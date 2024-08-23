@@ -1,0 +1,8 @@
+<form id="roleForm" method="post">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="title">Название должности</label>
+        <input type="text" class="form-control" id="title" name="title" value="">
+    </div>
+    <button type="submit" class="btn btn-primary">Сохранить</button>
+</form>
