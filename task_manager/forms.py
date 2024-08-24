@@ -36,7 +36,7 @@ class RoleForm(forms.ModelForm):
 class CustomUserCreationForm(forms.ModelForm):
     class Meta:
         model = CustomUser
-        fields = ['first_name', 'last_name', 'middle_name', 'position', 'department', 'role', 'email', 'foto', 'status']
+        fields = ['first_name', 'last_name', 'middle_name', 'department', 'role', 'email', 'status']
 
     def save(self, commit=True):
         user = super().save(commit=False)
@@ -67,4 +67,4 @@ class CustomUserCreationForm(forms.ModelForm):
 class CustomUserChangeForm(forms.ModelForm):
     class Meta:
         model = CustomUser
-        fields = ['first_name', 'last_name', 'middle_name', 'position', 'department', 'role', 'email', 'foto', 'status']
+        fields = ['first_name', 'last_name', 'middle_name', 'department', 'role', 'email', 'status']
