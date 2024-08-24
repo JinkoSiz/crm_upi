@@ -26,8 +26,11 @@ SECRET_KEY = 'django-insecure-5_5=bo8aujsopc5dfv%c^ucm!wch$c42f3fqufp+05mh@%aey@
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1:8000']
 
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+SECURE_SSL_REDIRECT = True
 
 # Application definition
 
@@ -106,12 +109,10 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
-
+LANGUAGE_CODE = 'ru'  # Assuming Russian is the preferred language
+TIME_ZONE = 'Europe/Moscow'  # Set the appropriate time zone
 USE_I18N = True
-
+USE_L10N = True
 USE_TZ = True
 
 
@@ -119,6 +120,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+# Media files (Uploaded content)
+MEDIA_URL = '/images/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'static/images')
 
 # Для хранения всех собранных статических файлов (для продакшена)
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
@@ -133,3 +138,13 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+AUTH_USER_MODEL = 'task_manager.CustomUser'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = ''  # Your email address
+EMAIL_HOST_PASSWORD = ''  # Your email account password

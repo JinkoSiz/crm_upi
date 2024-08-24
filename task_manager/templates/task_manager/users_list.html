@@ -1,0 +1,143 @@
+{% extends 'task_manager/base.html' %}
+
+{% block title %}User List{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <button type="button" class="btn btn-success mb-3" data-toggle="modal" data-target="#addUserModal">
+                Add User
+            </button>
+            <h2>Users</h2>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Position</th>
+                        <th scope="col">Department</th>
+                        <th scope="col">Role</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <th scope="row">{{ forloop.counter }}</th>
+                        <td>{{ user.first_name }} {{ user.last_name }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.position.name }}</td>
+                        <td>{{ user.department.name }}</td>
+                        <td>{{ user.role.name }}</td>
+                        <td>{{ user.get_status_display }}</td>
+                        <td>
+                            <a href="#" class="btn btn-sm btn-warning" data-toggle="modal" data-target="#editUserModal" data-id="{{ user.pk }}" data-name="{{ user.first_name }} {{ user.last_name }}">Edit</a>
+                            <button class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deleteUserModal" data-id="{{ user.pk }}">Delete</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add User Modal -->
+<div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" enctype="multipart/form-data" action="{% url 'create-user' %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addUserModalLabel">Add User</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    {{ form.as_p }}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit User Modal -->
+<div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="editUserForm" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editUserModalLabel">Edit User</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    {{ form.as_p }}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteUserModalLabel">Confirm Delete</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete this user?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <form id="deleteUserForm" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Handle Edit User modal display
+    $('#editUserModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        var userId = button.data('id');
+        var userName = button.data('name');
+
+        var modal = $(this);
+        modal.find('.modal-title').text('Edit User: ' + userName);
+
+        // Update the form action URL
+        $('#editUserForm').attr('action', '/users/' + userId + '/edit/');
+    });
+
+    // Handle Delete User modal display
+    $('#deleteUserModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        var userId = button.data('id');
+
+        // Update the form action URL
+        $('#deleteUserForm').attr('action', '/users/' + userId + '/delete/');
+    });
+</script>
+{% endblock %}

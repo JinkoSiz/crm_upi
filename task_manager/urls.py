@@ -13,4 +13,10 @@ urlpatterns = [
     path('roles/create/', views.createRole, name='role-create'),
     path('roles/<uuid:pk>/edit/', views.updateRole, name='role-edit'),
     path('roles/<uuid:pk>/delete/', views.deleteRole, name='role-delete'),
+    
+    # Пользователи
+    path('users/', views.user, name='user-list'),
+    path('users/create/', views.createUser, name='user-create'),
+    path('users/<uuid:pk>/edit/', views.updateUser, name='user-edit'),
+    path('users/<uuid:pk>/delete/', views.deleteUser, name='user-delete'),
 ]

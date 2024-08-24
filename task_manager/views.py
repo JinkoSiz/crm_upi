@@ -3,8 +3,10 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import Department, Role
-from .forms import DepartmentForm, RoleForm
+from django.utils.crypto import get_random_string
+from django.core.mail import send_mail
+from .models import Department, Role, CustomUser
+from .forms import DepartmentForm, RoleForm, CustomUserCreationForm, CustomUserChangeForm
 
 # Отделы
 
@@ -110,3 +112,45 @@ def deleteRole(request, pk):
     
     context = {'object': role}
     return render(request, 'task_manager/role_form.html', context)
+
+
+# Юзеры
+
+def user(request):
+    users = CustomUser.objects.all()
+    form = CustomUserCreationForm()
+    return render(request, 'task_manager/users_list.html', {'users': users, 'form': form})
+
+
+def createUser(request):
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('user-list')
+    else:
+        form = CustomUserCreationForm()
+
+    return render(request, 'task_manager/user_form.html', {'form': form})
+                  
+
+def updateUser(request, pk):
+    user = get_object_or_404(CustomUser, pk=pk)
+    if request.method == 'POST':
+        form = CustomUserChangeForm(request.POST, request.FILES, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect('user-list')
+    else:
+        form = CustomUserChangeForm(instance=user)
+
+    return render(request, 'task_manager/user_form.html', {'form': form, 'user': user})
+
+
+def deleteUser(request, pk):
+    user = get_object_or_404(CustomUser, pk=pk)
+    if request.method == 'POST':
+        user.delete()
+        return redirect('user-list')
+
+    return render(request, 'task_manager/user_confirm_delete.html', {'user': user})
