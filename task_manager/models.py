@@ -84,8 +84,9 @@ class Project(models.Model):
 
 
 class CustomUser(AbstractUser):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     middle_name = models.CharField(max_length=150, blank=True, null=True)
-    position = models.ForeignKey(Position, on_delete=models.SET_NULL, null=True, related_name='users')
+    is_admin = models.BooleanField(default=False, help_text='Designates whether the user is an administrator.')
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, related_name='users')
     role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, related_name='users')
     status = models.CharField(max_length=255, choices=[
