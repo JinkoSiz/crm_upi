@@ -37,16 +37,14 @@ SECRET_KEY = f'{DJANGO_KEY}'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-CSRF_TRUSTED_ORIGINS = ['crm-upi.vercel.app/',
-                 'crm-upi-jinkosizs-projects-4c8f9ac9.vercel.app/',
-                 'crm-upi-git-main-jinkosizs-projects-4c8f9ac9.vercel.app/',
-                 'crm-n3d20tj85-jinkosizs-projects-4c8f9ac9.vercel.app/admin',
+CSRF_TRUSTED_ORIGINS = ['crm-upi.vercel.app',
+                 'crm-upi-jinkosizs-projects-4c8f9ac9.vercel.app',
+                 'crm-upi-git-main-jinkosizs-projects-4c8f9ac9.vercel.app',
                  '127.0.0.1']
 
-ALLOWED_HOSTS = ['crm-upi.vercel.app/',
-                 'crm-upi-jinkosizs-projects-4c8f9ac9.vercel.app/',
-                 'crm-upi-git-main-jinkosizs-projects-4c8f9ac9.vercel.app/',
-                 'crm-n3d20tj85-jinkosizs-projects-4c8f9ac9.vercel.app/admin',
+ALLOWED_HOSTS = ['crm-upi.vercel.app',
+                 'crm-upi-jinkosizs-projects-4c8f9ac9.vercel.app',
+                 'crm-upi-git-main-jinkosizs-projects-4c8f9ac9.vercel.app',
                  '127.0.0.1']
 
 CSRF_COOKIE_SECURE = True
