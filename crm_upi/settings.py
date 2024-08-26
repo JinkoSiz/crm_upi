@@ -28,7 +28,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['https://crm-upi.vercel.app/',
                  'https://crm-upi-jinkosizs-projects-4c8f9ac9.vercel.app/',
-                 'https://crm-upi-git-main-jinkosizs-projects-4c8f9ac9.vercel.app/']
+                 'https://crm-upi-git-main-jinkosizs-projects-4c8f9ac9.vercel.app/',
+                 'https://crm-n3d20tj85-jinkosizs-projects-4c8f9ac9.vercel.app/admin',
+                 '127.0.0.1']
 
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
@@ -151,4 +153,4 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True 
 EMAIL_HOST_USER = EMAIL_USER  # Your email address
 EMAIL_HOST_PASSWORD = EMAIL_PASSWORD  # Your email account password
-DEFAULT_FROM_EMAIL = EMAIL_USER
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
