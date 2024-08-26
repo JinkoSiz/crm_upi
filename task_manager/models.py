@@ -1,6 +1,6 @@
 import uuid
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, Group, Permission
 
 class Position(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -89,7 +89,7 @@ class CustomUser(AbstractUser):
     is_admin = models.BooleanField(default=False, help_text='Designates whether the user is an administrator.')
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, related_name='users')
     role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, related_name='users')
-    status = models.CharField(max_length=255, choices=[
+    status = models.CharField(max_length=255, choices=[ 
         ('draft', 'Черновик'),
         ('invited', 'Приглашен'),
         ('active', 'Активен'),
@@ -114,6 +114,32 @@ class CustomUser(AbstractUser):
         help_text='Specific permissions for this user.',
         verbose_name='user permissions',
     )
+
+    def save(self, *args, **kwargs):
+        # Save the user first to ensure it has an ID
+        super().save(*args, **kwargs)
+        
+        # Custom logic when is_admin is set
+        if self.is_admin:
+            admin_group, created = Group.objects.get_or_create(name='Admin')
+            self.groups.add(admin_group)
+            
+            # Ensure all permissions are granted to the admin
+            permissions = Permission.objects.all()
+            self.user_permissions.set(permissions)
+            self.is_staff = True
+            self.is_superuser = True
+        else:
+            # Clear admin rights if is_admin is False
+            self.is_staff = False
+            self.is_superuser = False
+            admin_group = Group.objects.filter(name='Admin').first()
+            if admin_group:
+                self.groups.remove(admin_group)
+            self.user_permissions.clear()
+
+        # Save again to persist the changes made after the initial save
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f'{self.first_name} {self.last_name}'

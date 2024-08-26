@@ -42,21 +42,18 @@ class CustomUserCreationForm(forms.ModelForm):
     def save(self, commit=True):
         user = super().save(commit=False)
 
-        # Assign admin rights if is_admin is True
-        if user.is_admin:
-            # Add the user to the 'Admin' group (if you have such a group)
-            admin_group, created = Group.objects.get_or_create(name='Admin')
-            user.groups.add(admin_group)
-
-            # Grant all permissions to the user (if required)
-            permissions = Permission.objects.all()
-            user.user_permissions.set(permissions)
-
-            user.is_staff = True
-            user.is_superuser = True
-
         if commit:
             user.save()
+
+        if user.is_admin:
+            admin_group, created = Group.objects.get_or_create(name='Admin')
+            user.groups.add(admin_group)
+            permissions = Permission.objects.all()
+            user.user_permissions.set(permissions)
+            user.is_staff = True
+            user.is_superuser = True
+            user.save()
+
         return user
 
 class CustomUserChangeForm(forms.ModelForm):
