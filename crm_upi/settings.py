@@ -11,20 +11,37 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import environ
 import os
+
+
+env = environ.Env(
+    DEBUG=(bool, False)
+)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+
+DJANGO_KEY = env('DJANGO_KEY')
+EMAIL_USER = env('EMAIL_USER')
+EMAIL_PASSWORD = env('EMAIL_PASSWORD')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('DJANGO_KEY')
+SECRET_KEY = f'{DJANGO_KEY}'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+
+CSRF_TRUSTED_ORIGINS = ['https://crm-upi.vercel.app/',
+                 'https://crm-upi-jinkosizs-projects-4c8f9ac9.vercel.app/',
+                 'https://crm-upi-git-main-jinkosizs-projects-4c8f9ac9.vercel.app/',
+                 'https://crm-n3d20tj85-jinkosizs-projects-4c8f9ac9.vercel.app/admin',
+                 '127.0.0.1']
 
 ALLOWED_HOSTS = ['https://crm-upi.vercel.app/',
                  'https://crm-upi-jinkosizs-projects-4c8f9ac9.vercel.app/',
@@ -151,6 +168,6 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True 
-EMAIL_HOST_USER = os.environ.get('EMAIL_USER')  # Your email address
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_PASSWORD')  # Your email account password
+EMAIL_HOST_USER = f'{EMAIL_USER}'  # Your email address
+EMAIL_HOST_PASSWORD = f'{EMAIL_PASSWORD}'  # Your email account password
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
