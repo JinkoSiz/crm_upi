@@ -27,6 +27,14 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 DJANGO_KEY = env('DJANGO_KEY')
 EMAIL_USER = env('EMAIL_USER')
 EMAIL_PASSWORD = env('EMAIL_PASSWORD')
+# AWS_ID = env('AWS_ID')
+# AWS_STORAGE_NAME = env('AWS_STORAGE_NAME')
+# AWS_KEY = env('AWS_KEY')
+DB_USER = env('DB_USER')
+DB_PASSWORD = env('DB_PASSWORD')
+DB_HOST = env('DB_HOST')
+DB_NAME = env('DB_NAME')
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -37,10 +45,10 @@ SECRET_KEY = f'{DJANGO_KEY}'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-CSRF_TRUSTED_ORIGINS = ['crm-upi.vercel.app',
-                 'crm-upi-jinkosizs-projects-4c8f9ac9.vercel.app',
-                 'crm-upi-git-main-jinkosizs-projects-4c8f9ac9.vercel.app',
-                 '127.0.0.1']
+CSRF_TRUSTED_ORIGINS = ['https://crm-upi.vercel.app',
+                 'https://crm-upi-jinkosizs-projects-4c8f9ac9.vercel.app',
+                 'https://crm-upi-git-main-jinkosizs-projects-4c8f9ac9.vercel.app',
+                 'https://127.0.0.1']
 
 ALLOWED_HOSTS = ['crm-upi.vercel.app',
                  'crm-upi-jinkosizs-projects-4c8f9ac9.vercel.app',
@@ -100,9 +108,13 @@ WSGI_APPLICATION = 'crm_upi.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        'NAME': f'{DB_NAME}',
+        'USER': f'{DB_USER}',
+        'PASSWORD': f'{DB_PASSWORD}',
+        'HOST': f'{DB_HOST}',
+        'PORT': '5432',
     }
 }
 
