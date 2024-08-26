@@ -7,6 +7,10 @@ WORKDIR /app
 # Copy the application files into the working directory
 COPY . /app
 
+# Copy the SSL certificates into the appropriate directory
+COPY ./cert.crt /app/certs/cert.crt
+COPY ./cert.key /app/certs/cert.key
+
 # Install the application dependencies
 # Change the pip install command to use the --no-cache-dir flag to avoid caching the installation files
 RUN pip install --no-cache-dir -r requirements.txt
