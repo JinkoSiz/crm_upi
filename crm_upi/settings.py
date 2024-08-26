@@ -27,7 +27,8 @@ SECRET_KEY = DJANGO_KEY
 DEBUG = True
 
 ALLOWED_HOSTS = ['https://crm-upi.vercel.app/',
-                 'https://crm-upi-jinkosizs-projects-4c8f9ac9.vercel.app/']
+                 'https://crm-upi-jinkosizs-projects-4c8f9ac9.vercel.app/',
+                 'https://crm-upi-git-main-jinkosizs-projects-4c8f9ac9.vercel.app/']
 
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True

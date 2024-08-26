@@ -3,7 +3,7 @@
     {
       "src": "crm_upi/wsgi.py",
       "use": "@vercel/python",
-      "config": { "maxLambdaSize": "30mb", "runtime": "python3.9" }
+      "config": { "maxLambdaSize": "30mb", "runtime": "python3.12" }
     }
   ],
   "routes": [
