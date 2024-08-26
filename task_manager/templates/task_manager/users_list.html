@@ -10,6 +10,44 @@
                 Добавить Пользователя
             </button>
             <h2>Пользователи</h2>
+            
+            <!-- Filter Form -->
+            <form method="get" action="{% url 'user-list' %}" class="form-inline mb-4">
+                <div class="form-group mr-2">
+                    <label for="status" class="mr-2">Статус:</label>
+                    <select name="status" id="status" class="form-control">
+                        <option value="">Все</option>
+                        <option value="draft" {% if request.GET.status == 'draft' %}selected{% endif %}>Черновик</option>
+                        <option value="invited" {% if request.GET.status == 'invited' %}selected{% endif %}>Приглашен</option>
+                        <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>Активен</option>
+                        <option value="fired" {% if request.GET.status == 'fired' %}selected{% endif %}>Уволен</option>
+                    </select>
+                </div>
+                <div class="form-group mr-2">
+                    <label for="department" class="mr-2">Отдел:</label>
+                    <select name="department" id="department" class="form-control">
+                        <option value="">Все</option>
+                        {% for department in departments %}
+                            <option value="{{ department.pk }}" {% if request.GET.department == department.pk|stringformat:"s" %}selected{% endif %}>{{ department.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group mr-2">
+                    <label for="role" class="mr-2">Должность:</label>
+                    <select name="role" id="role" class="form-control">
+                        <option value="">Все</option>
+                        {% for role in roles %}
+                            <option value="{{ role.pk }}" {% if request.GET.role == role.pk|stringformat:"s" %}selected{% endif %}>{{ role.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group mr-2">
+                    <label for="last_name" class="mr-2">Фамилия:</label>
+                    <input type="text" name="last_name" id="last_name" value="{{ request.GET.last_name }}" class="form-control" placeholder="Введите фамилию">
+                </div>
+                <button type="submit" class="btn btn-primary">Фильтр</button>
+            </form>
+
             <table class="table table-striped">
                 <thead>
                     <tr>

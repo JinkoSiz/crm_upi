@@ -2,16 +2,21 @@ from django.core import paginator
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.utils.crypto import get_random_string
 from django.core.mail import send_mail
 from django.contrib.auth.models import UserManager
 from .models import Department, Role, CustomUser
 from .forms import DepartmentForm, RoleForm, CustomUserCreationForm, CustomUserChangeForm
+from django.db.models import Q
+
+
+def admin_required(login_url=None):
+    return user_passes_test(lambda u: u.is_authenticated and u.is_admin, login_url=login_url)
 
 # Отделы
-
+@admin_required(login_url='login')
 def department(request):
     departmentObj = Department.objects.all()
     form = DepartmentForm()
@@ -64,7 +69,7 @@ def deleteDepartment(request, pk):
 
 
 # Должности
-
+@admin_required(login_url='login')
 def role(request):
     roleObj = Role.objects.all()
     form = RoleForm()
@@ -117,11 +122,29 @@ def deleteRole(request, pk):
 
 
 # Юзеры
-
+@admin_required(login_url='login')
 def user(request):
     users = CustomUser.objects.all()
+    departments = Department.objects.all()
+    roles = Role.objects.all()
+
+    # Apply filters if any
+    status = request.GET.get('status')
+    department = request.GET.get('department')
+    role = request.GET.get('role')
+    last_name = request.GET.get('last_name')
+
+    if status:
+        users = users.filter(status=status)
+    if department:
+        users = users.filter(department__id=department)
+    if role:
+        users = users.filter(role__id=role)
+    if last_name:
+        users = users.filter(last_name__icontains=last_name)
+
     form = CustomUserCreationForm()
-    return render(request, 'task_manager/users_list.html', {'users': users, 'form': form})
+    return render(request, 'task_manager/users_list.html', {'users': users, 'form': form, 'departments': departments, 'roles': roles})
 
 
 def createUser(request):

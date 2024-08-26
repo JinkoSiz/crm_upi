@@ -18,8 +18,8 @@
             <ul>
                 {% if user.is_authenticated %}
                     {% if user.is_admin %}
-                        <!-- <li><a href="{% url 'time-logs' %}">Логи времени</a></li> -->
-                        <!-- <li><a href="{% url 'reports' %}">Отчёты</a></li> -->
+                        <li><a href="#">Логи времени</a></li>
+                        <li><a href="#">Отчёты</a></li>
                         <li>Сотрудники и роли
                             <ul>
                                 <li><a href="{% url 'department-list' %}">Отделы</a></li>
@@ -27,16 +27,16 @@
                                 <li><a href="{% url 'role-list' %}">Роли</a></li>
                             </ul>
                         </li>
-                        <!-- <li>Настройки
+                        <li>Настройки
                             <ul>
-                                <li><a href="{% url 'project-list' %}">Проекты</a></li>
-                                <li><a href="{% url 'section-list' %}">Разделы</a></li>
-                                <li><a href="{% url 'mark-list' %}">Метки</a></li>
-                                <li><a href="{% url 'task-list' %}">Задачи</a></li>
+                                <li><a href="#">Проекты</a></li>
+                                <li><a href="#">Разделы</a></li>
+                                <li><a href="#">Метки</a></li>
+                                <li><a href="#">Задачи</a></li>
                             </ul>
-                        </li> -->
+                        </li>
                     {% else %}
-                        <!-- S<li><a href="{% url 'time-logs' %}">Логи времени</a></li> -->
+                        <li><a href="#">Логи времени</a></li>
                     {% endif %}
                     <li><a href="{% url 'logout' %}">Выход</a></li>
                 {% endif %}
