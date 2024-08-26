@@ -1,5 +1,4 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,13 +16,29 @@
         <h1>Task Manager</h1>
         <nav>
             <ul>
-                <li><a href="{% url 'department-list' %}">Отделы</a></li>
-                <li><a href="{% url 'role-list' %}">Должности</a></li>
-                <li><a href="{% url 'user-list' %}">Пользователи</a></li>
                 {% if user.is_authenticated %}
-                    <li><a href="{% url 'logout' %}">Logout</a></li>
-                {% else %}
-                    <li><a href="{% url 'login' %}">Login</a></li>
+                    {% if user.is_admin %}
+                        <!-- <li><a href="{% url 'time-logs' %}">Логи времени</a></li> -->
+                        <!-- <li><a href="{% url 'reports' %}">Отчёты</a></li> -->
+                        <li>Сотрудники и роли
+                            <ul>
+                                <li><a href="{% url 'department-list' %}">Отделы</a></li>
+                                <li><a href="{% url 'user-list' %}">Пользователи</a></li>
+                                <li><a href="{% url 'role-list' %}">Роли</a></li>
+                            </ul>
+                        </li>
+                        <!-- <li>Настройки
+                            <ul>
+                                <li><a href="{% url 'project-list' %}">Проекты</a></li>
+                                <li><a href="{% url 'section-list' %}">Разделы</a></li>
+                                <li><a href="{% url 'mark-list' %}">Метки</a></li>
+                                <li><a href="{% url 'task-list' %}">Задачи</a></li>
+                            </ul>
+                        </li> -->
+                    {% else %}
+                        <!-- S<li><a href="{% url 'time-logs' %}">Логи времени</a></li> -->
+                    {% endif %}
+                    <li><a href="{% url 'logout' %}">Выход</a></li>
                 {% endif %}
             </ul>
         </nav>
