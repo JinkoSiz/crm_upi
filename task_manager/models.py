@@ -120,7 +120,7 @@ class CustomUser(AbstractUser):
         super().save(*args, **kwargs)
         
         # Custom logic when is_admin is set
-        if self.is_admin:
+        if self.is_admin or self.is_superuser:
             admin_group, created = Group.objects.get_or_create(name='Admin')
             self.groups.add(admin_group)
             

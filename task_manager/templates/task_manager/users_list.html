@@ -135,6 +135,8 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
                     <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                    <!-- Кнопка для сброса пароля -->
+                    <a href="{% url 'reset-password' user.id %}" class="btn btn-warning">Сбросить пароль</a>
                 </div>
             </form>
         </div>

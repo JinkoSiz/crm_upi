@@ -230,3 +230,24 @@ def send_invitation(request, pk):
         messages.warning(request, 'Этот пользователь уже был приглашен ранее.')
 
     return redirect('user-list')
+
+
+def reset_password(request, pk):
+    user = get_object_or_404(CustomUser, pk=pk)
+    
+    # Генерация нового случайного пароля
+    new_password = get_random_string(length=8)
+    user.set_password(new_password)
+    user.save()
+    
+    # Отправка нового пароля на email пользователя
+    send_mail(
+        'Ваш новый пароль',
+        f'Ваш новый пароль: {new_password}',
+        'noreply@taskmanager.com',  # Укажите email отправителя
+        [user.email],
+        fail_silently=False,
+    )
+    
+    messages.success(request, 'Пароль успешно сброшен и отправлен на email пользователя.')
+    return redirect('user-list')

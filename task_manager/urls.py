@@ -20,6 +20,7 @@ urlpatterns = [
     path('users/<uuid:pk>/edit/', views.updateUser, name='user-edit'),
     path('users/<uuid:pk>/delete/', views.deleteUser, name='user-delete'),
     path('users/<uuid:pk>/invite/', views.send_invitation, name='send-invitation'),
+    path('users/<uuid:pk>/reset-password', views.reset_password, name='reset-password'),
     path('login/', views.user_login, name='login'),
     path('logout/', views.user_logout, name='logout'),
 ]
