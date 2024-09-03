@@ -16,7 +16,7 @@ import os
 
 
 env = environ.Env(
-    DEBUG=(bool, True)
+    DEBUG=(bool, False)
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -43,7 +43,7 @@ DB_NAME = env('DB_NAME')
 SECRET_KEY = f'{DJANGO_KEY}'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 CSRF_TRUSTED_ORIGINS = ['https://crm-upi.vercel.app',
                  'https://crm-upi-jinkosizs-projects-4c8f9ac9.vercel.app',
@@ -153,7 +153,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = '/static/'
+STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+STATIC_URL = 'https://s3.timeweb.com/7777fb51-34f4640c-d71e-4ace-b57e-e7997a1f4952/static/'
 
 # Media files (Uploaded content)
 MEDIA_URL = '/images/'
