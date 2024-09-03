@@ -16,7 +16,7 @@ import os
 
 
 env = environ.Env(
-    DEBUG=(bool, False)
+    DEBUG=(bool, True)
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -27,9 +27,9 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 DJANGO_KEY = env('DJANGO_KEY')
 EMAIL_USER = env('EMAIL_USER')
 EMAIL_PASSWORD = env('EMAIL_PASSWORD')
-# AWS_ID = env('AWS_ID')
-# AWS_STORAGE_NAME = env('AWS_STORAGE_NAME')
-# AWS_KEY = env('AWS_KEY')
+AWS_ID = env('AWS_ID')
+AWS_STORAGE_NAME = env('AWS_STORAGE_NAME')
+AWS_KEY = env('AWS_KEY')
 DB_USER = env('DB_USER')
 DB_PASSWORD = env('DB_PASSWORD')
 DB_HOST = env('DB_HOST')
@@ -70,7 +70,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_extensions',
 
-    'task_manager'
+    'task_manager',
+    'corsheaders',
+    'storages',
 ]
 
 MIDDLEWARE = [
@@ -162,7 +164,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Места, где Django будет искать статические файлы
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
+    BASE_DIR / 'static'
 ]
 
 
@@ -170,6 +172,16 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+AWS_ACCESS_KEY_ID = f'{AWS_ID}'
+AWS_SECRET_ACCESS_KEY = f'{AWS_KEY}'
+AWS_STORAGE_BUCKET_NAME = f'{AWS_STORAGE_NAME}'
+AWS_S3_ENDPOINT_URL = 'https://s3.timeweb.com'
+
+AWS_QUERYSTRING_AUTH = False
+AWS_S3_FILE_OVERWRITE = False
 
 
 AUTH_USER_MODEL = 'task_manager.CustomUser'
