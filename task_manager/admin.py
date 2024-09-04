@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import CustomUser, Department, Role
+from .models import CustomUser, Department, Role, Project, ProjectStatus, Building, ProjectBuilding, ProjectSection
 
 class CustomUserAdmin(UserAdmin):
     model = CustomUser
@@ -10,7 +10,6 @@ class CustomUserAdmin(UserAdmin):
     )
 
 admin.site.register(CustomUser, CustomUserAdmin)
-
 
 @admin.register(Department)
 class DepartmentAdmin(admin.ModelAdmin):
@@ -24,3 +23,37 @@ class RoleAdmin(admin.ModelAdmin):
     search_fields = ('title',)
     readonly_fields = ('created_at', 'updated_at')
 
+# Проекты
+@admin.register(Project)
+class ProjectAdmin(admin.ModelAdmin):
+    list_display = ('title', 'status', 'created_at', 'updated_at')
+    search_fields = ('title',)
+    list_filter = ('status',)
+    readonly_fields = ('created_at', 'updated_at')
+
+@admin.register(ProjectStatus)
+class ProjectStatusAdmin(admin.ModelAdmin):
+    list_display = ('title', 'created_at', 'updated_at')
+    search_fields = ('title',)
+    readonly_fields = ('created_at', 'updated_at')
+
+# Здания
+@admin.register(Building)
+class BuildingAdmin(admin.ModelAdmin):
+    list_display = ('title', 'created_at', 'updated_at')
+    search_fields = ('title',)
+    readonly_fields = ('created_at', 'updated_at')
+
+# Проект-Здание
+@admin.register(ProjectBuilding)
+class ProjectBuildingAdmin(admin.ModelAdmin):
+    list_display = ('project', 'building', 'created_at', 'updated_at')
+    search_fields = ('project__title', 'building__title')
+    readonly_fields = ('created_at', 'updated_at')
+
+# Проект-Раздел
+@admin.register(ProjectSection)
+class ProjectSectionAdmin(admin.ModelAdmin):
+    list_display = ('project', 'building', 'created_at', 'updated_at')
+    search_fields = ('project__title', 'building__title')
+    readonly_fields = ('created_at', 'updated_at')

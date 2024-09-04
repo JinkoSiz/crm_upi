@@ -7,8 +7,8 @@ from django.contrib import messages
 from django.utils.crypto import get_random_string
 from django.core.mail import send_mail
 from django.contrib.auth.models import UserManager
-from .models import Department, Role, CustomUser
-from .forms import DepartmentForm, RoleForm, CustomUserCreationForm, CustomUserChangeForm
+from .models import Department, ProjectStatus, Role, CustomUser, Project, ProjectBuilding, ProjectSection, Building, Section
+from .forms import DepartmentForm, RoleForm, CustomUserCreationForm, CustomUserChangeForm, ProjectForm, ProjectBuildingForm, ProjectSectionForm
 from django.db.models import Q
 
 
@@ -251,3 +251,108 @@ def reset_password(request, pk):
     
     messages.success(request, 'Пароль успешно сброшен и отправлен на email пользователя.')
     return redirect('user-list')
+
+
+# Проекты
+
+@admin_required(login_url='login')
+def project(request):
+    projects = Project.objects.all()
+    project_statuses = ProjectStatus.objects.all()
+    form = ProjectForm()
+    return render(request, 'task_manager/project_list.html', {
+        'projects': projects,
+        'project_statuses': project_statuses,
+        'form': form
+    })
+
+def project_detail(request, pk):
+    project = get_object_or_404(Project, pk=pk)
+    project_buildings = ProjectBuilding.objects.filter(project=project)
+    project_sections = ProjectSection.objects.filter(project=project)
+    return render(request, 'task_manager/project_detail.html', {
+        'project': project, 
+        'project_buildings': project_buildings,
+        'project_sections': project_sections
+    })
+
+def createProject(request):
+    form = ProjectForm()
+
+    if request.method == 'POST':
+
+        form = ProjectForm(request.POST, request.FILES)
+        if form.is_valid():
+            role = form.save(commit=False)
+            role.save()
+            
+            return redirect('project-list')
+
+    context = {'form': form}
+    return render(request, 'task_manager/project_form.html', context)
+
+def updateProject(request, pk):
+    project = get_object_or_404(Project, pk=pk)
+    if request.method == 'POST':
+        form = ProjectForm(request.POST, instance=project)
+        if form.is_valid():
+            form.save()
+            return redirect('project-detail', pk=pk)
+    else:
+        form = ProjectForm(instance=project)
+    return render(request, 'task_manager/project_form.html', {'form': form})
+
+def deleteProject(request, pk):
+    project = get_object_or_404(Project, pk=pk)
+    if request.method == 'POST':
+        project.delete()
+        return redirect('project-list')
+    return render(request, 'task_manager/project_confirm_delete.html', {'project': project})
+
+
+# ProjectBuilding
+
+def project_building_create(request, project_pk):
+    project = get_object_or_404(Project, pk=project_pk)
+    if request.method == 'POST':
+        form = ProjectBuildingForm(request.POST)
+        if form.is_valid():
+            project_building = form.save(commit=False)
+            project_building.project = project
+            project_building.save()
+            return redirect('project-detail', pk=project_pk)
+    else:
+        form = ProjectBuildingForm()
+    return render(request, 'task_manager/project_building_form.html', {'form': form, 'project': project})
+
+def project_building_delete(request, pk):
+    project_building = get_object_or_404(ProjectBuilding, pk=pk)
+    project_pk = project_building.project.pk
+    if request.method == 'POST':
+        project_building.delete()
+        return redirect('project-detail', pk=project_pk)
+    return render(request, 'task_manager/project_building_confirm_delete.html', {'project_building': project_building})
+
+
+# ProjectSection
+
+def project_section_create(request, project_pk):
+    project = get_object_or_404(Project, pk=project_pk)
+    if request.method == 'POST':
+        form = ProjectSectionForm(request.POST)
+        if form.is_valid():
+            project_section = form.save(commit=False)
+            project_section.project = project
+            project_section.save()
+            return redirect('project-detail', pk=project_pk)
+    else:
+        form = ProjectSectionForm()
+    return render(request, 'task_manager/project_section_form.html', {'form': form, 'project': project})
+
+def project_section_delete(request, pk):
+    project_section = get_object_or_404(ProjectSection, pk=pk)
+    project_pk = project_section.project.pk
+    if request.method == 'POST':
+        project_section.delete()
+        return redirect('project-detail', pk=project_pk)
+    return render(request, 'task_manager/project_section_confirm_delete.html', {'project_section': project_section})
