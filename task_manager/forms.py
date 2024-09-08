@@ -5,6 +5,7 @@ from django.core.mail import send_mail
 from .models import Department, Role, CustomUser, Project, ProjectBuilding, ProjectSection, Building, Section
 from django.contrib.auth.models import Group, Permission
 
+
 # Форма для модели Department
 class DepartmentForm(forms.ModelForm):
     class Meta:
@@ -56,6 +57,7 @@ class CustomUserCreationForm(forms.ModelForm):
 
         return user
 
+
 class CustomUserChangeForm(forms.ModelForm):
     class Meta:
         model = CustomUser
@@ -86,17 +88,20 @@ class CustomUserChangeForm(forms.ModelForm):
             user.save()
         return user
 
+
 class ProjectForm(forms.ModelForm):
     class Meta:
         model = Project
         fields = ['title', 'status']
-        
+
+
 class ProjectBuildingForm(forms.ModelForm):
     class Meta:
         model = ProjectBuilding
         fields = ['project', 'building']
 
+
 class ProjectSectionForm(forms.ModelForm):
     class Meta:
         model = ProjectSection
-        fields = ['project', 'building']
+        fields = ['project', 'section']

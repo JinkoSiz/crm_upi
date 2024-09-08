@@ -30,6 +30,8 @@ urlpatterns = [
     path('projects/create/', views.createProject, name='project-create'),
     path('projects/<uuid:pk>/edit/', views.updateProject, name='project-update'),
     path('projects/<uuid:pk>/delete/', views.deleteProject, name='project-delete'),
+    path('buildings/create/', views.building_create, name='building-create'),
+    path('buildings/<uuid:building_id>/delete/', views.building_delete, name='building-delete'),
 
     # ProjectBuilding
     path('projects/<uuid:project_pk>/buildings/add/', views.project_building_create, name='project_building-create'),

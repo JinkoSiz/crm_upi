@@ -1,19 +1,23 @@
 from django.core import paginator
+from django.db import IntegrityError
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login, logout
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.utils.crypto import get_random_string
 from django.core.mail import send_mail
 from django.contrib.auth.models import UserManager
-from .models import Department, ProjectStatus, Role, CustomUser, Project, ProjectBuilding, ProjectSection, Building, Section
-from .forms import DepartmentForm, RoleForm, CustomUserCreationForm, CustomUserChangeForm, ProjectForm, ProjectBuildingForm, ProjectSectionForm
+from .models import Department, ProjectStatus, Role, CustomUser, Project, ProjectBuilding, ProjectSection, Building, \
+    Section
+from .forms import DepartmentForm, RoleForm, CustomUserCreationForm, CustomUserChangeForm, ProjectForm, \
+    ProjectBuildingForm, ProjectSectionForm
 from django.db.models import Q
 
 
 def admin_required(login_url=None):
     return user_passes_test(lambda u: u.is_authenticated and u.is_admin, login_url=login_url)
+
 
 # Отделы
 @admin_required(login_url='login')
@@ -33,7 +37,7 @@ def createDepartment(request):
         if form.is_valid():
             department = form.save(commit=False)
             department.save()
-            
+
             return redirect('department-list')
 
     context = {'form': form}
@@ -59,11 +63,10 @@ def updateDepartment(request, pk):
 def deleteDepartment(request, pk):
     department = get_object_or_404(Department, pk=pk)
     if request.method == 'POST':
-
         department.delete()
 
         return redirect('department-list')
-    
+
     context = {'object': department}
     return render(request, 'task_manager/department_form.html', context)
 
@@ -86,7 +89,7 @@ def createRole(request):
         if form.is_valid():
             role = form.save(commit=False)
             role.save()
-            
+
             return redirect('role-list')
 
     context = {'form': form}
@@ -112,11 +115,10 @@ def updateRole(request, pk):
 def deleteRole(request, pk):
     role = get_object_or_404(Role, pk=pk)
     if request.method == 'POST':
-
         role.delete()
 
         return redirect('role-list')
-    
+
     context = {'object': role}
     return render(request, 'task_manager/role_form.html', context)
 
@@ -144,7 +146,8 @@ def user(request):
         users = users.filter(last_name__icontains=last_name)
 
     form = CustomUserCreationForm()
-    return render(request, 'task_manager/users_list.html', {'users': users, 'form': form, 'departments': departments, 'roles': roles})
+    return render(request, 'task_manager/users_list.html',
+                  {'users': users, 'form': form, 'departments': departments, 'roles': roles})
 
 
 def createUser(request):
@@ -157,7 +160,7 @@ def createUser(request):
         form = CustomUserCreationForm()
 
     return render(request, 'task_manager/user_form.html', {'form': form})
-                  
+
 
 def updateUser(request, pk):
     user = get_object_or_404(CustomUser, pk=pk)
@@ -168,7 +171,7 @@ def updateUser(request, pk):
             return redirect('user-list')
     else:
         form = CustomUserChangeForm(instance=user)
-    
+
     context = {'form': form, 'user': user}
     return render(request, 'task_manager/user_form.html', context)
 
@@ -209,7 +212,7 @@ def send_invitation(request, pk):
         while CustomUser.objects.filter(username=username).exists():
             username = get_random_string(length=8)
         user.username = username
-        
+
         # Генерация случайного пароля
         password = get_random_string(length=8)
         user.set_password(password)
@@ -234,12 +237,12 @@ def send_invitation(request, pk):
 
 def reset_password(request, pk):
     user = get_object_or_404(CustomUser, pk=pk)
-    
+
     # Генерация нового случайного пароля
     new_password = get_random_string(length=8)
     user.set_password(new_password)
     user.save()
-    
+
     # Отправка нового пароля на email пользователя
     send_mail(
         'Ваш новый пароль',
@@ -248,7 +251,7 @@ def reset_password(request, pk):
         [user.email],
         fail_silently=False,
     )
-    
+
     messages.success(request, 'Пароль успешно сброшен и отправлен на email пользователя.')
     return redirect('user-list')
 
@@ -266,15 +269,33 @@ def project(request):
         'form': form
     })
 
+
 def project_detail(request, pk):
     project = get_object_or_404(Project, pk=pk)
+
+    # Получаем связанные здания и секции
     project_buildings = ProjectBuilding.objects.filter(project=project)
     project_sections = ProjectSection.objects.filter(project=project)
+
+    # Получаем все доступные здания и секции для отображения в форме
+    buildings = Building.objects.all()
+    sections = Section.objects.all()
+
+    # Получаем список всех PK секций для данного проекта
+    project_section_pks = project_sections.values_list('section__pk', flat=True)
+    project_building_pks = project_buildings.values_list('building__pk', flat=True)
+
     return render(request, 'task_manager/project_detail.html', {
-        'project': project, 
-        'project_buildings': project_buildings,
-        'project_sections': project_sections
+        'project': project,
+        'project_buildings': project_buildings,  # Передаем объекты ProjectBuilding для отображения
+        'project_sections': project_sections,  # Передаем объекты ProjectSection для отображения
+        'buildings': buildings,  # Все здания для отображения в форме
+        'sections': sections,  # Все секции для отображения в форме
+        'project_building_pks': project_building_pks,  # Список PK зданий для этого проекта
+        'project_section_pks': project_section_pks,  # Список PK секций для этого проекта
+        'project_status': ProjectStatus.objects.all(),  # Статусы проектов для выбора
     })
+
 
 def createProject(request):
     form = ProjectForm()
@@ -285,22 +306,41 @@ def createProject(request):
         if form.is_valid():
             role = form.save(commit=False)
             role.save()
-            
+
             return redirect('project-list')
 
     context = {'form': form}
     return render(request, 'task_manager/project_form.html', context)
 
+
 def updateProject(request, pk):
     project = get_object_or_404(Project, pk=pk)
+
     if request.method == 'POST':
         form = ProjectForm(request.POST, instance=project)
         if form.is_valid():
             form.save()
+
+            # Обработка зданий
+            buildings = request.POST.getlist('buildings')  # Получаем список зданий из формы
+            ProjectBuilding.objects.filter(project=project).delete()  # Удаляем старые здания
+            for building_id in buildings:
+                building = Building.objects.get(pk=building_id)
+                ProjectBuilding.objects.create(project=project, building=building)
+
+            # Обработка секций (аналогично для секций)
+            sections = request.POST.getlist('sections')
+            ProjectSection.objects.filter(project=project).delete()
+            for section_id in sections:
+                section = Section.objects.get(pk=section_id)
+                ProjectSection.objects.create(project=project, section=section)
+
             return redirect('project-detail', pk=pk)
     else:
         form = ProjectForm(instance=project)
-    return render(request, 'task_manager/project_form.html', {'form': form})
+
+    return render(request, 'task_manager/project_form.html', {'form': form, 'project': project})
+
 
 def deleteProject(request, pk):
     project = get_object_or_404(Project, pk=pk)
@@ -324,6 +364,7 @@ def project_building_create(request, project_pk):
     else:
         form = ProjectBuildingForm()
     return render(request, 'task_manager/project_building_form.html', {'form': form, 'project': project})
+
 
 def project_building_delete(request, pk):
     project_building = get_object_or_404(ProjectBuilding, pk=pk)
@@ -349,6 +390,7 @@ def project_section_create(request, project_pk):
         form = ProjectSectionForm()
     return render(request, 'task_manager/project_section_form.html', {'form': form, 'project': project})
 
+
 def project_section_delete(request, pk):
     project_section = get_object_or_404(ProjectSection, pk=pk)
     project_pk = project_section.project.pk
@@ -356,3 +398,48 @@ def project_section_delete(request, pk):
         project_section.delete()
         return redirect('project-detail', pk=project_pk)
     return render(request, 'task_manager/project_section_confirm_delete.html', {'project_section': project_section})
+
+
+def building_create(request):
+    if request.method == 'POST':
+        building_title = request.POST.get('title')
+        project_id = request.POST.get('project_id')
+
+        try:
+            project = Project.objects.get(pk=project_id)
+        except Project.DoesNotExist:
+            return JsonResponse({'error': 'Project not found'}, status=404)
+
+        try:
+            building, created = Building.objects.get_or_create(title=building_title)
+
+            if ProjectBuilding.objects.filter(project=project, building=building).exists():
+                return JsonResponse({'error': 'Building already exists in this project'}, status=400)
+
+            ProjectBuilding.objects.create(project=project, building=building)
+        except IntegrityError:
+            return JsonResponse({'error': 'Building with this name already exists'}, status=400)
+
+        return JsonResponse({'message': 'Building created and added to project'}, status=200)
+
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+
+def building_delete(request, building_id):
+    if request.method == 'POST':
+        project_id = request.POST.get('project_id')
+
+        # Удаление связи между проектом и зданием
+        try:
+            project_building = get_object_or_404(ProjectBuilding, building_id=building_id, project_id=project_id)
+            project_building.delete()
+
+            # Теперь удаляем само здание, если оно не связано с другими проектами
+            building = get_object_or_404(Building, pk=building_id)
+            # Проверяем, связано ли здание с другими проектами
+            if not ProjectBuilding.objects.filter(building=building).exists():
+                building.delete()
+
+            return JsonResponse({'message': 'Building removed from project and deleted'})
+        except Exception as e:
+            return JsonResponse({'error': 'Error deleting building: ' + str(e)}, status=400)

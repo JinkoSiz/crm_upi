@@ -1,27 +1,41 @@
-<form id="editProjectForm" method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    <div class="modal-header">
-        <h5 class="modal-title" id="editProjectModalLabel">Edit Project</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    </div>
-    <div class="modal-body">
-        <div class="form-group">
-            <label for="projectTitle">Project Title</label>
-            <input type="text" name="title" class="form-control" id="projectTitle" placeholder="Enter project title">
+<div class="modal fade" id="editProjectModal" tabindex="-1" aria-labelledby="editProjectModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="editProjectForm" method="post" enctype="multipart/form-data" action="{% url 'project-update' project.pk %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editProjectModalLabel">Edit Project</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="id_title">Project Title</label>
+                        <input type="text" name="title" class="form-control" id="id_title" value="{{ project.title }}" placeholder="Enter project title">
+                    </div>
+                    <div class="form-group">
+                        <label for="id_status">Status</label>
+                        <select name="status" class="form-control" id="id_status">
+                            {% for status in project_status %}
+                                <option value="{{ status.pk }}" {% if status.pk == project.status_id %}selected{% endif %}>{{ status.title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="id_sections">Sections</label>
+                        <select name="sections" class="form-control" id="id_sections" multiple>
+                            {% for section in all_sections %}
+                                <option value="{{ section.pk }}" {% if section.pk in project_sections %}selected{% endif %}>{{ section.title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+            </form>
         </div>
-        <div class="form-group">
-            <label for="projectStatus">Status</label>
-            <select name="status" class="form-control" id="projectStatus">
-                {% for status in project_statuses %}
-                    <option value="{{ status.pk }}">{{ status.title }}</option>
-                {% endfor %}
-            </select>
-        </div>
     </div>
-    <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <button type="submit" class="btn btn-primary">Save changes</button>
-    </div>
-</form>
+</div>

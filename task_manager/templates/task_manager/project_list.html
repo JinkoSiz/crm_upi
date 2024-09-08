@@ -26,7 +26,8 @@ Projects List
                     <tr>
                         <th scope="row">{{ forloop.counter }}</th>
                         <td>
-                            <a href="#" data-toggle="modal" data-target="#editProjectModal" data-id="{{ project.pk }}" data-title="{{ project.title }}" data-status="{{ project.status_id }}">
+                            <!-- Ссылка на детальную страницу проекта -->
+                            <a href="{% url 'project-detail' project.pk %}">
                                 {{ project.title }}
                             </a>
                         </td>
@@ -51,30 +52,6 @@ Projects List
                 {% csrf_token %}
                 <div class="modal-header">
                     <h5 class="modal-title" id="addProjectModalLabel">Add Project</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    {{ form.as_p }}
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save changes</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- Edit Project Modal -->
-<div class="modal fade" id="editProjectModal" tabindex="-1" aria-labelledby="editProjectModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form id="editProjectForm" method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editProjectModalLabel">Edit Project</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -116,24 +93,6 @@ Projects List
 </div>
 
 <script>
-    // Handle Edit Project modal display
-    $('#editProjectModal').on('show.bs.modal', function (event) {
-        var button = $(event.relatedTarget);
-        var projectId = button.data('id');
-        var projectTitle = button.data('title');
-        var projectStatus = button.data('status');
-
-        var modal = $(this);
-        modal.find('.modal-title').text('Edit Project: ' + projectTitle);
-
-        // Update the form action URL
-        $('#editProjectForm').attr('action', '/projects/' + projectId + '/edit/');
-
-        // Pre-fill form fields with project data
-        modal.find('#id_title').val(projectTitle);
-        modal.find('#id_status').val(projectStatus);
-    });
-
     // Handle Delete Project modal display
     $('#deleteProjectModal').on('show.bs.modal', function (event) {
         var button = $(event.relatedTarget);
