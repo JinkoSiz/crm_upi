@@ -44,7 +44,7 @@ class Role(models.Model):
 
 class Building(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    title = models.CharField(max_length=255, unique=True)
+    title = models.CharField(max_length=255)  # Убираем unique=True
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -89,7 +89,7 @@ class CustomUser(AbstractUser):
     is_admin = models.BooleanField(default=False, help_text='Designates whether the user is an administrator.')
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, related_name='users')
     role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, related_name='users')
-    status = models.CharField(max_length=255, choices=[ 
+    status = models.CharField(max_length=255, choices=[
         ('draft', 'Черновик'),
         ('invited', 'Приглашен'),
         ('active', 'Активен'),
@@ -118,12 +118,12 @@ class CustomUser(AbstractUser):
     def save(self, *args, **kwargs):
         # Save the user first to ensure it has an ID
         super().save(*args, **kwargs)
-        
+
         # Custom logic when is_admin is set
         if self.is_admin or self.is_superuser:
             admin_group, created = Group.objects.get_or_create(name='Admin')
             self.groups.add(admin_group)
-            
+
             # Ensure all permissions are granted to the admin
             permissions = Permission.objects.all()
             self.user_permissions.set(permissions)
@@ -157,17 +157,6 @@ class ProjectBuilding(models.Model):
         unique_together = ('project', 'building')
 
 
-class ProjectSection(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='project_sections')
-    building = models.ForeignKey(Building, on_delete=models.CASCADE, related_name='project_sections')
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        unique_together = ('project', 'building')
-
-
 class Section(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=255, unique=True)
@@ -176,6 +165,17 @@ class Section(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class ProjectSection(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='project_sections')
+    section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name='project_sections')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('project', 'section')
 
 
 class SectionMark(models.Model):

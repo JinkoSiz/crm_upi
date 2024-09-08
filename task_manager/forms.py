@@ -2,8 +2,9 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.utils.crypto import get_random_string
 from django.core.mail import send_mail
-from .models import Department, Role, CustomUser
+from .models import Department, Role, CustomUser, Project, ProjectBuilding, ProjectSection, Building, Section
 from django.contrib.auth.models import Group, Permission
+
 
 # Форма для модели Department
 class DepartmentForm(forms.ModelForm):
@@ -56,6 +57,7 @@ class CustomUserCreationForm(forms.ModelForm):
 
         return user
 
+
 class CustomUserChangeForm(forms.ModelForm):
     class Meta:
         model = CustomUser
@@ -85,3 +87,21 @@ class CustomUserChangeForm(forms.ModelForm):
         if commit:
             user.save()
         return user
+
+
+class ProjectForm(forms.ModelForm):
+    class Meta:
+        model = Project
+        fields = ['title', 'status']
+
+
+class ProjectBuildingForm(forms.ModelForm):
+    class Meta:
+        model = ProjectBuilding
+        fields = ['project', 'building']
+
+
+class ProjectSectionForm(forms.ModelForm):
+    class Meta:
+        model = ProjectSection
+        fields = ['project', 'section']

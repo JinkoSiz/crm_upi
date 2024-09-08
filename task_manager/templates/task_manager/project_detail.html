@@ -1,0 +1,168 @@
+{% extends 'task_manager/base.html' %}
+
+{% block title %}
+Project Detail: {{ project.title }}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Project: {{ project.title }}</h2>
+    <p>Status: {{ project.status.title }}</p>
+
+    <h4>Buildings</h4>
+    <ul>
+        {% for building in project_buildings %}
+        <li id="building-{{ building.building.pk }}">
+            {{ building.building.title }}
+            <button class="delete-building-btn btn btn-danger btn-sm" data-id="{{ building.building.pk }}">Delete</button>
+        </li>
+        {% endfor %}
+    </ul>
+
+
+    <!-- Добавление нового здания -->
+    <h4>Add New Building</h4>
+    <input type="text" id="buildingTitleInput" placeholder="Enter building title" class="form-control mb-2">
+    <button id="addBuildingBtn" class="btn btn-primary">Add Building</button>
+    <p id="buildingMessage"></p>
+
+    <h4>Sections</h4>
+    <ul>
+        {% for section in project_sections %}
+        <li>{{ section.section.title }}</li>
+        {% endfor %}
+    </ul>
+
+    <a href="#" class="btn btn-warning" data-toggle="modal" data-target="#editProjectModal"
+       data-id="{{ project.pk }}" data-title="{{ project.title }}" data-status="{{ project.status_id }}">
+        Edit Project
+    </a>
+</div>
+
+<!-- Edit Project Modal -->
+<div class="modal fade" id="editProjectModal" tabindex="-1" aria-labelledby="editProjectModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="editProjectForm" method="post" enctype="multipart/form-data"
+                  action="{% url 'project-update' project.pk %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editProjectModalLabel">Edit Project</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="id_title">Project Title</label>
+                        <input type="text" name="title" class="form-control" id="id_title" value="{{ project.title }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="id_status">Status</label>
+                        <select name="status" class="form-control" id="id_status">
+                            {% for status in project_status %}
+                                <option value="{{ status.pk }}"
+                                        {% if status.pk == project.status_id %}selected{% endif %}>
+                                    {{ status.title }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="id_buildings">Buildings</label>
+                        <select name="buildings" class="form-control" id="id_buildings" multiple>
+                            {% for building in buildings %}
+                                <option value="{{ building.pk }}" {% if building in project_buildings %}selected{% endif %}>
+                                    {{ building.title }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <!-- Добавляем возможность выбора секций в форме -->
+                    <div class="form-group">
+                        <label for="id_sections">Sections</label>
+                        <select name="sections" class="form-control" id="id_sections" multiple>
+                            {% for section in sections %}
+                                <option value="{{ section.pk }}" {% if section.pk in project_sections %}selected{% endif %}>{{ section.title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Handle Edit Project modal display
+    $('#editProjectModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        var projectId = button.data('id');
+        var projectTitle = button.data('title');
+        var projectStatus = button.data('status');
+
+        var modal = $(this);
+        modal.find('.modal-title').text('Edit Project: ' + projectTitle);
+
+        // Pre-fill form fields with project data
+        modal.find('#id_title').val(projectTitle);
+        modal.find('#id_status').val(projectStatus);
+    });
+
+    // Добавление нового здания
+    $('#addBuildingBtn').on('click', function () {
+        var buildingTitle = $('#buildingTitleInput').val();
+        var projectId = "{{ project.pk }}";
+
+        if (!buildingTitle) {
+            alert('Please enter a building title');
+            return;
+        }
+
+        $.ajax({
+            url: '/buildings/create/',
+            type: 'POST',
+            data: {
+                'title': buildingTitle,
+                'project_id': projectId,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function (response) {
+                $('#buildingMessage').html('<span class="text-success">' + response.message + '</span>');
+                $('#buildingList').append('<li id="building-' + response.building_id + '">' + buildingTitle +
+                    ' <button class="btn btn-danger btn-sm delete-building-btn" data-id="' + response.building_id + '">Delete</button></li>');
+                $('#buildingTitleInput').val('');
+            },
+            error: function (response) {
+                $('#buildingMessage').html('<span class="text-danger">' + response.responseJSON.error + '</span>');
+            }
+        });
+    });
+
+    $(document).on('click', '.delete-building-btn', function () {
+        var buildingId = $(this).data('id');
+        var projectId = "{{ project.pk }}";  // Убедитесь, что projectId передается корректно
+
+        $.ajax({
+            url: '/buildings/' + buildingId + '/delete/',
+            type: 'POST',
+            data: {
+                'project_id': projectId,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function (response) {
+                $('#building-' + buildingId).remove();
+                $('#buildingMessage').html('<span class="text-success">' + response.message + '</span>');
+            },
+            error: function (response) {
+                console.error(response);
+                $('#buildingMessage').html('<span class="text-danger">Error deleting building.</span>');
+            }
+        });
+    });
+</script>
+{% endblock %}
