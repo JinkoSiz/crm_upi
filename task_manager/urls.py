@@ -40,4 +40,10 @@ urlpatterns = [
     # ProjectSection
     path('projects/<uuid:project_pk>/sections/add/', views.project_section_create, name='project_section-create'),
     path('project_sections/<uuid:pk>/delete/', views.project_section_delete, name='project_section-delete'),
+
+    # Разделы
+    path('sections/', views.section, name='section-list'),
+    path('sections/create/', views.createSection, name='section-create'),
+    path('sections/<uuid:pk>/edit/', views.updateSection, name='section-edit'),
+    path('sections/<uuid:pk>/delete/', views.deleteSection, name='section-delete'),
 ]

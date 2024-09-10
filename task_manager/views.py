@@ -11,7 +11,7 @@ from django.contrib.auth.models import UserManager
 from .models import Department, ProjectStatus, Role, CustomUser, Project, ProjectBuilding, ProjectSection, Building, \
     Section
 from .forms import DepartmentForm, RoleForm, CustomUserCreationForm, CustomUserChangeForm, ProjectForm, \
-    ProjectBuildingForm, ProjectSectionForm
+    ProjectBuildingForm, ProjectSectionForm, SectionForm
 from django.db.models import Q
 
 
@@ -443,3 +443,47 @@ def building_delete(request, building_id):
             return JsonResponse({'message': 'Building removed from project and deleted'})
         except Exception as e:
             return JsonResponse({'error': 'Error deleting building: ' + str(e)}, status=400)
+
+
+# Разделы
+@admin_required(login_url='login')
+def section(request):
+    sections = Section.objects.all()
+    form = SectionForm()
+
+    return render(request, 'task_manager/sections_list.html', {'sections': sections, 'form': form})
+
+
+def createSection(request):
+    form = SectionForm()
+
+    if request.method == 'POST':
+        form = SectionForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('section-list')
+
+    return render(request, 'task_manager/section_form.html', {'form': form})
+
+
+def updateSection(request, pk):
+    section = get_object_or_404(Section, pk=pk)
+    form = SectionForm(instance=section)
+
+    if request.method == 'POST':
+        form = SectionForm(request.POST, instance=section)
+        if form.is_valid():
+            form.save()
+            return redirect('section-list')
+
+    return render(request, 'task_manager/section_form.html', {'form': form, 'section': section})
+
+
+def deleteSection(request, pk):
+    section = get_object_or_404(Section, pk=pk)
+    if request.method == 'POST':
+        section.delete()
+        return redirect('section-list')
+
+    return render(request, 'task_manager/section_confirm_delete.html', {'section': section})
+

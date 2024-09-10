@@ -105,3 +105,16 @@ class ProjectSectionForm(forms.ModelForm):
     class Meta:
         model = ProjectSection
         fields = ['project', 'section']
+
+
+class SectionForm(forms.ModelForm):
+    class Meta:
+        model = Section
+        fields = ['title']
+        widgets = {
+            'title': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Введите название раздела',
+                'required': True
+            }),
+        }

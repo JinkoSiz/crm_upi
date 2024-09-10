@@ -1,0 +1,14 @@
+{% extends 'task_manager/base.html' %}
+
+{% block title %}Delete Section{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Are you sure you want to delete the section "{{ section.title }}"?</h2>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Delete</button>
+        <a href="{% url 'section-list' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}
