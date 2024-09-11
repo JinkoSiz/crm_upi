@@ -34,6 +34,7 @@ DB_USER = env('DB_USER')
 DB_PASSWORD = env('DB_PASSWORD')
 DB_HOST = env('DB_HOST')
 DB_NAME = env('DB_NAME')
+REDIS_URL = env('REDIS_REDIS_URL')
 
 
 # Quick-start development settings - unsuitable for production
@@ -58,6 +59,9 @@ ALLOWED_HOSTS = ['crm-upi.vercel.app',
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
 SECURE_SSL_REDIRECT = True
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_CACHE_ALIAS = 'default'
+
 
 # Application definition
 
@@ -117,6 +121,17 @@ DATABASES = {
         'PASSWORD': f'{DB_PASSWORD}',
         'HOST': f'{DB_HOST}',
         'PORT': '5432',
+    }
+}
+
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': REDIS_URL,  # Адрес Redis-сервера
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
     }
 }
 
