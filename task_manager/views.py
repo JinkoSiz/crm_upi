@@ -1,4 +1,5 @@
 from django.core import paginator
+from django.core.cache import cache
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login, logout
@@ -13,6 +14,7 @@ from .models import Department, ProjectStatus, Role, CustomUser, Project, Projec
 from .forms import DepartmentForm, RoleForm, CustomUserCreationForm, CustomUserChangeForm, ProjectForm, \
     ProjectBuildingForm, ProjectSectionForm, SectionForm
 from django.db.models import Q
+from django.views.decorators.cache import cache_page
 
 
 def admin_required(login_url=None):
@@ -22,9 +24,14 @@ def admin_required(login_url=None):
 # Отделы
 @admin_required(login_url='login')
 def department(request):
-    departmentObj = Department.objects.all()
-    form = DepartmentForm()
+    # Попробуем получить отделы из кэша
+    departmentObj = cache.get('department_list')
+    if not departmentObj:
+        # Если кэш пуст, загружаем данные из базы и кэшируем
+        departmentObj = Department.objects.all()
+        cache.set('department_list', departmentObj, timeout=60 * 15)  # Кэшируем на 15 минут
 
+    form = DepartmentForm()
     return render(request, 'task_manager/departments_list.html', {'departments': departmentObj, 'form': form})
 
 
@@ -32,39 +39,35 @@ def createDepartment(request):
     form = DepartmentForm()
 
     if request.method == 'POST':
-
         form = DepartmentForm(request.POST, request.FILES)
         if form.is_valid():
             department = form.save(commit=False)
             department.save()
-
+            cache.delete('department_list')  # Удаляем кэш после создания
             return redirect('department-list')
 
     context = {'form': form}
     return render(request, 'task_manager/department_form.html', context)
-
 
 def updateDepartment(request, pk):
     department = get_object_or_404(Department, pk=pk)
     form = DepartmentForm(instance=department)
 
     if request.method == 'POST':
-
         form = DepartmentForm(request.POST, request.FILES, instance=department)
         if form.is_valid():
             department = form.save()
-
+            cache.delete('department_list')  # Удаляем кэш после обновления
             return redirect('department-list')
 
     context = {'form': form, 'department': department}
     return render(request, 'task_manager/department_form.html', context)
 
-
 def deleteDepartment(request, pk):
     department = get_object_or_404(Department, pk=pk)
     if request.method == 'POST':
         department.delete()
-
+        cache.delete('department_list')  # Удаляем кэш после удаления
         return redirect('department-list')
 
     context = {'object': department}
@@ -74,9 +77,14 @@ def deleteDepartment(request, pk):
 # Должности
 @admin_required(login_url='login')
 def role(request):
-    roleObj = Role.objects.all()
-    form = RoleForm()
+    # Пробуем получить список ролей из кэша
+    roleObj = cache.get('role_list')
 
+    if not roleObj:
+        roleObj = Role.objects.all()
+        cache.set('role_list', roleObj, 600)  # Кэшируем на 10 минут (600 секунд)
+
+    form = RoleForm()
     return render(request, 'task_manager/roles_list.html', {'roles': roleObj, 'form': form})
 
 
@@ -84,11 +92,13 @@ def createRole(request):
     form = RoleForm()
 
     if request.method == 'POST':
-
         form = RoleForm(request.POST, request.FILES)
         if form.is_valid():
             role = form.save(commit=False)
             role.save()
+
+            # Сбрасываем кэш списка ролей
+            cache.delete('role_list')
 
             return redirect('role-list')
 
@@ -101,10 +111,12 @@ def updateRole(request, pk):
     form = RoleForm(instance=role)
 
     if request.method == 'POST':
-
         form = RoleForm(request.POST, request.FILES, instance=role)
         if form.is_valid():
             role = form.save()
+
+            # Сбрасываем кэш списка ролей
+            cache.delete('role_list')
 
             return redirect('role-list')
 
@@ -117,6 +129,9 @@ def deleteRole(request, pk):
     if request.method == 'POST':
         role.delete()
 
+        # Сбрасываем кэш списка ролей
+        cache.delete('role_list')
+
         return redirect('role-list')
 
     context = {'object': role}
@@ -126,28 +141,37 @@ def deleteRole(request, pk):
 # Юзеры
 @admin_required(login_url='login')
 def user(request):
-    users = CustomUser.objects.all()
+    # Кэшируем пользователей только для основной страницы без фильтров
+    cache_key = 'user_list'  # ключ кэша
+    users = cache.get(cache_key)
+
+    # Применяем кэш только если нет активных фильтров
+    if not users and not (
+            request.GET.get('status') or request.GET.get('department') or request.GET.get('role') or request.GET.get(
+            'last_name')):
+        users = CustomUser.objects.all()
+        cache.set(cache_key, users, timeout=60 * 5)  # кэшируем на 5 минут
+
+    # Применяем фильтры, если они есть
+    if request.GET.get('status'):
+        users = users.filter(status=request.GET.get('status'))
+    if request.GET.get('department'):
+        users = users.filter(department__id=request.GET.get('department'))
+    if request.GET.get('role'):
+        users = users.filter(role__id=request.GET.get('role'))
+    if request.GET.get('last_name'):
+        users = users.filter(last_name__icontains=request.GET.get('last_name'))
+
     departments = Department.objects.all()
     roles = Role.objects.all()
-
-    # Apply filters if any
-    status = request.GET.get('status')
-    department = request.GET.get('department')
-    role = request.GET.get('role')
-    last_name = request.GET.get('last_name')
-
-    if status:
-        users = users.filter(status=status)
-    if department:
-        users = users.filter(department__id=department)
-    if role:
-        users = users.filter(role__id=role)
-    if last_name:
-        users = users.filter(last_name__icontains=last_name)
-
     form = CustomUserCreationForm()
-    return render(request, 'task_manager/users_list.html',
-                  {'users': users, 'form': form, 'departments': departments, 'roles': roles})
+
+    return render(request, 'task_manager/users_list.html', {
+        'users': users,
+        'form': form,
+        'departments': departments,
+        'roles': roles
+    })
 
 
 def createUser(request):
@@ -155,6 +179,10 @@ def createUser(request):
         form = CustomUserCreationForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
+
+            # Очищаем кэш после добавления пользователя
+            cache.delete('user_list')
+
             return redirect('user-list')
     else:
         form = CustomUserCreationForm()
@@ -168,6 +196,10 @@ def updateUser(request, pk):
         form = CustomUserChangeForm(request.POST, request.FILES, instance=user)
         if form.is_valid():
             form.save()
+
+            # Очищаем кэш после обновления пользователя
+            cache.delete('user_list')
+
             return redirect('user-list')
     else:
         form = CustomUserChangeForm(instance=user)
@@ -180,6 +212,10 @@ def deleteUser(request, pk):
     user = get_object_or_404(CustomUser, pk=pk)
     if request.method == 'POST':
         user.delete()
+
+        # Очищаем кэш после удаления пользователя
+        cache.delete('user_list')
+
         return redirect('user-list')
 
     return render(request, 'task_manager/user_confirm_delete.html', {'user': user})
@@ -486,4 +522,3 @@ def deleteSection(request, pk):
         return redirect('section-list')
 
     return render(request, 'task_manager/section_confirm_delete.html', {'section': section})
-
