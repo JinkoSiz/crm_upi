@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
+from django.db import transaction
 from django.utils.crypto import get_random_string
 from django.core.mail import send_mail
 from .models import Department, Role, CustomUser, Project, ProjectBuilding, ProjectSection, Building, Section
@@ -42,6 +43,10 @@ class CustomUserCreationForm(forms.ModelForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
+
+        # Генерируем случайное уникальное имя пользователя
+        if not user.username:
+            user.username = get_random_string(8)
 
         if commit:
             user.save()
