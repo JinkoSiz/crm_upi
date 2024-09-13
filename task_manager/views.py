@@ -1,6 +1,6 @@
 from django.core import paginator
 from django.core.cache import cache
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse, JsonResponse
@@ -15,6 +15,7 @@ from .forms import DepartmentForm, RoleForm, CustomUserCreationForm, CustomUserC
     ProjectBuildingForm, ProjectSectionForm, SectionForm
 from django.db.models import Q
 from django.views.decorators.cache import cache_page
+from .tasks import send_invitation_email_task, reset_password_task
 
 
 def admin_required(login_url=None):
@@ -141,18 +142,15 @@ def deleteRole(request, pk):
 # Юзеры
 @admin_required(login_url='login')
 def user(request):
-    # Кэшируем пользователей только для основной страницы без фильтров
-    cache_key = 'user_list'  # ключ кэша
+    cache_key = 'user_list'
     users = cache.get(cache_key)
 
-    # Применяем кэш только если нет активных фильтров
-    if not users and not (
-            request.GET.get('status') or request.GET.get('department') or request.GET.get('role') or request.GET.get(
-            'last_name')):
-        users = CustomUser.objects.all()
-        cache.set(cache_key, users, timeout=60 * 5)  # кэшируем на 5 минут
+    # Применяем кэш только если нет фильтров
+    if not users and not (request.GET.get('status') or request.GET.get('department') or request.GET.get('role') or request.GET.get('last_name')):
+        users = CustomUser.objects.select_related('department', 'role').all()
+        cache.set(cache_key, users, timeout=60 * 5)  # Кэшируем на 5 минут
 
-    # Применяем фильтры, если они есть
+    # Применяем фильтры
     if request.GET.get('status'):
         users = users.filter(status=request.GET.get('status'))
     if request.GET.get('department'):
@@ -178,10 +176,12 @@ def createUser(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
+            with transaction.atomic():
+                user = form.save()
+                cache.delete('user_list')  # Очищаем кэш
 
-            # Очищаем кэш после добавления пользователя
-            cache.delete('user_list')
+                # Отправка приглашения в фоновом режиме
+                send_invitation_email_task.delay(user.pk)
 
             return redirect('user-list')
     else:
@@ -255,11 +255,11 @@ def send_invitation(request, pk):
         user.status = 'invited'
         user.save()
 
-        # Отправка письма-приглашения с логином и паролем
+        # Синхронная отправка email
         send_mail(
             'Приглашение на платформу Task Manager',
             f'Ваши учетные данные для входа:\nЛогин: {user.username}\nПароль: {password}',
-            'noreply@taskmanager.com',
+            'zpsk1977@gmail.com',
             [user.email],
             fail_silently=False,
         )

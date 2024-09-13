@@ -145,6 +145,14 @@ class CustomUser(AbstractUser):
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['status']),
+            models.Index(fields=['department']),
+            models.Index(fields=['role']),
+            models.Index(fields=['email']),
+        ]
+
 
 class ProjectBuilding(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
