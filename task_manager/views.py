@@ -10,7 +10,7 @@ from django.utils.crypto import get_random_string
 from django.core.mail import send_mail
 from django.contrib.auth.models import UserManager
 from .models import Department, ProjectStatus, Role, CustomUser, Project, ProjectBuilding, ProjectSection, Building, \
-    Section
+    Section, Mark, SectionMark
 from .forms import DepartmentForm, RoleForm, CustomUserCreationForm, CustomUserChangeForm, ProjectForm, \
     ProjectBuildingForm, ProjectSectionForm, SectionForm
 from django.db.models import Q
@@ -176,12 +176,8 @@ def createUser(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST, request.FILES)
         if form.is_valid():
-            with transaction.atomic():
-                user = form.save()
-                cache.delete('user_list')  # Очищаем кэш
-
-                # Отправка приглашения в фоновом режиме
-                send_invitation_email_task.delay(user.pk)
+            user = form.save()
+            cache.delete('user_list')  # Очищаем кэш
 
             return redirect('user-list')
     else:
@@ -485,9 +481,14 @@ def building_delete(request, building_id):
 @admin_required(login_url='login')
 def section(request):
     sections = Section.objects.all()
+    available_marks = Mark.objects.all()  # Получаем все доступные марки
     form = SectionForm()
 
-    return render(request, 'task_manager/sections_list.html', {'sections': sections, 'form': form})
+    return render(request, 'task_manager/sections_list.html', {
+        'sections': sections,
+        'form': form,
+        'available_marks': available_marks  # Передаем доступные марки в контекст
+    })
 
 
 def createSection(request):
@@ -504,15 +505,32 @@ def createSection(request):
 
 def updateSection(request, pk):
     section = get_object_or_404(Section, pk=pk)
-    form = SectionForm(instance=section)
+    available_marks = Mark.objects.all()  # Все доступные марки
+    section_marks = SectionMark.objects.filter(section=section)  # Марки, связанные с секцией
 
     if request.method == 'POST':
         form = SectionForm(request.POST, instance=section)
         if form.is_valid():
             form.save()
-            return redirect('section-list')
 
-    return render(request, 'task_manager/section_form.html', {'form': form, 'section': section})
+            # Обновляем марки для секции
+            marks = request.POST.getlist('marks')  # Получаем выбранные ID марок из формы
+            SectionMark.objects.filter(section=section).delete()  # Удаляем старые марки
+
+            for mark_id in marks:
+                mark = Mark.objects.get(id=mark_id)
+                SectionMark.objects.create(section=section, mark=mark)  # Создаем новые связи
+
+            return redirect('section-list')
+    else:
+        form = SectionForm(instance=section)
+
+    return render(request, 'task_manager/section_form.html', {
+        'form': form,
+        'section': section,
+        'available_marks': available_marks,
+        'section_marks': section_marks,
+    })
 
 
 def deleteSection(request, pk):

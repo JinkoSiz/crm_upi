@@ -3,7 +3,7 @@ from django.core.mail import send_mail
 from .models import CustomUser
 
 
-@shared_task
+#@shared_task
 def send_invitation_email_task(user_id):
     user = CustomUser.objects.get(pk=user_id)
     send_mail(

@@ -170,25 +170,28 @@
 <script>
     // Handle Edit User modal display
     $('#editUserModal').on('show.bs.modal', function (event) {
-        var button = $(event.relatedTarget);
-        var userId = button.data('id');
-        var userName = button.data('name');
-        var modal = $(this);
+    var button = $(event.relatedTarget);
+    var userId = button.data('id');
+    var userName = button.data('name');
+    var modal = $(this);
 
-        modal.find('.modal-title').text('Изменить Пользователя: ' + userName);
+    modal.find('.modal-title').text('Изменить Пользователя: ' + userName);
 
-        // Update the form action URL
-        $('#editUserForm').attr('action', '/users/' + userId + '/edit/');
+    // Update the form action URL
+    $('#editUserForm').attr('action', '/users/' + userId + '/edit/');
 
-        // Fill the form fields with the user data
-        var row = button.closest('tr');
-        modal.find('#id_first_name').val(row.find('[data-first-name]').data('first-name'));
-        modal.find('#id_last_name').val(row.find('[data-last-name]').data('last-name'));
-        modal.find('#id_email').val(row.find('[data-email]').data('email'));
-        modal.find('#id_is_admin').prop('checked', row.find('[data-is-admin]').data('is-admin') == 'True');
-        modal.find('#id_department').val(row.find('[data-department]').data('department'));
-        modal.find('#id_role').val(row.find('[data-role]').data('role'));
-        modal.find('#id_status').val(row.find('[data-status]').data('status'));
+    // Fill the form fields with the user data
+    var row = button.closest('tr');
+    modal.find('#id_first_name').val(row.find('[data-first-name]').data('first-name'));
+    modal.find('#id_last_name').val(row.find('[data-last-name]').data('last-name'));
+    modal.find('#id_email').val(row.find('[data-email]').data('email'));
+    modal.find('#id_is_admin').prop('checked', row.find('[data-is-admin]').data('is-admin') == 'True');
+    modal.find('#id_department').val(row.find('[data-department]').data('department'));
+    modal.find('#id_role').val(row.find('[data-role]').data('role'));
+    modal.find('#id_status').val(row.find('[data-status]').data('status'));
+
+    // Update the reset password button link
+    modal.find('.btn-warning').attr('href', '/users/' + userId + '/reset-password');
     });
 
     // Handle Delete User modal display

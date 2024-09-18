@@ -231,3 +231,4 @@ class Timelog(models.Model):
             models.Index(fields=['mark']),
             models.Index(fields=['task']),
         ]
+
