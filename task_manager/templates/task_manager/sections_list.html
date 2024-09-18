@@ -80,6 +80,23 @@
                 </div>
                 <div class="modal-body">
                     {{ form.as_p }}
+
+                    <!-- Добавляем блок "Марки" -->
+                    <h5>Марки</h5>
+                    <div id="marks-container">
+                        {% for mark in section_marks %}
+                            <div class="form-group">
+                                <label for="mark-{{ forloop.counter }}">Выберите марку</label>
+                                <select name="marks" id="mark-{{ forloop.counter }}" class="form-control">
+                                    {% for available_mark in available_marks %}
+                                        <option value="{{ available_mark.id }}" {% if available_mark.id == mark.id %}selected{% endif %}>{{ available_mark.title }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="button" class="btn btn-danger remove-mark">Удалить</button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <button type="button" class="btn btn-info" id="add-mark">Добавить марку</button>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -135,6 +152,26 @@
 
         // Update the form action URL
         $('#deleteSectionForm').attr('action', '/sections/' + sectionId + '/delete/');
+    });
+
+    // Добавление нового поля для выбора марки
+    $('#add-mark').on('click', function () {
+        var newMarkField = `
+            <div class="form-group">
+                <label for="mark-new">Выберите марку</label>
+                <select name="marks" class="form-control">
+                    {% for available_mark in available_marks %}
+                        <option value="{{ available_mark.id }}">{{ available_mark.title }}</option>
+                    {% endfor %}
+                </select>
+                <button type="button" class="btn btn-danger remove-mark">Удалить</button>
+            </div>`;
+        $('#marks-container').append(newMarkField);
+    });
+
+    // Удаление поля марки
+    $(document).on('click', '.remove-mark', function () {
+        $(this).closest('.form-group').remove();
     });
 </script>
 {% endblock %}
