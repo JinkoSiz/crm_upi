@@ -3,19 +3,48 @@
 {% block title %}Login{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2>Login</h2>
-    <form method="post" action="{% url 'login' %}">
-        {% csrf_token %}
-        <div class="form-group">
-            <label for="username">Username:</label>
-            <input type="text" name="username" id="username" class="form-control" required>
-        </div>
-        <div class="form-group">
-            <label for="password">Password:</label>
-            <input type="password" name="password" id="password" class="form-control" required>
-        </div>
-        <button type="submit" class="btn btn-primary">Login</button>
+<!--<div class="container mt-4">-->
+<!--    <h2>Login</h2>-->
+<!--    <form method="post" action="{% url 'login' %}">-->
+<!--        {% csrf_token %}-->
+<!--        <div class="form-group">-->
+<!--            <label for="username">Username:</label>-->
+<!--            <input type="text" name="username" id="username" class="form-control" required>-->
+<!--        </div>-->
+<!--        <div class="form-group">-->
+<!--            <label for="password">Password:</label>-->
+<!--            <input type="password" name="password" id="password" class="form-control" required>-->
+<!--        </div>-->
+<!--        <button type="submit" class="btn btn-primary">Login</button>-->
+<!--    </form>-->
+<!--</div>-->
+
+<div class="container">
+    <form method="post" class="sign-in" action="{% url 'login' %}">
+        <img src="img/logo.png" alt="Logo" class="logo">
+        <h1>Вход</h1>
+        <label for="username">
+            <h2>Ваш email</h2>
+            <input type="text" name="username" id="username" placeholder="hello@mail.ru" required>
+        </label>
+        <label for="password">
+            <h2>Ваш пароль</h2>
+            <span class="pass-input">
+                <input type="password" name="password" id="password" placeholder="Пароль" required>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <g clip-path="url(#clip0_169_1954)">
+                    <path d="M12.483 10.1684L13.6189 9.0325C13.7016 9.34172 13.75 9.665 13.75 10C13.75 12.0678 12.0678 13.75 10 13.75C9.665 13.75 9.34172 13.7016 9.0325 13.6189L10.1684 12.483C11.4105 12.3983 12.3983 11.4105 12.483 10.1684ZM19.9212 9.69641C19.8444 9.55813 18.7541 7.64766 16.6228 6.02859L15.7133 6.93813C17.2673 8.08078 18.252 9.41344 18.6397 10.0009C17.8989 11.1289 14.993 15 10 15C9.25125 15 8.555 14.9042 7.89984 14.7514L6.87281 15.7784C7.81703 16.068 8.85484 16.25 10 16.25C16.5427 16.25 19.7864 10.5463 19.9212 10.3036C20.0263 10.1147 20.0263 9.88531 19.9212 9.69641ZM17.3169 3.56688L3.56687 17.3169C3.44484 17.4389 3.28484 17.5 3.125 17.5C2.96516 17.5 2.80516 17.4389 2.68313 17.3169C2.43891 17.0727 2.43891 16.6772 2.68313 16.4331L4.4325 14.6838C1.60437 12.9764 0.167344 10.4631 0.07875 10.3036C-0.02625 10.1147 -0.02625 9.88516 0.07875 9.69625C0.213594 9.45375 3.45734 3.75 10 3.75C11.6917 3.75 13.157 4.13594 14.4097 4.70656L16.4331 2.68313C16.6773 2.43891 17.0728 2.43891 17.3169 2.68313C17.5609 2.92734 17.5611 3.32281 17.3169 3.56688ZM5.36453 13.7517L6.94687 12.1694C6.50984 11.5563 6.25 10.8086 6.25 10C6.25 7.93219 7.93219 6.25 10 6.25C10.8086 6.25 11.5563 6.50984 12.1694 6.94672L13.4489 5.66719C12.438 5.26234 11.2892 5 10 5C5.00703 5 2.10109 8.87109 1.36047 9.99906C1.83078 10.7119 3.18266 12.5163 5.36453 13.7517ZM7.85422 11.2619L11.2619 7.85422C10.8902 7.63469 10.4622 7.5 10 7.5C8.62156 7.5 7.5 8.62156 7.5 10C7.5 10.4622 7.63469 10.8902 7.85422 11.2619Z" fill="#A6A6A6"/>
+                  </g>
+                  <defs>
+                    <clipPath id="clip0_169_1954">
+                      <rect width="20" height="20" fill="white"/>
+                    </clipPath>
+                  </defs>
+                </svg>
+            </span>
+        </label>
+        <a href="#" class="forgot-pass">Забыли пароль?</a>
+        <button type="submit">Войти в систему</button>
     </form>
 </div>
 {% endblock %}
