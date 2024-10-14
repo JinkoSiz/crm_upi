@@ -3,7 +3,6 @@
 {% block title %}Login{% endblock %}
 
 {% block content %}
-<!--new layout-->
 <div class="container">
     <form method="post" class="sign-in" action="{% url 'login' %}">
         {% csrf_token %}
