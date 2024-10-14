@@ -11,40 +11,61 @@
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
 <body>
+<div class="conatiner">
     <header>
-        <!-- <h1>Task Manager</h1> -->
-        <nav>
-            <ul>
-                {% if user.is_authenticated %}
-                    {% if user.is_admin %}
-                        <li><a href="#">Логи времени</a></li>
-                        <li><a href="#">Отчёты</a></li>
-                        <li>Сотрудники и роли
-                            <ul>
-                                <li><a href="{% url 'department-list' %}">Отделы</a></li>
-                                <li><a href="{% url 'user-list' %}">Пользователи</a></li>
-                                <li><a href="{% url 'role-list' %}">Роли</a></li>
-                            </ul>
-                        </li>
-                        <li>Настройки
-                            <ul>
-                                <li><a href="{% url 'project-list' %}">Проекты</a></li>
-                                <li><a href="{% url 'section-list' %}">Разделы</a></li>
-                                <li><a href="{% url 'mark-list' %}">Марки</a></li>
-                                <li><a href="#">Задачи</a></li>
-                            </ul>
-                        </li>
-                    {% else %}
-                        <li><a href="#">Логи времени</a></li>
-                    {% endif %}
-                    <li><a href="{% url 'logout' %}">Выход</a></li>
-                {% endif %}
-            </ul>
-        </nav>
+        <img src="img/logo.png" alt="Logo" class="logo">
+        <div class="header-info">
+            <div class="header-info-user">
+                <p class="header-info-user-name">Семенов Семен</p>
+                <p class="header-info-user-position">Должность</p>
+            </div>
+            <img src="img/Avatar.svg" alt="Avatar" class="header-info-img">
+            <a href="signin.html" class="header-info-log-out">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="21" viewBox="0 0 20 21" fill="currentColor">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M16.875 9.5625H6.25C5.7325 9.5625 5.3125 9.9825 5.3125 10.5C5.3125 11.0175 5.7325 11.4375 6.25 11.4375H16.875C17.3925 11.4375 17.8125 11.0175 17.8125 10.5C17.8125 9.9825 17.3925 9.5625 16.875 9.5625Z" fill="currentColor"/>
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M15.0372 14.2876L18.1622 11.1626C18.5284 10.7963 18.5284 10.2038 18.1622 9.83755L15.0372 6.71255C14.6722 6.3463 14.0772 6.3463 13.7122 6.71255C13.3459 7.07755 13.3459 7.67255 13.7122 8.03755L16.1734 10.5001L13.7122 12.9626C13.3459 13.3276 13.3459 13.9226 13.7122 14.2876C14.0772 14.6538 14.6722 14.6538 15.0372 14.2876Z" fill="currentColor"/>
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M10 17.0625H3.75C3.6675 17.0625 3.5875 17.03 3.52875 16.9713C3.47 16.9125 3.4375 16.8325 3.4375 16.75V4.25C3.4375 4.1675 3.47 4.0875 3.52875 4.02875C3.5875 3.97 3.6675 3.9375 3.75 3.9375H10C10.5175 3.9375 10.9375 3.5175 10.9375 3C10.9375 2.4825 10.5175 2.0625 10 2.0625C8.07875 2.0625 5.67125 2.0625 3.75 2.0625C3.17 2.0625 2.61375 2.2925 2.20375 2.70375C1.7925 3.11375 1.5625 3.67 1.5625 4.25V16.75C1.5625 17.33 1.7925 17.8863 2.20375 18.2963C2.61375 18.7075 3.17 18.9375 3.75 18.9375H10C10.5175 18.9375 10.9375 18.5175 10.9375 18C10.9375 17.4825 10.5175 17.0625 10 17.0625Z" fill="currentColor"/>
+                </svg>
+            </a>
+        </div>
     </header>
+
+<!--    <header>-->
+<!--        &lt;!&ndash; <h1>Task Manager</h1> &ndash;&gt;-->
+<!--        <nav>-->
+<!--            <ul>-->
+<!--                {% if user.is_authenticated %}-->
+<!--                    {% if user.is_admin %}-->
+<!--                        <li><a href="#">Логи времени</a></li>-->
+<!--                        <li><a href="#">Отчёты</a></li>-->
+<!--                        <li>Сотрудники и роли-->
+<!--                            <ul>-->
+<!--                                <li><a href="{% url 'department-list' %}">Отделы</a></li>-->
+<!--                                <li><a href="{% url 'user-list' %}">Пользователи</a></li>-->
+<!--                                <li><a href="{% url 'role-list' %}">Роли</a></li>-->
+<!--                            </ul>-->
+<!--                        </li>-->
+<!--                        <li>Настройки-->
+<!--                            <ul>-->
+<!--                                <li><a href="{% url 'project-list' %}">Проекты</a></li>-->
+<!--                                <li><a href="{% url 'section-list' %}">Разделы</a></li>-->
+<!--                                <li><a href="{% url 'mark-list' %}">Марки</a></li>-->
+<!--                                <li><a href="#">Задачи</a></li>-->
+<!--                            </ul>-->
+<!--                        </li>-->
+<!--                    {% else %}-->
+<!--                        <li><a href="#">Логи времени</a></li>-->
+<!--                    {% endif %}-->
+<!--                    <li><a href="{% url 'logout' %}">Выход</a></li>-->
+<!--                {% endif %}-->
+<!--            </ul>-->
+<!--        </nav>-->
+<!--    </header>-->
+
     <main>
         {% block content %}
         {% endblock %}
     </main>
+</div>
 </body>
 </html>
