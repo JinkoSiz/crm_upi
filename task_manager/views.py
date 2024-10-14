@@ -10,9 +10,9 @@ from django.utils.crypto import get_random_string
 from django.core.mail import send_mail
 from django.contrib.auth.models import UserManager
 from .models import Department, ProjectStatus, Role, CustomUser, Project, ProjectBuilding, ProjectSection, Building, \
-    Section
+    Section, Mark
 from .forms import DepartmentForm, RoleForm, CustomUserCreationForm, CustomUserChangeForm, ProjectForm, \
-    ProjectBuildingForm, ProjectSectionForm, SectionForm
+    ProjectBuildingForm, ProjectSectionForm, SectionForm, MarkForm
 from django.db.models import Q
 from django.views.decorators.cache import cache_page
 
@@ -522,3 +522,58 @@ def deleteSection(request, pk):
         return redirect('section-list')
 
     return render(request, 'task_manager/section_confirm_delete.html', {'section': section})
+
+
+# Марки
+@login_required(login_url='login')
+def mark(request):
+    # Попробуем получить марки из кэша
+    marks = cache.get('mark_list')
+    if not marks:
+        # Если кэш пуст, загружаем данные из базы и кэшируем
+        marks = Mark.objects.all()
+        cache.set('mark_list', marks, timeout=60 * 15)  # Кэшируем на 15 минут
+
+    form = MarkForm()
+    return render(request, 'task_manager/mark_list.html', {'marks': marks, 'form': form})
+
+
+def createMark(request):
+    form = MarkForm()
+
+    if request.method == 'POST':
+        form = MarkForm(request.POST)
+        if form.is_valid():
+            mark = form.save(commit=False)
+            mark.save()
+            cache.delete('mark_list')  # Удаляем кэш после создания
+            return redirect('mark-list')
+
+    context = {'form': form}
+    return render(request, 'task_manager/mark_form.html', context)
+
+
+def updateMark(request, pk):
+    mark = get_object_or_404(Mark, pk=pk)
+    form = MarkForm(instance=mark)
+
+    if request.method == 'POST':
+        form = MarkForm(request.POST, instance=mark)
+        if form.is_valid():
+            mark = form.save()
+            cache.delete('mark_list')  # Удаляем кэш после обновления
+            return redirect('mark-list')
+
+    context = {'form': form, 'mark': mark}
+    return render(request, 'task_manager/mark_form.html', context)
+
+
+def deleteMark(request, pk):
+    mark = get_object_or_404(Mark, pk=pk)
+    if request.method == 'POST':
+        mark.delete()
+        cache.delete('mark_list')  # Удаляем кэш после удаления
+        return redirect('mark-list')
+
+    context = {'object': mark}
+    return render(request, 'task_manager/mark_confirm_delete.html', context)
