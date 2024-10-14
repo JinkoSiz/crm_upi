@@ -3,7 +3,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.db import transaction
 from django.utils.crypto import get_random_string
 from django.core.mail import send_mail
-from .models import Department, Role, CustomUser, Project, ProjectBuilding, ProjectSection, Building, Section
+from .models import Department, Role, CustomUser, Project, ProjectBuilding, ProjectSection, Building, Section, Mark
 from django.contrib.auth.models import Group, Permission
 
 
@@ -120,6 +120,20 @@ class SectionForm(forms.ModelForm):
             'title': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Введите название раздела',
+                'required': True
+            }),
+        }
+
+
+# Форма для модели Mark
+class MarkForm(forms.ModelForm):
+    class Meta:
+        model = Mark
+        fields = ['title']
+        widgets = {
+            'title': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Введите название марки',
                 'required': True
             }),
         }

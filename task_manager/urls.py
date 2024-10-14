@@ -46,4 +46,10 @@ urlpatterns = [
     path('sections/create/', views.createSection, name='section-create'),
     path('sections/<uuid:pk>/edit/', views.updateSection, name='section-edit'),
     path('sections/<uuid:pk>/delete/', views.deleteSection, name='section-delete'),
+    
+    # Марки
+    path('marks/', views.mark, name='mark-list'),
+    path('marks/create/', views.createMark, name='mark-create'),
+    path('marks/<uuid:pk>/edit/', views.updateMark, name='mark-edit'),
+    path('marks/<uuid:pk>/delete/', views.deleteMark, name='mark-delete'),
 ]
