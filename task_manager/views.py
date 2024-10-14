@@ -15,7 +15,7 @@ from .forms import DepartmentForm, RoleForm, CustomUserCreationForm, CustomUserC
     ProjectBuildingForm, ProjectSectionForm, SectionForm, MarkForm
 from django.db.models import Q
 from django.views.decorators.cache import cache_page
-from .tasks import send_invitation_email_task, reset_password_task
+
 
 
 def admin_required(login_url=None):
