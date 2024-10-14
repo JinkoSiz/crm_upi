@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import CustomUser, Department, Role, Project, ProjectStatus, Building, ProjectBuilding, ProjectSection, \
-    Section, Mark
+    Section, Mark, SectionMark
 
 
 class CustomUserAdmin(UserAdmin):
@@ -68,12 +68,14 @@ class ProjectSectionAdmin(admin.ModelAdmin):
     search_fields = ('project__title', 'section__title')
     readonly_fields = ('created_at', 'updated_at')
 
+
 # Разделы
 @admin.register(Section)
 class SectionAdmin(admin.ModelAdmin):
     list_display = ('title', 'created_at', 'updated_at')
     search_fields = ('title',)
     readonly_fields = ('created_at', 'updated_at')
+
 
 # Марки
 @admin.register(Mark)
