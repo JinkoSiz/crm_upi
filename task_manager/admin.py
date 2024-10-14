@@ -79,14 +79,7 @@ class SectionAdmin(admin.ModelAdmin):
 
 # Марки
 @admin.register(Mark)
-class SectionAdmin(admin.ModelAdmin):
+class MarkAdmin(admin.ModelAdmin):
     list_display = ('title', 'created_at', 'updated_at')
     search_fields = ('title',)
     readonly_fields = ('created_at', 'updated_at')
-
-
-@admin.register(SectionMark)
-class SectionMarkAdmin(admin.ModelAdmin):
-    list_display = ('section', 'mark', 'created_at', 'updated_at')
-    list_filter = ('section', 'mark')
-    search_fields = ('section__title', 'mark__title')
