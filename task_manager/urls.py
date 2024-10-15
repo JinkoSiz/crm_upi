@@ -52,4 +52,16 @@ urlpatterns = [
     path('marks/create/', views.createMark, name='mark-create'),
     path('marks/<uuid:pk>/edit/', views.updateMark, name='mark-edit'),
     path('marks/<uuid:pk>/delete/', views.deleteMark, name='mark-delete'),
+
+    # Задачи
+    path('tasks/', views.task_list, name='task-list'),
+    path('tasks/create/', views.create_task, name='task-create'),
+    path('tasks/<uuid:pk>/edit/', views.update_task, name='task-edit'),
+    path('tasks/<uuid:pk>/delete/', views.delete_task, name='task-delete'),
+
+    # Логи времени
+    path('timelogs/', views.timelog_list, name='timelog-list'),
+    path('timelog/create/', views.timelog_create, name='timelog-create'),
+    path('timelog/<str:pk>/edit/', views.timelog_update, name='timelog-update'),
+    path('timelog/<str:pk>/delete/', views.timelog_delete, name='timelog-delete'),
 ]

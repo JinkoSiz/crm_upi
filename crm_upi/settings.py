@@ -44,7 +44,7 @@ REDIS_URL = env('REDIS_REDIS_URL')
 SECRET_KEY = f'{DJANGO_KEY}'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False #SSS
+DEBUG = True #SSS
 
 CSRF_TRUSTED_ORIGINS = ['https://crm-upi.vercel.app',
                  'https://crm-upi-jinkosizs-projects-4c8f9ac9.vercel.app',
