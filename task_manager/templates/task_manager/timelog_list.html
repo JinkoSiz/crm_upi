@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Time Logs</h2>
+
+    <!-- Фильтры -->
+    <form method="get">
+        <div class="form-group">
+            <label for="user">User:</label>
+            <select name="user" id="user" class="form-control">
+                <option value="">All</option>
+                {% for user in users %}
+                    <option value="{{ user.id }}" {% if request.GET.user == user.id|stringformat:"s" %}selected{% endif %}>{{ user.username }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <!-- Добавьте другие фильтры по аналогии -->
+        <button type="submit" class="btn btn-primary">Filter</button>
+    </form>
+
+    <table class="table table-striped mt-4">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>User</th>
+                <th>Project</th>
+                <th>Stage</th>
+                <th>Date</th>
+                <th>Time Spent</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in timelogs %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ log.user }}</td>
+                <td>{{ log.project }}</td>
+                <td>{{ log.stage }}</td>
+                <td>{{ log.date }}</td>
+                <td>{{ log.time }} hours</td>
+                <td>
+                    <a href="{% url 'timelog-update' log.id %}" class="btn btn-sm btn-warning">Edit</a>
+                    <a href="{% url 'timelog-delete' log.id %}" class="btn btn-sm btn-danger">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

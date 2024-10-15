@@ -1,7 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import CustomUser, Department, Role, Project, ProjectStatus, Building, ProjectBuilding, ProjectSection, \
-    Section, Mark, SectionMark
+from .models import *
 
 
 class CustomUserAdmin(UserAdmin):
@@ -83,3 +82,21 @@ class MarkAdmin(admin.ModelAdmin):
     list_display = ('title', 'created_at', 'updated_at')
     search_fields = ('title',)
     readonly_fields = ('created_at', 'updated_at')
+
+
+# Задачи
+@admin.register(TaskType)
+class TaskAdmin(admin.ModelAdmin):
+    list_display = ('title', 'created_at', 'updated_at')
+    search_fields = ('title',)
+    readonly_fields = ('created_at', 'updated_at')
+
+
+# Тайм Логи
+@admin.register(Timelog)
+class TimelogAdmin(admin.ModelAdmin):
+    list_display = ('user', 'role', 'department', 'project', 'stage', 'date', 'time')
+    search_fields = ('user__username', 'project__title', 'stage')
+    list_filter = ('stage', 'department', 'project', 'mark', 'task')
+    ordering = ('-date',)
+    date_hierarchy = 'date'
