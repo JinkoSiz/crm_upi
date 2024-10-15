@@ -663,7 +663,7 @@ def timelog_list(request):
     context = {
         'timelogs': timelogs,
     }
-    return render(request, 'timelogs/timelog_list.html', context)
+    return render(request, 'task_manager/timelog_list.html', context)
 
 def timelog_create(request):
     form = TimelogForm()
@@ -675,7 +675,7 @@ def timelog_create(request):
             return redirect('timelog-list')
 
     context = {'form': form}
-    return render(request, 'timelogs/timelog_form.html', context)
+    return render(request, 'task_manager/timelog_form.html', context)
 
 def timelog_update(request, pk):
     timelog = get_object_or_404(Timelog, pk=pk)
@@ -688,7 +688,7 @@ def timelog_update(request, pk):
             return redirect('timelog-list')
 
     context = {'form': form}
-    return render(request, 'timelogs/timelog_form.html', context)
+    return render(request, 'task_manager/timelog_form.html', context)
 
 def timelog_delete(request, pk):
     timelog = get_object_or_404(Timelog, pk=pk)
@@ -697,4 +697,4 @@ def timelog_delete(request, pk):
         return redirect('timelog-list')
 
     context = {'object': timelog}
-    return render(request, 'timelogs/timelog_confirm_delete.html', context)
+    return render(request, 'task_manager/timelog_confirm_delete.html', context)
