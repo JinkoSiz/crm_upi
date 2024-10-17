@@ -290,94 +290,67 @@ def reset_password(request, pk):
 
 @admin_required(login_url='login')
 def project(request):
-    projects = Project.objects.all()
-    project_statuses = ProjectStatus.objects.all()
+    # Используем select_related для выборки связанных данных статус проекта
+    projects = Project.objects.all().select_related('status')
+    
+    project_status = ProjectStatus.objects.all()
     form = ProjectForm()
+    
     return render(request, 'task_manager/project_list.html', {
         'projects': projects,
-        'project_statuses': project_statuses,
+        'project_status': project_status,
         'form': form
     })
 
-
 def project_detail(request, pk):
-    project = get_object_or_404(Project, pk=pk)
+    project = get_object_or_404(Project.objects.prefetch_related('project_buildings__building', 'project_sections__section'), pk=pk)
 
-    # Получаем связанные здания и секции
-    project_buildings = ProjectBuilding.objects.filter(project=project)
-    project_sections = ProjectSection.objects.filter(project=project)
+    buildings = project.project_buildings.values('building__pk', 'building__title')
+    sections = project.project_sections.values('section__pk', 'section__title')
 
-    # Получаем все доступные здания и секции для отображения в форме
-    buildings = Building.objects.all()
-    sections = Section.objects.all()
-
-    # Получаем список всех PK секций для данного проекта
-    project_section_pks = project_sections.values_list('section__pk', flat=True)
-    project_building_pks = project_buildings.values_list('building__pk', flat=True)
-
-    return render(request, 'task_manager/project_detail.html', {
-        'project': project,
-        'project_buildings': project_buildings,  # Передаем объекты ProjectBuilding для отображения
-        'project_sections': project_sections,  # Передаем объекты ProjectSection для отображения
-        'buildings': buildings,  # Все здания для отображения в форме
-        'sections': sections,  # Все секции для отображения в форме
-        'project_building_pks': project_building_pks,  # Список PK зданий для этого проекта
-        'project_section_pks': project_section_pks,  # Список PK секций для этого проекта
-        'project_status': ProjectStatus.objects.all(),  # Статусы проектов для выбора
+    return JsonResponse({
+        'project': {
+            'title': project.title,
+            'status': project.status_id
+        },
+        'buildings': list(buildings),
+        'sections': list(sections)  # Добавляем секции для отображения
     })
 
-
 def createProject(request):
-    form = ProjectForm()
-
     if request.method == 'POST':
+        title = request.POST['title']
+        status_id = request.POST['status']
 
-        form = ProjectForm(request.POST, request.FILES)
-        if form.is_valid():
-            role = form.save(commit=False)
-            role.save()
-
-            return redirect('project-list')
-
-    context = {'form': form}
-    return render(request, 'task_manager/project_form.html', context)
-
+        project = Project.objects.create(title=title, status_id=status_id)
+        return JsonResponse({'message': 'Проект создан'})
 
 def updateProject(request, pk):
-    project = get_object_or_404(Project, pk=pk)
-
     if request.method == 'POST':
-        form = ProjectForm(request.POST, instance=project)
-        if form.is_valid():
-            form.save()
+        project = get_object_or_404(Project, pk=pk)
+        
+        # Обновляем название и статус проекта
+        project.title = request.POST['title']
+        project.status_id = request.POST['status']
+        project.save()
 
-            # Обработка зданий
-            buildings = request.POST.getlist('buildings')  # Получаем список зданий из формы
-            ProjectBuilding.objects.filter(project=project).delete()  # Удаляем старые здания
-            for building_id in buildings:
-                building = Building.objects.get(pk=building_id)
-                ProjectBuilding.objects.create(project=project, building=building)
-
-            # Обработка секций (аналогично для секций)
-            sections = request.POST.getlist('sections')
-            ProjectSection.objects.filter(project=project).delete()
-            for section_id in sections:
-                section = Section.objects.get(pk=section_id)
-                ProjectSection.objects.create(project=project, section=section)
-
-            return redirect('project-detail', pk=pk)
-    else:
-        form = ProjectForm(instance=project)
-
-    return render(request, 'task_manager/project_form.html', {'form': form, 'project': project})
+        # Обработка зданий
+        buildings = request.POST.getlist('buildings[]')  # Получаем список зданий из формы
+        ProjectBuilding.objects.filter(project=project).delete()  # Удаляем старые здания
+        print(buildings)
+        for building_title in buildings:
+            # Проверяем, существует ли здание с таким названием, если нет - создаем
+            building, created = Building.objects.get_or_create(title=building_title)
+            ProjectBuilding.objects.create(project=project, building=building)
+        
+        return JsonResponse({'message': 'Проект обновлен'})
 
 
 def deleteProject(request, pk):
-    project = get_object_or_404(Project, pk=pk)
     if request.method == 'POST':
+        project = get_object_or_404(Project, pk=pk)
         project.delete()
-        return redirect('project-list')
-    return render(request, 'task_manager/project_confirm_delete.html', {'project': project})
+        return JsonResponse({'message': 'Проект удален'})
 
 
 # ProjectBuilding
