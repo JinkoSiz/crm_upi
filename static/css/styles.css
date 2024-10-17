@@ -44,6 +44,10 @@ input[type=date]::-webkit-calendar-picker-indicator {
     border-width: thin;
 }
 
+p {
+    margin: 0;
+}
+
 header {
     display: flex;
     padding: 20px 30px;
@@ -51,6 +55,7 @@ header {
     align-items: center;
     border-radius: 10px;
     background: var(--Text_Gray_10);
+    margin-bottom: 58px;
 }
 
 .logo {
@@ -120,7 +125,7 @@ h2 {
     line-height: 18px;
 }
 
-button, .button {
+button {
     border-radius: 4px;
     background: var(--Primary_blue);
     display: flex;
@@ -138,6 +143,34 @@ button, .button {
     min-height: 46px;
     transition: .2s all ease-in-out;
     text-decoration: none;
+}
+
+button:active, button:focus {
+    outline: none;
+}
+
+.button {
+    border-radius: 4px;
+    background: var(--Primary_blue);
+    display: flex;
+    padding: 10px 20px;
+    align-items: center;
+    color: var(--Text_Gray_10);
+    font-feature-settings: 'liga' off, 'clig' off;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 18px; /* 112.5% */
+    outline: none;
+    border: none;
+    cursor: pointer;
+    min-height: 46px;
+    transition: .2s all ease-in-out;
+    text-decoration: none;
+}
+
+.button:active, .button:focus {
+    outline: none;
 }
 
 button:hover, .button:hover {
@@ -255,4 +288,390 @@ button:hover, .button:hover {
     font-weight: 400;
     line-height: 18px; /* 100% */
     padding-left: 36px;
+}
+
+.admin-main-navigation {
+    margin-bottom: 20px;
+}
+
+.admin-main-navigation ul {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    margin: 0 -5px;
+}
+.admin-main-navigation ul li {
+    padding: 0 5px;
+}
+
+.admin-main-navigation ul li a {
+    display: flex;
+    align-items: center;
+    border-radius: 4px;
+    background: var(--Text_Gray_10);
+    padding: 20px;
+    text-decoration: none;
+    color: var(--Text_Gray_40);
+    font-feature-settings: 'liga' off, 'clig' off;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 18px;
+    transition: .2s all;
+}
+
+.admin-main-navigation ul li a:hover {
+    background-color: var(--Hover-button-2);
+    color: var(--Text_Gray_10);
+}
+
+.admin-main-navigation ul li.active a {
+    background-color: var(--Primary_blue);
+    color: var(--Text_Gray_10);
+}
+
+.admin-main-navigation ul li a span {
+    width: 18px;
+    height: 21px;
+    margin-right: 10px;
+}
+
+nav.handbooks, nav.reports {
+    display: none;
+    padding: 0 20px;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--Text_Gray_10);
+    border-radius: 10px 10px 0 0;
+}
+
+nav.handbooks.active, nav.reports.active {
+    display: flex;
+}
+
+nav.handbooks ul, nav.reports ul {
+    list-style: none;
+    display: flex;
+    align-items: center;
+}
+
+nav.handbooks ul li, nav.reports ul li {
+    padding: 34px 50px 34px 0;
+    border-bottom: 2px solid var(--Text_Gray_20);
+    z-index: 2;
+}
+
+nav.handbooks ul li.active, nav.reports ul li.active {
+    border-bottom: 2px solid var(--Primary_blue);
+}
+
+nav.handbooks ul li a, nav.reports ul li a {
+    color: var(--Text_Gray_40);
+    font-feature-settings: 'liga' off, 'clig' off;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 18px; /* 112.5% */
+    transition: .2s all;
+}
+
+nav.handbooks ul li a:hover, nav.reports ul li a:hover {
+    text-decoration: none;
+    color: var(--Primary_blue);
+    transition: .2s all;
+}
+
+nav.handbooks ul li.active a, nav.reports ul li.active a {
+    color: var(--Primary_blue);
+    font-weight: 600;
+}
+
+nav.handbooks span, nav.reports span {
+    width: 96.8%;
+    height: 2px;
+    background-color: var(--Text_Gray_20);
+    bottom: 16px;
+    left: 20px;
+    display: block;
+    position: absolute;
+    z-index: 1;
+}
+
+button.edit, button.delete {
+    background-color: transparent;
+    display: block;
+    padding: 0;
+}
+
+button.edit {
+    width: 16px;
+    min-height: 16px;
+    margin-right: 20px;
+}
+
+button.delete {
+    width: 22px;
+    min-height: 22px;
+}
+
+button.add-depart {
+    display: flex;
+    height: 46px;
+    padding: 10px 20px;
+    align-items: center;
+    border-radius: 4px;
+    background: var(--Primary_blue);
+    color: var(--Text_Gray_10);
+    font-feature-settings: 'liga' off, 'clig' off;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 18px; /* 112.5% */
+}
+
+.actions-button-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+button.sorter {
+    background-color: transparent;
+    align-items: center;
+    padding: 0;
+    min-height: 0;
+    height: auto;
+}
+
+button.sorter p {
+    color: var(--Text_Gray_100);
+    font-feature-settings: 'liga' off, 'clig' off;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 18px; /* 128.571% */
+    margin-right: 10px;
+}
+
+button.sorter span {
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.table {
+    background-color: var(--Text_Gray_10);
+    margin: 0;
+}
+
+.table thead {
+    border: 1px solid var(--Text_Gray_20);
+    background: var(--Secondary);
+}
+
+.table tbody tr {
+    border: 1px solid var(--Text_Gray_20);
+    border-top: none;
+}
+
+.table tbody tr:last-child {
+    border-radius: 0 0 10px 10px;
+}
+
+.table td, .table th, .table thead th {
+    border: none;
+    padding: 20px;
+}
+
+.table td p, .table th p, .table thead th p {
+    color: var(--Text_Gray_100);
+    font-feature-settings: 'liga' off, 'clig' off;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 18px; /* 128.571% */
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: var(--Text_Gray_10);
+}
+
+.modal-dialog {
+    max-width: 100%;
+    margin: 0;
+    height: 100%;
+}
+
+.modal-content {
+    margin: 0;
+    top: 30%;
+    left: 50%;
+    transform: translateX(-50%);
+    position: absolute;
+    width: auto;
+    border-radius: 10px;
+    padding: 40px;
+    min-width: 400px;
+    border: none;
+    box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+    display: block;
+    border: none;
+    padding: 0;
+    margin: 0 0 25px 0;
+    border-radius: 0;
+}
+
+.modal-header .close {
+    position: absolute;
+    top: -23px;
+    right: -29px;
+    padding: 0;
+    margin: 0;
+    width: 14px;
+    min-height: 14px;
+    display: block;
+    line-height: 0;
+    outline: none;
+}
+
+.modal-header .close span {
+    width: 14px;
+    height: 14px;
+    display: block;
+}
+
+.modal-header .modal-title {
+    color: var(--Text_Gray_100);
+    text-align: center;
+    font-size: 30px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+}
+
+.close:not(:disabled):not(.disabled):focus, .close:not(:disabled):not(.disabled):hover {
+    opacity: 1;
+    background-color: transparent;
+    outline: none;
+}
+
+.modal-backdrop.show {
+    opacity: 0;
+}
+
+.modal-body {
+    padding: 0;
+    border: none;
+    margin: 0 0 25px 0;
+}
+
+.modal-body p label {
+    margin-bottom: 10px;
+    color: var(--Text_Gray_100);
+    font-feature-settings: 'liga' off, 'clig' off;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 18px; /* 112.5% */
+    text-align: right;
+}
+
+.modal-body p input {
+    height: 40px;
+    padding: 10px;
+    display: block;
+    width: 100%;
+    color: var(--Text_Gray_40);
+    font-feature-settings: 'liga' off, 'clig' off;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 18px; /* 128.571% */
+}
+
+.modal-body p.title-delete {
+    color: var(--Text_Gray_100);
+    text-align: center;
+    font-size: 30px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+}
+
+.modal-footer {
+    padding: 0;
+    border: none;
+    border-radius: 0;
+}
+
+.modal-footer .add-btn {
+    width: 100%;
+    height: 46px;
+    padding: 10px 21px;
+    justify-content: center;
+    align-items: center;
+    color: var(--Text_Gray_10);
+    font-feature-settings: 'liga' off, 'clig' off;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 18px; /* 112.5% */
+    border-radius: 4px;
+    background: var(--Primary_blue);
+    margin: 0;
+}
+
+.modal-footer.modal-footer-delete {
+    justify-content: space-between;
+}
+
+.modal-footer.modal-footer-delete form, .modal-footer.modal-footer-delete .btn-danger .btn-secondary {
+    margin: 0;
+}
+
+.modal-footer.modal-footer-delete form .btn-danger {
+    width: 185px;
+    height: 46px;
+    padding: 10px 21px;
+    border-radius: 4px;
+    background: var(--Danger);
+    text-align: center;
+    color: var(--Text_Gray_10);
+    font-feature-settings: 'liga' off, 'clig' off;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 18px; /* 112.5% */
+    border: none;
+    outline: none;
+}
+
+.modal-footer.modal-footer-delete .btn-secondary {
+    width: 185px;
+    height: 46px;
+    padding: 10px 21px;
+    border-radius: 4px;
+    background-color: var(--Text_Gray_10);
+    color: var(--Text_Gray_100);
+    font-feature-settings: 'liga' off, 'clig' off;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 18px; /* 112.5% */
+    border: 2px solid var(--Text_Gray_20);
+    outline: none;
+    margin: 0;
+}
+
+.modal-header .modal-title span {
+    display: block;
+    width: 400px;
+}
+
+.modal-footer.modal-footer-delete .btn-secondary:hover {
+
 }
