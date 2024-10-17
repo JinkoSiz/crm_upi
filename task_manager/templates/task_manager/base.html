@@ -105,17 +105,17 @@
     </nav>
     <nav class="handbooks active">
         <ul>
-            <li ><a href="">Проекты</a></li>
-            <li class="active"><a href="">Разделы</a></li>
-            <li ><a href="">Марки</a></li>
-            <li ><a href="">Отделы</a></li>
-            <li ><a href="">Должности</a></li>
+            <li class="data-list active" data-cid="projects"><a href="{% url 'project-list' %}">Проекты</a></li>
+            <li class="data-list" data-cid="sections"><a href="{% url 'section-list' %}">Разделы</a></li>
+            <li class="data-list" data-cid="marks"><a href="{% url 'mark-list' %}">Марки</a></li>
+            <li class="data-list" data-cid="departments"><a href="{% url 'department-list' %}">Отделы</a></li>
+            <li class="data-list" data-cid="roles"><a href="{% url 'role-list' %}">Должности</a></li>
         </ul>
-        <button style="display: none" type="button"  class="add-depart" data-toggle="modal" data-target="#addProjectModal">Добавить проект</button>
-        <button style="display: none" type="button" class="add-depart" data-toggle="modal" data-target="#addSectionModal">Добавить раздел</button>
-        <button type="button" class="add-depart" data-toggle="modal" data-target="#addMarkModal">Добавить марку</button>
-        <button style="display: none" type="button" class="add-depart" data-toggle="modal" data-target="#addDepartmentModal">Добавить отдел</button>
-        <button style="display: none" type="button" class="add-depart" data-toggle="modal" data-target="#addDepartmentModal">Добавить должность</button>
+        <button style="display: none" data-cid="projects" type="button"  class="add-depart" data-toggle="modal" data-target="#addProjectModal">Добавить проект</button>
+        <button style="display: none" data-cid="sections" type="button"  class="add-depart" data-toggle="modal" data-target="#addSectionModal">Добавить раздел</button>
+        <button style="display: none" data-cid="marks" type="button"  class="add-depart" data-toggle="modal" data-target="#addMarkModal">Добавить марку</button>
+        <button style="display: none" data-cid="departments" type="button"  class="add-depart" data-toggle="modal" data-target="#addDepartmentModal">Добавить отдел</button>
+        <button data-cid="roles" type="button"  class="add-depart" data-toggle="modal" data-target="#addRoleModal">Добавить должность</button>
 
         <span></span>
     </nav>
@@ -134,4 +134,33 @@
     </main>
 </div>
 </body>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+        const currentUrlPath = window.location.pathname;
+        const segment = currentUrlPath.split('/')[1];
+
+        const dataList = document.querySelectorAll('.data-list');
+        const dataButtons = document.querySelectorAll('.add-depart');
+
+        function dataMining (url, links, btns) {
+            links.forEach(item => {
+                item.classList.remove('active');
+                if(url == item.dataset.cid) {
+                    item.classList.add('active');
+                }
+            });
+
+            btns.forEach(item => {
+                item.style.display = 'none';
+                if(url == item.dataset.cid) {
+                    item.style.display = 'flex';
+                }
+
+            });
+        }
+
+        dataMining(segment, dataList, dataButtons);
+    });
+</script>
 </html>

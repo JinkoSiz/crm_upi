@@ -29,10 +29,13 @@ class RoleForm(forms.ModelForm):
     class Meta:
         model = Role
         fields = ['title']
+        labels = {
+            'title': 'Название'
+        }
         widgets = {
             'title': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Введите название отдела',
+                'placeholder': 'Название должности',
                 'required': True
             }),
         }
@@ -136,10 +139,13 @@ class MarkForm(forms.ModelForm):
     class Meta:
         model = Mark
         fields = ['title']
+        labels = {
+            'title': 'Название',
+        }
         widgets = {
             'title': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Введите название марки',
+                'placeholder': 'Название марки',
                 'required': True
             }),
         }
