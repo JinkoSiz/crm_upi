@@ -9,32 +9,32 @@ Projects List
     <div class="row">
         <div class="col-md-12">
             <!-- Кнопка для добавления нового проекта -->
-            <button type="button" class="btn btn-success mb-3" data-toggle="modal" data-target="#addProjectModal">
-                Add Project
+            <button type="button" class="btn btn-success mb-3" data-toggle="modal" data-target="#projectModal">
+                Создать проект
             </button>
-            <h2>Projects</h2>
+            <h2>Проекты</h2>
             <table class="table table-striped">
                 <thead>
                     <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">Title</th>
-                        <th scope="col">Actions</th>
+                        <th>#</th>
+                        <th>Название</th>
+                        <th>Статус</th>
+                        <th>Действия</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for project in projects %}
                     <tr>
-                        <th scope="row">{{ forloop.counter }}</th>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ project.title }}</td>
+                        <td>{{ project.status.title }}</td>
                         <td>
-                            <!-- Ссылка на детальную страницу проекта -->
-                            <a href="{% url 'project-detail' project.pk %}">
-                                {{ project.title }}
-                            </a>
-                        </td>
-                        <td>
-                            <button class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deleteProjectModal" data-id="{{ project.pk }}">
-                                Delete
+                            <!-- Кнопка для редактирования проекта -->
+                            <button class="btn btn-warning btn-sm edit-project-btn" data-id="{{ project.pk }}" data-title="{{ project.title }}" data-status="{{ project.status_id }}" data-toggle="modal" data-target="#projectModal">
+                                Редактировать
                             </button>
+                            <!-- Кнопка для удаления проекта -->
+                            <button class="btn btn-danger btn-sm delete-project-btn" data-id="{{ project.pk }}">Удалить</button>
                         </td>
                     </tr>
                     {% endfor %}
@@ -44,62 +44,182 @@ Projects List
     </div>
 </div>
 
-<!-- Add Project Modal -->
-<div class="modal fade" id="addProjectModal" tabindex="-1" aria-labelledby="addProjectModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+<!-- Модальное окно для создания и редактирования проекта -->
+<div class="modal fade" id="projectModal" tabindex="-1" aria-labelledby="projectModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <form method="post" enctype="multipart/form-data" action="{% url 'project-create' %}">
+            <form id="projectForm" method="post">
                 {% csrf_token %}
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addProjectModalLabel">Add Project</h5>
+                    <h5 class="modal-title" id="projectModalLabel">Создать/Редактировать проект</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    {{ form.as_p }}
+                    <div class="form-group">
+                        <label for="id_title">Название проекта</label>
+                        <input type="text" name="title" class="form-control" id="id_title" placeholder="Введите название проекта">
+                    </div>
+                    <div class="form-group">
+                        <label for="id_status">Статус</label>
+                        <select name="status" class="form-control" id="id_status">
+                            {% for status in project_status %}
+                            <option value="{{ status.pk }}">{{ status.title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Раздел для добавления зданий в проект -->
+                    <h4>Здания</h4>
+                    <ul id="buildingList" class="list-group mb-2"></ul>
+                    <input type="text" id="buildingTitleInput" placeholder="Название здания" class="form-control mb-2">
+                    <button type="button" id="addBuildingBtn" class="btn btn-primary mb-2">Добавить здание</button>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save changes</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                    <button type="submit" class="btn btn-primary">Сохранить изменения</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<!-- Delete Project Modal -->
-<div class="modal fade" id="deleteProjectModal" tabindex="-1" aria-labelledby="deleteProjectModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="deleteProjectModalLabel">Confirm Delete</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                Are you sure you want to delete this project?
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <form id="deleteProjectForm" method="post">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger">Delete</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
 <script>
-    // Handle Delete Project modal display
-    $('#deleteProjectModal').on('show.bs.modal', function (event) {
-        var button = $(event.relatedTarget);
-        var projectId = button.data('id');
+    let currentProjectId = null;
+    const csrfToken = '{{ csrf_token }}';
 
-        // Update the form action URL
-        $('#deleteProjectForm').attr('action', '/projects/' + projectId + '/delete/');
+    // Обработчик открытия модалки для создания/редактирования проекта
+    $('#projectModal').on('show.bs.modal', function (event) {
+        const button = $(event.relatedTarget); // Кнопка, вызвавшая модалку
+        currentProjectId = button.data('id');  // Получаем id проекта, если редактируем
+
+        if (currentProjectId) {
+            // Редактирование проекта
+            $.ajax({
+                url: `/projects/${currentProjectId}/`,
+                method: 'GET',
+                success: function (data) {
+                    $('#id_title').val(data.project.title);
+                    $('#id_status').val(data.project.status);
+                    $('#buildingList').empty();
+                    data.buildings.forEach(function (building) {
+                        $('#buildingList').append(
+                            `<li class="list-group-item" id="building-${building.id}">${building.title} 
+                             <button class="btn btn-danger btn-sm delete-building-btn" data-id="${building.id}">Удалить</button></li>`
+                        );
+                    });
+                }
+            });
+        } else {
+            // Создание проекта
+            $('#id_title').val('');
+            $('#id_status').val('');
+            $('#buildingList').empty();
+        }
+    });
+
+    // Обработчик сохранения проекта
+    $('#projectForm').on('submit', function (event) {
+        event.preventDefault();
+        
+        const title = $('#id_title').val();
+        const status = $('#id_status').val();
+        
+        // Собираем список зданий из списка в модалке
+        let buildings = [];
+        $('#buildingList li').each(function() {
+            // Извлекаем текст названия здания без текста кнопки "Удалить"
+            let buildingTitle = $(this).clone()  // Клонируем элемент для манипуляций
+                              .children('button')  // Ищем кнопку внутри элемента
+                              .remove()  // Удаляем кнопку
+                              .end()  // Возвращаемся к клонированному элементу
+                              .text()  // Извлекаем текстовое содержимое
+                              .trim();  // Убираем лишние пробелы
+            if (buildingTitle) {
+                buildings.push(buildingTitle);  // Добавляем здание в массив
+            }
+        });
+        
+        // Используем FormData для отправки данных
+        let formData = new FormData();
+        formData.append('title', title);
+        formData.append('status', status);
+        formData.append('csrfmiddlewaretoken', csrfToken);
+        
+        // Добавляем здания в FormData
+        for (let i = 0; i < buildings.length; i++) {
+            formData.append('buildings[]', buildings[i]);  // Обратите внимание на 'buildings[]'
+        }
+
+        if (!currentProjectId) {
+            // Создание нового проекта
+            $.ajax({
+                url: '/projects/create/',
+                method: 'POST',
+                data: formData,
+                processData: false,  // Не обрабатываем данные, т.к. используем FormData
+                contentType: false,  // Устанавливаем false, т.к. данные не являются строкой
+                success: function (data) {
+                    location.reload(); // Обновляем страницу после создания
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error:', error);
+                }
+            });
+        } else {
+            // Редактирование проекта
+            $.ajax({
+                url: `/projects/${currentProjectId}/edit/`,
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (data) {
+                    location.reload(); // Обновляем страницу после редактирования
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error:', error);
+                }
+            });
+        }
+    });
+
+    // Обработчик добавления нового здания
+    $('#addBuildingBtn').on('click', function () {
+        const buildingTitle = $('#buildingTitleInput').val();
+        if (!buildingTitle) {
+            alert('Пожалуйста, введите название здания');
+            return;
+        }
+
+        $('#buildingList').append(
+            `<li class="list-group-item">${buildingTitle} 
+            <button class="btn btn-danger btn-sm delete-building-btn">Удалить</button></li>`
+        );
+        $('#buildingTitleInput').val('');
+    });
+
+    // Обработчик удаления проекта
+    $(document).on('click', '.delete-project-btn', function () {
+        const projectId = $(this).data('id');
+        if (confirm('Вы уверены, что хотите удалить этот проект?')) {
+            $.ajax({
+                url: `/projects/${projectId}/delete/`,
+                method: 'POST',
+                data: {
+                    csrfmiddlewaretoken: csrfToken
+                },
+                success: function () {
+                    location.reload();
+                }
+            });
+        }
+    });
+
+    // Обработчик удаления здания
+    $(document).on('click', '.delete-building-btn', function () {
+        $(this).closest('li').remove();
     });
 </script>
 {% endblock %}
