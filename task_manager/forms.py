@@ -12,10 +12,13 @@ class DepartmentForm(forms.ModelForm):
     class Meta:
         model = Department
         fields = ['title']
+        labels = {
+            'title': 'Название',
+        }
         widgets = {
             'title': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Введите название отдела',
+                'placeholder': 'Название отдела',
                 'required': True
             }),
         }
@@ -116,10 +119,13 @@ class SectionForm(forms.ModelForm):
     class Meta:
         model = Section
         fields = ['title']
+        labels = {
+            'title': 'Название',
+        }
         widgets = {
             'title': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Введите название раздела',
+                'placeholder': 'Название раздела',
                 'required': True
             }),
         }

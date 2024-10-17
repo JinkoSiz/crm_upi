@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Task Manager{% endblock %}</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
@@ -16,8 +16,8 @@
         <img src="img/logo.png" alt="Logo" class="logo">
         <div class="header-info">
             <div class="header-info-user">
-                <p class="header-info-user-name"></p>
-                <p class="header-info-user-position"></p>
+                <p class="header-info-user-name">1</p>
+                <p class="header-info-user-position">1</p>
             </div>
             <img src="img/Avatar.svg" alt="Avatar" class="header-info-img">
             <a href="login.html" class="header-info-log-out">
@@ -32,7 +32,7 @@
 
     <nav class="admin-main-navigation">
         <ul>
-            <li class="active">
+            <li>
                 <a href="#">
                     <span>
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -67,7 +67,7 @@
                     <p>Пользователи</p>
                 </a>
             </li>
-            <li>
+            <li class="active">
                 <a href="#">
                     <span>
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -102,6 +102,30 @@
                 </a>
             </li>
         </ul>
+    </nav>
+    <nav class="handbooks active">
+        <ul>
+            <li ><a href="">Проекты</a></li>
+            <li class="active"><a href="">Разделы</a></li>
+            <li ><a href="">Марки</a></li>
+            <li ><a href="">Отделы</a></li>
+            <li ><a href="">Должности</a></li>
+        </ul>
+        <button style="display: none" type="button"  class="add-depart" data-toggle="modal" data-target="#addProjectModal">Добавить проект</button>
+        <button style="display: none" type="button" class="add-depart" data-toggle="modal" data-target="#addSectionModal">Добавить раздел</button>
+        <button type="button" class="add-depart" data-toggle="modal" data-target="#addMarkModal">Добавить марку</button>
+        <button style="display: none" type="button" class="add-depart" data-toggle="modal" data-target="#addDepartmentModal">Добавить отдел</button>
+        <button style="display: none" type="button" class="add-depart" data-toggle="modal" data-target="#addDepartmentModal">Добавить должность</button>
+
+        <span></span>
+    </nav>
+    <nav class="reports">
+        <ul>
+            <li><a href="">Трудозатраты по объектам</a></li>
+            <li><a href="">Трудозатраты по сотрудникам</a></li>
+            <li><a href="">Итоговый отчет</a></li>
+        </ul>
+        <span></span>
     </nav>
 
     <main>
