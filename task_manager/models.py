@@ -3,19 +3,9 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser, Group, Permission
 
 
-class Position(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    title = models.CharField(max_length=255, unique=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.title
-
-
 class ProjectStatus(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    title = models.CharField(max_length=255, unique=True)
+    title = models.CharField(max_length=255, unique=True, default='Default')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -200,7 +190,7 @@ class SectionMark(models.Model):
 class Timelog(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='timelogs')
-    position = models.ForeignKey(Position, on_delete=models.CASCADE, related_name='timelogs')
+    role = models.ForeignKey(Role, on_delete=models.CASCADE, related_name='timelogs')
     department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='timelogs')
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='timelogs')
     stage = models.CharField(max_length=255, choices=[
@@ -223,7 +213,7 @@ class Timelog(models.Model):
     class Meta:
         indexes = [
             models.Index(fields=['user']),
-            models.Index(fields=['position']),
+            models.Index(fields=['role']),
             models.Index(fields=['department']),
             models.Index(fields=['project']),
             models.Index(fields=['section']),

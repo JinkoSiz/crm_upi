@@ -3,7 +3,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.db import transaction
 from django.utils.crypto import get_random_string
 from django.core.mail import send_mail
-from .models import Department, Role, CustomUser, Project, ProjectBuilding, ProjectSection, Building, Section, Mark
+from .models import *
 from django.contrib.auth.models import Group, Permission
 
 
@@ -142,4 +142,21 @@ class MarkForm(forms.ModelForm):
                 'placeholder': 'Введите название марки',
                 'required': True
             }),
+        }
+
+
+# Форма для модели TaskType
+class TaskTypeForm(forms.ModelForm):
+    class Meta:
+        model = TaskType
+        fields = ['title']
+
+
+# Форма для модели TimeLog
+class TimelogForm(forms.ModelForm):
+    class Meta:
+        model = Timelog
+        fields = ['user', 'role', 'department', 'project', 'stage', 'section', 'building', 'mark', 'task', 'date', 'time']
+        widgets = {
+            'date': forms.DateInput(attrs={'type': 'date'}),
         }

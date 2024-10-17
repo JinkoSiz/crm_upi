@@ -9,10 +9,8 @@ from django.contrib import messages
 from django.utils.crypto import get_random_string
 from django.core.mail import send_mail
 from django.contrib.auth.models import UserManager
-from .models import Department, ProjectStatus, Role, CustomUser, Project, ProjectBuilding, ProjectSection, Building, \
-    Section, Mark, SectionMark
-from .forms import DepartmentForm, RoleForm, CustomUserCreationForm, CustomUserChangeForm, ProjectForm, \
-    ProjectBuildingForm, ProjectSectionForm, SectionForm, MarkForm
+from .models import *
+from .forms import *
 from django.db.models import Q
 from django.views.decorators.cache import cache_page
 
@@ -595,3 +593,108 @@ def deleteMark(request, pk):
 
     context = {'object': mark}
     return render(request, 'task_manager/mark_confirm_delete.html', context)
+
+
+# Задачи
+def task_list(request):
+    # Попробуем получить задачи из кэша
+    cache_key = 'tasktype_list'
+    tasks = cache.get(cache_key)
+    
+    if not tasks:
+        tasks = TaskType.objects.all()
+        cache.set(cache_key, tasks, timeout=60 * 15)  # Кэшируем на 15 минут
+    
+    form = TaskTypeForm()
+    
+    return render(request, 'task_manager/task_list.html', {'tasks': tasks, 'form': form})
+
+def create_task(request):
+    form = TaskTypeForm()
+    
+    if request.method == 'POST':
+        form = TaskTypeForm(request.POST)
+        if form.is_valid():
+            task = form.save(commit=False)
+            task.save()
+            cache.delete('tasktype_list')  # Удаляем кэш после создания
+            return redirect('task-list')
+    
+    return render(request, 'task_manager/task_form.html', {'form': form})
+
+def update_task(request, pk):
+    task = get_object_or_404(TaskType, pk=pk)
+    form = TaskTypeForm(instance=task)
+    
+    if request.method == 'POST':
+        form = TaskTypeForm(request.POST, instance=task)
+        if form.is_valid():
+            form.save()
+            cache.delete('tasktype_list')  # Удаляем кэш после обновления
+            return redirect('task-list')
+    
+    return render(request, 'task_manager/task_form.html', {'form': form, 'task': task})
+
+def delete_task(request, pk):
+    task = get_object_or_404(TaskType, pk=pk)
+    
+    if request.method == 'POST':
+        task.delete()
+        cache.delete('tasktype_list')  # Удаляем кэш после удаления
+        return redirect('task-list')
+    
+    return render(request, 'task_manager/task_confirm_delete.html', {'task': task})
+
+
+# TimeLog
+def timelog_list(request):
+    # Фильтрация по параметрам
+    timelogs = Timelog.objects.all()
+
+    if request.GET.get('user'):
+        timelogs = timelogs.filter(user__id=request.GET.get('user'))
+    if request.GET.get('project'):
+        timelogs = timelogs.filter(project__id=request.GET.get('project'))
+    if request.GET.get('stage'):
+        timelogs = timelogs.filter(stage=request.GET.get('stage'))
+    if request.GET.get('mark'):
+        timelogs = timelogs.filter(mark__id=request.GET.get('mark'))
+
+    context = {
+        'timelogs': timelogs,
+    }
+    return render(request, 'task_manager/timelog_list.html', context)
+
+def timelog_create(request):
+    form = TimelogForm()
+
+    if request.method == 'POST':
+        form = TimelogForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('timelog-list')
+
+    context = {'form': form}
+    return render(request, 'task_manager/timelog_form.html', context)
+
+def timelog_update(request, pk):
+    timelog = get_object_or_404(Timelog, pk=pk)
+    form = TimelogForm(instance=timelog)
+
+    if request.method == 'POST':
+        form = TimelogForm(request.POST, instance=timelog)
+        if form.is_valid():
+            form.save()
+            return redirect('timelog-list')
+
+    context = {'form': form}
+    return render(request, 'task_manager/timelog_form.html', context)
+
+def timelog_delete(request, pk):
+    timelog = get_object_or_404(Timelog, pk=pk)
+    if request.method == 'POST':
+        timelog.delete()
+        return redirect('timelog-list')
+
+    context = {'object': timelog}
+    return render(request, 'task_manager/timelog_confirm_delete.html', context)
