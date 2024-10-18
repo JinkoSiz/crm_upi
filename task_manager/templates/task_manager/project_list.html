@@ -75,6 +75,18 @@ Projects List
                     <ul id="buildingList" class="list-group mb-2"></ul>
                     <input type="text" id="buildingTitleInput" placeholder="Название здания" class="form-control mb-2">
                     <button type="button" id="addBuildingBtn" class="btn btn-primary mb-2">Добавить здание</button>
+
+                    <!-- Разделы -->
+                    <h4>Разделы</h4>
+                    <div class="form-group">
+                        {% for section in sections %}
+                        <div class="form-check">
+                            <label class="form-check-label" for="{{ section.pk }}">
+                                <input type="checkbox" class="form-check-input" id="{{ section.pk }}" name="sections" value="{{ section.pk }}">{{ section.title }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
@@ -105,9 +117,14 @@ Projects List
                     $('#buildingList').empty();
                     data.buildings.forEach(function (building) {
                         $('#buildingList').append(
-                            `<li class="list-group-item" id="building-${building.id}">${building.title} 
-                             <button class="btn btn-danger btn-sm delete-building-btn" data-id="${building.id}">Удалить</button></li>`
+                            `<li class="list-group-item" id="building-${building.building__pk}">${building.building__title} 
+                            <button class="btn btn-danger btn-sm delete-building-btn" data-id="${building.building__pk}">Удалить</button></li>`
                         );
+                    });
+
+                    // Отмечаем разделы как выбранные, если они уже связаны с проектом
+                    data.sections.forEach(function (section) {
+                        $(`#section${section.section__pk}`).prop('checked', true);
                     });
                 }
             });
@@ -116,6 +133,8 @@ Projects List
             $('#id_title').val('');
             $('#id_status').val('');
             $('#buildingList').empty();
+            // Снимаем отметку со всех чекбоксов разделов
+            $('input[name="sections"]').prop('checked', false);
         }
     });
 
@@ -129,17 +148,18 @@ Projects List
         // Собираем список зданий из списка в модалке
         let buildings = [];
         $('#buildingList li').each(function() {
-            // Извлекаем текст названия здания без текста кнопки "Удалить"
-            let buildingTitle = $(this).clone()  // Клонируем элемент для манипуляций
-                              .children('button')  // Ищем кнопку внутри элемента
-                              .remove()  // Удаляем кнопку
-                              .end()  // Возвращаемся к клонированному элементу
-                              .text()  // Извлекаем текстовое содержимое
-                              .trim();  // Убираем лишние пробелы
+            let buildingTitle = $(this).clone().children('button').remove().end().text().trim();
             if (buildingTitle) {
-                buildings.push(buildingTitle);  // Добавляем здание в массив
+                buildings.push(buildingTitle);
             }
         });
+
+        // Собираем выбранные разделы
+        let sections = [];
+        $('input[name="sections"]:checked').each(function() {
+            sections.push($(this).val());
+        });
+        console.log(sections);
         
         // Используем FormData для отправки данных
         let formData = new FormData();
@@ -149,8 +169,14 @@ Projects List
         
         // Добавляем здания в FormData
         for (let i = 0; i < buildings.length; i++) {
-            formData.append('buildings[]', buildings[i]);  // Обратите внимание на 'buildings[]'
+            formData.append('buildings[]', buildings[i]);
         }
+
+        // Добавляем разделы в FormData
+        for (let i = 0; i < sections.length; i++) {
+            formData.append('sections[]', sections[i]);
+        }
+        console.log(sections);
 
         if (!currentProjectId) {
             // Создание нового проекта
@@ -158,8 +184,8 @@ Projects List
                 url: '/projects/create/',
                 method: 'POST',
                 data: formData,
-                processData: false,  // Не обрабатываем данные, т.к. используем FormData
-                contentType: false,  // Устанавливаем false, т.к. данные не являются строкой
+                processData: false,
+                contentType: false,
                 success: function (data) {
                     location.reload(); // Обновляем страницу после создания
                 },

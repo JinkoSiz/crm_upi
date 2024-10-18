@@ -294,11 +294,13 @@ def project(request):
     projects = Project.objects.all().select_related('status')
     
     project_status = ProjectStatus.objects.all()
+    sections = Section.objects.all()  # Получаем все разделы
     form = ProjectForm()
     
     return render(request, 'task_manager/project_list.html', {
         'projects': projects,
         'project_status': project_status,
+        'sections': sections,  # Передаем разделы в шаблон
         'form': form
     })
 
@@ -321,8 +323,24 @@ def createProject(request):
     if request.method == 'POST':
         title = request.POST['title']
         status_id = request.POST['status']
+        sections = request.POST.getlist('sections')
 
         project = Project.objects.create(title=title, status_id=status_id)
+
+        # Обработка зданий
+        buildings = request.POST.getlist('buildings[]')  # Получаем список зданий из формы
+        ProjectBuilding.objects.filter(project=project).delete()  # Удаляем старые здания
+        print(buildings)
+        for building_title in buildings:
+            # Проверяем, существует ли здание с таким названием, если нет - создаем
+            building, created = Building.objects.get_or_create(title=building_title)
+            ProjectBuilding.objects.create(project=project, building=building)
+        
+        # Добавляем выбранные разделы к проекту
+        for section_id in sections:
+            section = Section.objects.get(pk=section_id)
+            ProjectSection.objects.create(project=project, section=section)
+
         return JsonResponse({'message': 'Проект создан'})
 
 def updateProject(request, pk):
@@ -342,6 +360,14 @@ def updateProject(request, pk):
             # Проверяем, существует ли здание с таким названием, если нет - создаем
             building, created = Building.objects.get_or_create(title=building_title)
             ProjectBuilding.objects.create(project=project, building=building)
+
+        # Обработка разделов
+        sections = request.POST.getlist('sections[]')  # Получаем список разделов из формы
+        print(sections)
+        ProjectSection.objects.filter(project=project).delete()  # Удаляем старые разделы
+        for section_id in sections:
+            section = Section.objects.get(pk=section_id)
+            ProjectSection.objects.create(project=project, section=section)
         
         return JsonResponse({'message': 'Проект обновлен'})
 
