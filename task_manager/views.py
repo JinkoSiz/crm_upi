@@ -323,6 +323,16 @@ def createProject(request):
         status_id = request.POST['status']
 
         project = Project.objects.create(title=title, status_id=status_id)
+        
+        # Обработка зданий
+        buildings = request.POST.getlist('buildings[]')  # Получаем список зданий из формы
+        ProjectBuilding.objects.filter(project=project).delete()  # Удаляем старые здания
+        print(buildings)
+        for building_title in buildings:
+            # Проверяем, существует ли здание с таким названием, если нет - создаем
+            building, created = Building.objects.get_or_create(title=building_title)
+            ProjectBuilding.objects.create(project=project, building=building)
+
         return JsonResponse({'message': 'Проект создан'})
 
 def updateProject(request, pk):
