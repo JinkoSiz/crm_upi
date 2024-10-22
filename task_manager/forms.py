@@ -41,37 +41,54 @@ class RoleForm(forms.ModelForm):
         }
 
 
-# Форма для модели User
 class CustomUserCreationForm(forms.ModelForm):
+    full_name = forms.CharField(label='ФИО', max_length=255)
+    is_admin = forms.ChoiceField(choices=[(False, 'Пользователь'), (True, 'Админ')], label="Роль")
+
     class Meta:
         model = CustomUser
-        fields = ['first_name', 'role', 'department', 'is_admin', 'email']
-        labels = {
-            'first_name': 'ФИО',
-            'role': 'Должность',
-            'department': 'Отдел',
-            'is_admin': 'Роль',
-            'email': 'Email',
 
-        }
+        fields = ['full_name', 'is_admin', 'department', 'role', 'email', 'status']
 
     def save(self, commit=True):
         user = super().save(commit=False)
 
-        # Генерируем случайное уникальное имя пользователя
+        # Разбиваем full_name на три части: фамилия, имя, отчество
+        full_name = self.cleaned_data['full_name']
+        name_parts = full_name.split()
+        
+        if len(name_parts) == 3:
+            user.last_name = name_parts[0]  # Фамилия
+            user.first_name = name_parts[1]  # Имя
+            user.middle_name = name_parts[2]  # Отчество
+        elif len(name_parts) == 2:
+            user.last_name = name_parts[0]
+            user.first_name = name_parts[1]
+            user.middle_name = ''  # Если отчество не указано
+        else:
+            user.first_name = full_name  # Если только одно имя
+
+        # Обрабатываем роль пользователя
+        is_admin = self.cleaned_data.get('is_admin')
+        user.is_admin = bool(is_admin)
+
         if not user.username:
             user.username = get_random_string(8)
 
         if commit:
             user.save()
 
-        if user.is_admin:
-            admin_group, created = Group.objects.get_or_create(name='Admin')
-            user.groups.add(admin_group)
-            permissions = Permission.objects.all()
-            user.user_permissions.set(permissions)
-            user.is_staff = True
-            user.is_superuser = True
+            # Если пользователь - админ, добавляем группу
+            if user.is_admin:
+                admin_group, created = Group.objects.get_or_create(name='Admin')
+                user.groups.add(admin_group)
+                permissions = Permission.objects.all()
+                user.user_permissions.set(permissions)
+                user.is_staff = True
+                user.is_superuser = True
+            else:
+                user.is_staff = False
+                user.is_superuser = False
             user.save()
 
         return user
@@ -170,7 +187,7 @@ class TaskTypeForm(forms.ModelForm):
 class TimelogForm(forms.ModelForm):
     class Meta:
         model = Timelog
-        fields = ['user', 'role', 'department', 'project', 'stage', 'section', 'building', 'mark', 'task', 'date', 'time']
+        fields = ['department', 'project', 'stage', 'section', 'building', 'mark', 'task', 'date', 'time']
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date'}),
         }
