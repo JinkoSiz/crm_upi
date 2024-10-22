@@ -45,7 +45,15 @@ class RoleForm(forms.ModelForm):
 class CustomUserCreationForm(forms.ModelForm):
     class Meta:
         model = CustomUser
-        fields = ['first_name', 'last_name', 'middle_name', 'is_admin', 'department', 'role', 'email', 'status']
+        fields = ['first_name', 'role', 'department', 'is_admin', 'email']
+        labels = {
+            'first_name': 'ФИО',
+            'role': 'Должность',
+            'department': 'Отдел',
+            'is_admin': 'Роль',
+            'email': 'Email',
+
+        }
 
     def save(self, commit=True):
         user = super().save(commit=False)
