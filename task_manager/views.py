@@ -294,11 +294,13 @@ def project(request):
     projects = Project.objects.all().select_related('status')
     
     project_status = ProjectStatus.objects.all()
+    sections = Section.objects.all()  # Получаем все разделы
     form = ProjectForm()
     
     return render(request, 'task_manager/project_list.html', {
         'projects': projects,
         'project_status': project_status,
+        'sections': sections,  # Передаем разделы в шаблон
         'form': form
     })
 
@@ -321,8 +323,24 @@ def createProject(request):
     if request.method == 'POST':
         title = request.POST['title']
         status_id = request.POST['status']
+        sections = request.POST.getlist('sections')
 
         project = Project.objects.create(title=title, status_id=status_id)
+
+        # Обработка зданий
+        buildings = request.POST.getlist('buildings[]')  # Получаем список зданий из формы
+        ProjectBuilding.objects.filter(project=project).delete()  # Удаляем старые здания
+        print(buildings)
+        for building_title in buildings:
+            # Проверяем, существует ли здание с таким названием, если нет - создаем
+            building, created = Building.objects.get_or_create(title=building_title)
+            ProjectBuilding.objects.create(project=project, building=building)
+        
+        # Добавляем выбранные разделы к проекту
+        for section_id in sections:
+            section = Section.objects.get(pk=section_id)
+            ProjectSection.objects.create(project=project, section=section)
+
         return JsonResponse({'message': 'Проект создан'})
 
 def updateProject(request, pk):
@@ -342,6 +360,14 @@ def updateProject(request, pk):
             # Проверяем, существует ли здание с таким названием, если нет - создаем
             building, created = Building.objects.get_or_create(title=building_title)
             ProjectBuilding.objects.create(project=project, building=building)
+
+        # Обработка разделов
+        sections = request.POST.getlist('sections[]')  # Получаем список разделов из формы
+        print(sections)
+        ProjectSection.objects.filter(project=project).delete()  # Удаляем старые разделы
+        for section_id in sections:
+            section = Section.objects.get(pk=section_id)
+            ProjectSection.objects.create(project=project, section=section)
         
         return JsonResponse({'message': 'Проект обновлен'})
 
@@ -621,8 +647,8 @@ def delete_task(request, pk):
 
 # TimeLog
 def timelog_list(request):
-    # Фильтрация по параметрам
-    timelogs = Timelog.objects.all()
+    # Оптимизация запросов с использованием select_related и prefetch_related
+    timelogs = Timelog.objects.all().select_related('user', 'role', 'department', 'project', 'building', 'mark', 'task').prefetch_related('section')
 
     if request.GET.get('user'):
         timelogs = timelogs.filter(user__id=request.GET.get('user'))
@@ -632,23 +658,33 @@ def timelog_list(request):
         timelogs = timelogs.filter(stage=request.GET.get('stage'))
     if request.GET.get('mark'):
         timelogs = timelogs.filter(mark__id=request.GET.get('mark'))
+    
+    form = TimelogForm()
 
     context = {
         'timelogs': timelogs,
+        'form': form
     }
     return render(request, 'task_manager/timelog_list.html', context)
 
+@login_required
 def timelog_create(request):
-    form = TimelogForm()
-
     if request.method == 'POST':
         form = TimelogForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect('timelog-list')
+            # Получаем текущего пользователя
+            user = request.user
+            role = user.role  # Предполагается, что у пользователя есть роль
 
-    context = {'form': form}
-    return render(request, 'task_manager/timelog_form.html', context)
+            # Создаем новый таймлог с указанием пользователя и его роли
+            timelog = form.save(commit=False)
+            timelog.user = user
+            timelog.role = role
+            timelog.save()
+
+            return JsonResponse({'message': 'Таймлог успешно создан'}, status=200)
+
+    return JsonResponse({'error': 'Неверный запрос'}, status=400)
 
 def timelog_update(request, pk):
     timelog = get_object_or_404(Timelog, pk=pk)

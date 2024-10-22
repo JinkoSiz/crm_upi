@@ -130,8 +130,42 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    {{ form.as_p }}
-                </div>
+                    <!-- Поле для ввода ФИО -->
+                    <div class="form-group">
+                        <label for="id_full_name">ФИО:</label>
+                        <input type="text" class="form-control" name="full_name" id="id_full_name" placeholder="Введите ФИО">
+                    </div>
+                
+                    <!-- Выпадающий список для выбора роли (админ или пользователь) -->
+                    <div class="form-group">
+                        <label for="id_is_admin">Роль:</label>
+                        <select name="is_admin" class="form-control" id="id_is_admin">
+                            <option value="False">Пользователь</option>
+                            <option value="True">Админ</option>
+                        </select>
+                    </div>
+                
+                    <!-- Оставшиеся поля формы -->
+                    <div class="form-group">
+                        <label for="id_department">Отдел:</label>
+                        {{ form.department }}
+                    </div>
+                
+                    <div class="form-group">
+                        <label for="id_role">Роль:</label>
+                        {{ form.role }}
+                    </div>
+                
+                    <div class="form-group">
+                        <label for="id_email">Email:</label>
+                        {{ form.email }}
+                    </div>
+                
+                    <div class="form-group">
+                        <label for="id_status">Статус:</label>
+                        {{ form.status }}
+                    </div>
+                </div>                                
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
                     <button type="submit" class="btn btn-primary">Сохранить изменения</button>

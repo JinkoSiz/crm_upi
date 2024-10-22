@@ -1,12 +1,51 @@
-{% extends 'task_manager/base.html' %}
-
-{% block content %}
 <div class="container mt-4">
     <h2>{% if form.instance.pk %}Edit Time Log{% else %}Create Time Log{% endif %}</h2>
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
+        <div class="form-group">
+            <label for="id_user">User:</label>
+            {{ form.user }}
+        </div>
+        <div class="form-group">
+            <label for="id_role">Role:</label>
+            {{ form.role }}
+        </div>
+        <div class="form-group">
+            <label for="id_department">Department:</label>
+            {{ form.department }}
+        </div>
+        <div class="form-group">
+            <label for="id_project">Project:</label>
+            {{ form.project }}
+        </div>
+        <div class="form-group">
+            <label for="id_stage">Stage:</label>
+            {{ form.stage }}
+        </div>
+        <div class="form-group">
+            <label for="id_section">Section:</label>
+            {{ form.section }}
+        </div>
+        <div class="form-group">
+            <label for="id_building">Building:</label>
+            {{ form.building }}
+        </div>
+        <div class="form-group">
+            <label for="id_mark">Mark:</label>
+            {{ form.mark }}
+        </div>
+        <div class="form-group">
+            <label for="id_task">Task:</label>
+            {{ form.task }}
+        </div>
+        <div class="form-group">
+            <label for="id_date">Date:</label>
+            {{ form.date }}
+        </div>
+        <div class="form-group">
+            <label for="id_time">Time (hours):</label>
+            {{ form.time }}
+        </div>
         <button type="submit" class="btn btn-primary">Save</button>
     </form>
 </div>
-{% endblock %}

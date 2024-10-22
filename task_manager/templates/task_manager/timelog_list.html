@@ -4,20 +4,10 @@
 <div class="container mt-4">
     <h2>Time Logs</h2>
 
-    <!-- Фильтры -->
-    <form method="get">
-        <div class="form-group">
-            <label for="user">User:</label>
-            <select name="user" id="user" class="form-control">
-                <option value="">All</option>
-                {% for user in users %}
-                    <option value="{{ user.id }}" {% if request.GET.user == user.id|stringformat:"s" %}selected{% endif %}>{{ user.username }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <!-- Добавьте другие фильтры по аналогии -->
-        <button type="submit" class="btn btn-primary">Filter</button>
-    </form>
+    <!-- Кнопка для создания нового таймлога -->
+    <button type="button" class="btn btn-success mb-3" data-toggle="modal" data-target="#timelogModal">
+        Добавить таймлог
+    </button>
 
     <table class="table table-striped mt-4">
         <thead>
@@ -49,4 +39,49 @@
         </tbody>
     </table>
 </div>
+
+<!-- Модальное окно для создания нового таймлога -->
+<div class="modal fade" id="timelogModal" tabindex="-1" aria-labelledby="timelogModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="timelogForm" method="post">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="timelogModalLabel">Создать таймлог</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <!-- Добавляем поля формы здесь -->
+                    {{ form.as_p }} 
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Обработчик отправки формы
+    $('#timelogForm').on('submit', function (event) {
+        event.preventDefault();
+        const form = $(this);
+
+        $.ajax({
+            url: "{% url 'timelog-create' %}",
+            method: 'POST',
+            data: form.serialize(),
+            success: function (data) {
+                location.reload(); // Обновляем страницу после успешного создания
+            },
+            error: function (xhr, status, error) {
+                console.error('Ошибка:', error);
+            }
+        });
+    });
+</script>
 {% endblock %}
