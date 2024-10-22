@@ -647,8 +647,8 @@ def delete_task(request, pk):
 
 # TimeLog
 def timelog_list(request):
-    # Фильтрация по параметрам
-    timelogs = Timelog.objects.all()
+    # Оптимизация запросов с использованием select_related и prefetch_related
+    timelogs = Timelog.objects.all().select_related('user', 'role', 'department', 'project', 'building', 'mark', 'task').prefetch_related('section')
 
     if request.GET.get('user'):
         timelogs = timelogs.filter(user__id=request.GET.get('user'))
@@ -658,23 +658,33 @@ def timelog_list(request):
         timelogs = timelogs.filter(stage=request.GET.get('stage'))
     if request.GET.get('mark'):
         timelogs = timelogs.filter(mark__id=request.GET.get('mark'))
+    
+    form = TimelogForm()
 
     context = {
         'timelogs': timelogs,
+        'form': form
     }
     return render(request, 'task_manager/timelog_list.html', context)
 
+@login_required
 def timelog_create(request):
-    form = TimelogForm()
-
     if request.method == 'POST':
         form = TimelogForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect('timelog-list')
+            # Получаем текущего пользователя
+            user = request.user
+            role = user.role  # Предполагается, что у пользователя есть роль
 
-    context = {'form': form}
-    return render(request, 'task_manager/timelog_form.html', context)
+            # Создаем новый таймлог с указанием пользователя и его роли
+            timelog = form.save(commit=False)
+            timelog.user = user
+            timelog.role = role
+            timelog.save()
+
+            return JsonResponse({'message': 'Таймлог успешно создан'}, status=200)
+
+    return JsonResponse({'error': 'Неверный запрос'}, status=400)
 
 def timelog_update(request, pk):
     timelog = get_object_or_404(Timelog, pk=pk)
