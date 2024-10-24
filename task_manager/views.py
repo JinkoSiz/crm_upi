@@ -291,7 +291,7 @@ def reset_password(request, pk):
 @admin_required(login_url='login')
 def project(request):
     # Используем select_related для выборки связанных данных статус проекта
-    projects = Project.objects.all().select_related('status')
+    projects = Project.objects.all().select_related('status').prefetch_related('project_buildings__building', 'project_sections__section')
     
     project_status = ProjectStatus.objects.all()
     sections = Section.objects.all()  # Получаем все разделы
@@ -665,6 +665,7 @@ def timelog_list(request):
         'timelogs': timelogs,
         'form': form
     }
+
     return render(request, 'task_manager/timelog_list.html', context)
 
 @login_required

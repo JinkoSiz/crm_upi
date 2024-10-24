@@ -164,6 +164,8 @@
               adminLinksListItem = document.querySelectorAll('.data-list'),
               adminLinksBtnsListItem = document.querySelectorAll('.add-depart');
 
+        console.log('Path of url: ' +  currentUrlPath);
+    
         
         function dataMining(selector, urlPath) {
             selector.forEach(item => {
@@ -234,6 +236,11 @@
                 case 'reports':
                     adminHandbooksNavList.style.display = 'none';
                     dataMining(mainList, url);
+                    break;
+
+                default: 
+                    adminHandbooksNavList.style.display = 'none';
+                    
                     break;
 
                 // case 'reports1':
