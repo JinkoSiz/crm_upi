@@ -24,6 +24,19 @@ select {
     appearance: none;
 }
 
+select::after,
+select::before {
+    content: '';
+    display: block;
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%) rotate(45deg);
+    width: 6px;
+    height: 2px;
+    background-color: var(--Text_Gray_40);
+}
+
 input:focus,
 select:focus,
 input:focus-visible,
@@ -45,6 +58,13 @@ input[type=date]::-webkit-calendar-picker-indicator {
     width: 20px;
     height: 22px;
     border-width: thin;
+}
+
+input[type=checkbox] {
+    width: 20px !important;
+    height: 20px !important;
+    border-radius: 3px !important;
+    border: 1px solid var(--Text_Gray_40) !important;
 }
 
 body {
@@ -821,6 +841,7 @@ button.send-invite:focus {
     margin-bottom: 25px;
     padding: 10px;
     height: 40px;
+    width: 100%;
 }
 
 #addUserModal .modal-content select,
@@ -929,7 +950,7 @@ button.pagination-button {
     font-style: normal;
     font-weight: 600;
     line-height: 18px; /* 112.5% */
-    border-bottom: none;
+    border-bottom: 2px var(--Text_Gray_20) solid;
     background: transparent;
     border-radius: 0;
 }
@@ -1016,4 +1037,94 @@ button.pagination-button {
     transform: translateY(-50%);
     background: transparent;
     padding: 0;
+}
+
+#projectModal .form-check {
+    padding-left: 30px;
+    display: flex;
+    align-items: center;
+    height: 40px;
+}
+
+#projectModal .form-check-label {
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 18px;
+    color: var(--Text_Gray_100);
+}
+
+#projectModal .form-check .form-check-input{
+    margin-top: 0;
+    margin-left: -30px;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border: none !important;
+}
+
+#projectModal .form-check .form-check-input::after {
+    content: '';
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    border: 1px solid var(--Text_Gray_40);
+    border-radius: 3px;
+}
+
+#projectModal .form-check .form-check-input::before {
+    content: 'L';
+    color: var(--Primary_blue);
+    font-size: 17px;
+    font-weight: 600;
+    width: 14px;
+    height: 14px;
+    display: block;
+    background-color: transparent;
+    position: absolute;
+    top: -1px;
+    transform: translateY(-50%);
+    left: 3px;
+    transform: rotate(45deg) scaleX(-1);
+    opacity: 0;
+}
+
+#projectModal .form-check .form-check-input:checked::after {
+    border: 1px solid var(--Primary_blue);
+}
+
+#projectModal .form-check .form-check-input:checked::before {
+    opacity: 1;
+}
+
+#logsTable tbody tr td {
+    border-right: 1px solid var(--Text_Gray_20);
+    padding: 30px 20px;
+}
+
+#logsTable tbody tr td:last-child {
+    border-right: none;
+}
+
+.logs-form-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.logs-form-input-wrapper {
+    display: flex;
+    align-items: center;
+    margin-right: 30px;
+}
+
+#logsTimings {
+    margin-right: 30px;
+    display: block;
+    width: 185px;
+    height: 40px;
+    border-radius: 5px;
+    border: 1px solid var(--Text_Gray_40);
 }

@@ -54,7 +54,7 @@
     <nav class="admin-main-navigation">
         <ul>
             <li data-cid="logs">
-                <a href="#">
+                <a href="{% url 'timelog-list' %}">
                     <span>
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
                           <g clip-path="url(#clip0_169_2415)">
@@ -162,7 +162,9 @@
               adminBtnsListItem = document.querySelectorAll('.admin-main-navigation ul li'),
               adminHandbooksNavList = document.querySelector('.handbooks'),
               adminLinksListItem = document.querySelectorAll('.data-list'),
-              adminLinksBtnsListItem = document.querySelectorAll('.add-depart');
+              adminLinksBtnsListItem = document.querySelectorAll('.add-depart'),
+              adminMainNavigation = document.querySelector('.admin-main-navigation'),
+              header = document.querySelector('header');
 
         console.log('Path of url: ' +  currentUrlPath);
     
@@ -188,11 +190,14 @@
         function setStatus (url, mainList, secondaryList, secondaryListBtns) {
 
             adminHandbooksNavList.style.display = 'none';
+            adminMainNavigation.style.display = 'block';
+            header.style.display = 'flex';
 
             switch (url) {
-                case 'logs':
-                    dataMining(mainList, url);
-                    break;
+
+                case 'login': 
+                    adminMainNavigation.style.display = 'none';
+                    header.style.display = 'none';
 
                 case 'users':
                     dataMining(mainList, url);
@@ -238,10 +243,12 @@
                     dataMining(mainList, url);
                     break;
 
-                default: 
+                default:
                     adminHandbooksNavList.style.display = 'none';
-                    
+                    dataMining(mainList, 'logs');
                     break;
+                
+
 
                 // case 'reports1':
                     
