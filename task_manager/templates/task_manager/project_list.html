@@ -19,6 +19,8 @@ Projects List
                         <th>#</th>
                         <th>Название</th>
                         <th>Статус</th>
+                        <th>Здания</th>
+                        <th>Разделы</th>
                         <th>Действия</th>
                     </tr>
                 </thead>
@@ -28,6 +30,20 @@ Projects List
                         <td>{{ forloop.counter }}</td>
                         <td>{{ project.title }}</td>
                         <td>{{ project.status.title }}</td>
+                        <td>
+                            <ul>
+                                {% for building in project.project_buildings.all %}
+                                <li>{{ building.building.title }}</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                        <td>
+                            <ul>
+                                {% for section in project.project_sections.all %}
+                                <li>{{ section.section.title }}</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
                         <td>
                             <!-- Кнопка для редактирования проекта -->
                             <button class="btn btn-warning btn-sm edit-project-btn" data-id="{{ project.pk }}" data-title="{{ project.title }}" data-status="{{ project.status_id }}" data-toggle="modal" data-target="#projectModal">
@@ -39,7 +55,7 @@ Projects List
                     </tr>
                     {% endfor %}
                 </tbody>
-            </table>
+            </table>                        
         </div>
     </div>
 </div>
