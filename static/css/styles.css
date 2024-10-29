@@ -50,6 +50,20 @@ select.form-control:focus-visible  {
     box-shadow: none;
 }
 
+input[type=date] {
+    width: 175px;
+    height: 40px;
+    padding: 10px;
+    color: var(--Text_Gray_100);
+    font-feature-settings: 'liga' off, 'clig' off;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 18px;
+    border-radius: 5px;
+    border: 1px solid var(--Text_Gray_40);
+}
+
 input[type=date]::-webkit-calendar-picker-indicator {
     color: rgba(0, 0, 0, 0);
     opacity: 1;
@@ -1120,6 +1134,21 @@ button.pagination-button {
     margin-right: 30px;
 }
 
+.logs-form-wrapper .btn.btn-success {
+    margin-left: 30px;
+    display: none;
+}
+
+.logs-form-input-wrapper span {
+    color: var(--Text_Gray_100);
+    font-feature-settings: 'liga' off, 'clig' off;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 18px; /* 112.5% */
+    margin: 0 10px;
+}
+
 #logsTimings {
     margin-right: 30px;
     display: block;
@@ -1127,4 +1156,12 @@ button.pagination-button {
     height: 40px;
     border-radius: 5px;
     border: 1px solid var(--Text_Gray_40);
+    padding: 10px;
+    color: var(--Text_Gray_100);
+    font-feature-settings: 'liga' off, 'clig' off;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 18px; /* 128.571% */
 }
+
