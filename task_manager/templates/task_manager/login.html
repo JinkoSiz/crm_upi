@@ -6,7 +6,7 @@
 <div class="container">
     <form method="post" class="sign-in" action="{% url 'login' %}">
         {% csrf_token %}
-        <img src="img/logo.png" alt="Logo" class="logo">
+        <img src="https://s3.timeweb.com/7777fb51-34f4640c-d71e-4ace-b57e-e7997a1f4952/logoforlogin.svg" alt="Logo" class="logo">
         <h1>Вход</h1>
         <label for="username">
             <h2>Ваш email</h2>
@@ -28,7 +28,6 @@
                 </svg>
             </span>
         </label>
-        <a href="#" class="forgot-pass">Забыли пароль?</a>
         <button type="submit">Войти в систему</button>
     </form>
 </div>
