@@ -13,11 +13,11 @@
 <body>
 <div class="container">
     <header>
-        <img src="img/logo.png" alt="Logo" class="logo">
+        <img src="https://s3.timeweb.com/7777fb51-34f4640c-d71e-4ace-b57e-e7997a1f4952/03_logo1.svg" alt="Logo" class="logo">
         <div class="header-info">
             <div class="header-info-user">
-                <p class="header-info-user-name">1</p>
-                <p class="header-info-user-position">1</p>
+                <p class="header-info-user-name">{{ user.first_name }} {{ user.last_name }}</p>
+                <p class="header-info-user-position">{{ user.role }}</p>
             </div>
             <span class="header-info-img">
                 <svg xmlns="http://www.w3.org/2000/svg" width="40" height="41" viewBox="0 0 40 41" fill="none">
@@ -41,7 +41,7 @@
                     </defs>
                   </svg>
             </span>
-            <a href="login.html" class="header-info-log-out">
+            <a href="{% url 'logout' %}" class="header-info-log-out">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="21" viewBox="0 0 20 21" fill="currentColor">
                     <path fill-rule="evenodd" clip-rule="evenodd" d="M16.875 9.5625H6.25C5.7325 9.5625 5.3125 9.9825 5.3125 10.5C5.3125 11.0175 5.7325 11.4375 6.25 11.4375H16.875C17.3925 11.4375 17.8125 11.0175 17.8125 10.5C17.8125 9.9825 17.3925 9.5625 16.875 9.5625Z" fill="currentColor"/>
                     <path fill-rule="evenodd" clip-rule="evenodd" d="M15.0372 14.2876L18.1622 11.1626C18.5284 10.7963 18.5284 10.2038 18.1622 9.83755L15.0372 6.71255C14.6722 6.3463 14.0772 6.3463 13.7122 6.71255C13.3459 7.07755 13.3459 7.67255 13.7122 8.03755L16.1734 10.5001L13.7122 12.9626C13.3459 13.3276 13.3459 13.9226 13.7122 14.2876C14.0772 14.6538 14.6722 14.6538 15.0372 14.2876Z" fill="currentColor"/>
@@ -53,7 +53,7 @@
 
     <nav class="admin-main-navigation">
         <ul>
-            <li data-cid="logs">
+            <li data-cid="timelogs">
                 <a href="{% url 'timelog-list' %}">
                     <span>
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -164,9 +164,15 @@
               adminLinksListItem = document.querySelectorAll('.data-list'),
               adminLinksBtnsListItem = document.querySelectorAll('.add-depart'),
               adminMainNavigation = document.querySelector('.admin-main-navigation'),
-              header = document.querySelector('header');
+              header = document.querySelector('header'),
+              isAdmin = '{{user.is_admin}}';
 
-        console.log('Path of url: ' +  currentUrlPath);
+
+        if(isAdmin === 'True'  &&  window.location.pathname == '/') {
+            console.log('redirecting');
+            console.log(typeof(isAdmin));
+            // window.location.href += 'timelogs';
+        }
     
         
         function dataMining(selector, urlPath) {
@@ -188,7 +194,7 @@
         }
 
         function setStatus (url, mainList, secondaryList, secondaryListBtns) {
-
+            
             adminHandbooksNavList.style.display = 'none';
             adminMainNavigation.style.display = 'block';
             header.style.display = 'flex';
@@ -198,6 +204,22 @@
                 case 'login': 
                     adminMainNavigation.style.display = 'none';
                     header.style.display = 'none';
+                    const showPass = document.querySelector('.pass-input svg'),
+                          passInput = document.querySelector('.pass-input input[type=password]')
+
+                    console.log(passInput);
+                    
+                    showPass.addEventListener('mousedown', () => {
+                        passInput.setAttribute('type', 'text');
+                    });
+
+                    showPass.addEventListener('mouseup', () => {
+                        passInput.setAttribute('type', 'password');
+                    });
+
+                case 'timelogs':
+                    dataMining(mainList, url);
+                    break;
 
                 case 'users':
                     dataMining(mainList, url);
@@ -243,20 +265,10 @@
                     dataMining(mainList, url);
                     break;
 
-                default:
+                default: 
                     adminHandbooksNavList.style.display = 'none';
-                    dataMining(mainList, 'logs');
+                    adminMainNavigation.style.display = 'none';
                     break;
-                
-
-
-                // case 'reports1':
-                    
-                //     break;
-
-                // case 'reports2':
-                    
-                //     break;
             }
         }
 
