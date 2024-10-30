@@ -1116,11 +1116,21 @@ button.pagination-button {
 
 #logsTable tbody tr td {
     border-right: 1px solid var(--Text_Gray_20);
-    padding: 30px 20px;
+    padding: 30px 10px;
+}
+
+#logsTable tbody tr td:first-child,
+#logsTable tbody tr th:first-child {
+    padding-left: 20px;
+}
+
+#logsTable tbody tr th:last-child {
+    padding-right: 20px;
 }
 
 #logsTable tbody tr td:last-child {
     border-right: none;
+    padding-right: 20px;
 }
 
 .logs-form-wrapper {
