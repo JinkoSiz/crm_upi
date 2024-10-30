@@ -13,6 +13,7 @@ from .models import *
 from .forms import *
 from django.db.models import Q
 from django.views.decorators.cache import cache_page
+from django.utils import timezone
 
 
 
@@ -222,7 +223,7 @@ def user_login(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            return redirect('department-list')  # Redirect to your desired page after login
+            return redirect('user-dashboard')  # Redirect to your desired page after login
         else:
             messages.error(request, 'Invalid username or password')
             return redirect('login')
@@ -230,7 +231,8 @@ def user_login(request):
 
 
 def user_logout(request):
-    logout(request)
+    if request.user.is_authenticated:
+        logout(request)
     return redirect('login')
 
 
@@ -708,3 +710,37 @@ def timelog_delete(request, pk):
 
     context = {'object': timelog}
     return render(request, 'task_manager/timelog_confirm_delete.html', context)
+
+
+def reset_session(request):
+    request.session.flush()  # Полностью очистит текущую сессию
+    return redirect('login')
+
+
+@login_required
+def user_dashboard(request):
+    user = request.user
+    today = timezone.now().date()
+
+    # Получаем таймлог за текущий день для данного пользователя
+    timelog = Timelog.objects.filter(user=user, date__date=today).first()
+
+    if request.method == 'POST' and not timelog:
+        form = TimelogForm(request.POST)
+        if form.is_valid():
+            new_timelog = form.save(commit=False)
+            new_timelog.user = user
+            new_timelog.role = user.role  # Предполагаем, что у пользователя есть роль
+            new_timelog.date = timezone.now()  # Устанавливаем дату на текущую
+            new_timelog.save()
+            return redirect('user-dashboard')
+    else:
+        form = TimelogForm()
+
+    context = {
+        'user': user,
+        'timelog': timelog,
+        'form': form,
+        'today': today,
+    }
+    return render(request, 'task_manager/user_dashboard.html', context)

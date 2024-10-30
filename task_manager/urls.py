@@ -60,8 +60,12 @@ urlpatterns = [
     path('tasks/<uuid:pk>/delete/', views.delete_task, name='task-delete'),
 
     # Логи времени
-    path('', views.timelog_list, name='timelog-list'),
+    path('timelogs', views.timelog_list, name='timelog-list'),
     path('timelog/create/', views.timelog_create, name='timelog-create'),
     path('timelog/<str:pk>/edit/', views.timelog_update, name='timelog-update'),
     path('timelog/<str:pk>/delete/', views.timelog_delete, name='timelog-delete'),
+
+    # Основная страница
+    path('', views.user_dashboard, name='user-dashboard'),
+    path('reset-session/', views.reset_session, name='reset-session'),
 ]

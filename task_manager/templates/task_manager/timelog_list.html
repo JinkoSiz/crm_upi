@@ -181,14 +181,14 @@
         {% for log in timelogs %}
         {
             name: "{{ log.user }}",
-            department: "",
-            date: "{{ log.date }}",
+            department: "{{ log.department.title }}",
+            date: "{{ log.date|date:'Y-m-d' }}",
             project: "{{ log.project }}",
             stage: "{{ log.stage }}",
-            section: "",
-            project: "",
-            mark: "",
-            task: "",
+            section: "{{ log.section.title }}",
+            project: "{{ log.building.title }}",
+            mark: "{{ log.mark.title }}",
+            task: "{{ log.task.title }}",
             time: "{{ log.time }}"
         },
         {% endfor %}
