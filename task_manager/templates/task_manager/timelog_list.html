@@ -2,29 +2,29 @@
 
 {% block content %}
 <div class="row">
-    <h2>Time Logs</h2>
-
-    <!-- Кнопка для создания нового таймлога -->
-    <button type="button" class="btn btn-success mb-3" data-toggle="modal" data-target="#timelogModal">
-        Добавить таймлог
-    </button>
 
     <div class="col-md-12">
         <form method="get" action="{% url 'user-list' %}" class="form-inline add-users-form">
             <div class="logs-form-wrapper">
                 <div class="logs-form-input-wrapper">
                     <input type="date">
-                    <span>-</span>
+                    <span>—</span>
                     <input type="date">
                 </div>
-                <select name="logs-timings" id="logsTimings"></select>
+                <select name="logs-timings" id="logsTimings">
+                    <option value="1">1</option>
+                    <option value="1">2</option>
+                    <option value="1">3</option>
+                </select>
                 <button class="accept-btn" type="submit">Применить</button>
+                <!-- Кнопка для создания нового таймлога -->
+                <button type="button" class="btn btn-success" data-toggle="modal" data-target="#timelogModal">Добавить таймлог</button>
             </div>
         </form>
         <table id="logsTable" class="table table-striped">
             <thead>
-                <tr class="">
-                    <th>
+                <tr>
+                    <th class="col-1">
                         <button class="sorter">
                             <p>Сотрудник</p>
                             <span>
@@ -34,7 +34,7 @@
                             </span>
                         </button>
                     </th>
-                    <th>
+                    <th class="col-1">
                         <button class="sorter">
                             <p>Отдел</p>
                             <span>
@@ -44,7 +44,7 @@
                             </span>
                         </button>
                     </th>
-                    <th>
+                    <th class="col-1">
                         <button class="sorter">
                             <p>Дата</p>
                             <span>
@@ -54,7 +54,7 @@
                             </span>
                         </button>
                     </th>
-                    <th>
+                    <th class="col-1">
                         <button class="sorter">
                             <p>Объект</p>
                             <span>
@@ -64,7 +64,7 @@
                             </span>
                         </button>
                     </th>
-                    <th>
+                    <th class="col-1">
                         <button class="sorter">
                             <p>Стадия</p>
                             <span>
@@ -74,7 +74,7 @@
                             </span>
                         </button>
                     </th>
-                    <th>
+                    <th class="col-1">
                         <button class="sorter">
                             <p>Раздел</p>
                             <span>
@@ -84,7 +84,7 @@
                             </span>
                         </button>
                     </th>
-                    <th>
+                    <th class="col-3">
                         <button class="sorter">
                             <p>ЗИС</p>
                             <span>
@@ -94,7 +94,7 @@
                             </span>
                         </button>
                     </th>
-                    <th>
+                    <th class="col-1">
                         <button class="sorter">
                             <p>Марка</p>
                             <span>
@@ -104,7 +104,7 @@
                             </span>
                         </button>
                     </th>
-                    <th>
+                    <th class="col-1">
                         <button class="sorter">
                             <p>Задача</p>
                             <span>
@@ -114,31 +114,12 @@
                             </span>
                         </button>
                     </th>
-                    <th>
+                    <th class="col-1">
                         <p>Время</p>
                     </th>
                 </tr>
             </thead>
-            <tbody id="logsTableBody">
-                <!-- {% for log in timelogs %}
-                <tr>
-                    <td>{{ log.user }}</td>
-                    <td></td>
-                    <td>{{ log.date }}</td>
-                    <td>{{ log.project }}</td>
-                    <td>{{ log.stage }}</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td>{{ log.time }} hours</td>
-                    <td>
-                        <a href="{% url 'timelog-update' log.id %}" class="btn btn-sm btn-warning">Edit</a>
-                        <a href="{% url 'timelog-delete' log.id %}" class="btn btn-sm btn-danger">Delete</a>
-                    </td>
-                </tr>
-                {% endfor %} -->
-            </tbody>
+            <tbody id="logsTableBody"></tbody>
         </table>
     
         <div class="pagination" id="pagination">
