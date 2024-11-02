@@ -1,0 +1,68 @@
+{% extends 'task_manager/base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>Отчет о выполненной работе за {{ today|date:"d.m.Y" }}</h2>
+    <form method="post" action="{% url 'report_create' %}">
+        {% csrf_token %}
+        <div id="timelog-rows">
+            <!-- Строка для одного таймлога -->
+            <div class="timelog-row">
+                <select name="department" class="form-control">
+                    {% for department in departments %}
+                        <option value="{{ department.id }}">{{ department.title }}</option>
+                    {% endfor %}
+                </select>
+
+                <select name="project" class="form-control">
+                    {% for project in projects %}
+                        <option value="{{ project.id }}">{{ project.title }}</option>
+                    {% endfor %}
+                </select>
+
+                <select name="stage" class="form-control">
+                    {% for stage_value, stage_display in stages %}
+                        <option value="{{ stage_value }}">{{ stage_display }}</option>
+                    {% endfor %}
+                </select>
+
+                <select name="section" class="form-control">
+                    {% for section in sections %}
+                        <option value="{{ section.id }}">{{ section.title }}</option>
+                    {% endfor %}
+                </select>
+
+                <select name="building" class="form-control">
+                    {% for building in buildings %}
+                        <option value="{{ building.id }}">{{ building.title }}</option>
+                    {% endfor %}
+                </select>
+
+                <select name="mark" class="form-control">
+                    {% for mark in marks %}
+                        <option value="{{ mark.id }}">{{ mark.title }}</option>
+                    {% endfor %}
+                </select>
+
+                <select name="task" class="form-control">
+                    {% for task in tasks %}
+                        <option value="{{ task.id }}">{{ task.title }}</option>
+                    {% endfor %}
+                </select>
+
+                <input type="number" name="time" class="form-control" placeholder="Время (в часах)">
+            </div>
+        </div>
+
+        <button type="button" onclick="addRow()">Добавить строку</button>
+        <button type="submit" class="btn btn-primary">Отправить отчет</button>
+    </form>
+</div>
+
+<script>
+function addRow() {
+    const row = document.querySelector('.timelog-row').cloneNode(true);
+    document.getElementById('timelog-rows').appendChild(row);
+}
+</script>
+{% endblock %}
