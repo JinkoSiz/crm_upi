@@ -744,3 +744,65 @@ def user_dashboard(request):
         'today': today,
     }
     return render(request, 'task_manager/user_dashboard.html', context)
+
+
+@login_required
+def report_create(request):
+    today = timezone.now().date()
+
+    if request.method == 'POST':
+        timelogs_data = []
+        departments = request.POST.getlist('department')
+        projects = request.POST.getlist('project')
+        stages = request.POST.getlist('stage')
+        sections = request.POST.getlist('section')
+        buildings = request.POST.getlist('building')
+        marks = request.POST.getlist('mark')
+        tasks = request.POST.getlist('task')
+        times = request.POST.getlist('time')
+
+        for i in range(len(departments)):
+            timelog = Timelog(
+                user=request.user,
+                role=request.user.role,
+                department_id=departments[i],
+                project_id=projects[i],
+                stage=stages[i],
+                section_id=sections[i],
+                building_id=buildings[i],
+                mark_id=marks[i],
+                task_id=tasks[i],
+                time=int(times[i]),
+                date=today
+            )
+            timelogs_data.append(timelog)
+
+        # Сохраняем все таймлоги одним запросом
+        Timelog.objects.bulk_create(timelogs_data)
+        return redirect('timelog-list')  # Перенаправляем на список таймлогов
+
+    else:
+        form = TimelogForm()
+
+    # Загружаем данные из кэша или базы данных для селектов
+    departments = cache.get_or_set('departments', Department.objects.all(), timeout=60 * 15)
+    projects = cache.get_or_set('projects', Project.objects.select_related('status').all(), timeout=60 * 15)
+    sections = cache.get_or_set('sections', Section.objects.all(), timeout=60 * 15)
+    buildings = cache.get_or_set('buildings', Building.objects.all(), timeout=60 * 15)
+    marks = cache.get_or_set('marks', Mark.objects.all(), timeout=60 * 15)
+    tasks = cache.get_or_set('tasks', TaskType.objects.all(), timeout=60 * 15)
+
+    context = {
+        'form': form,
+        'today': today,
+        'departments': departments,
+        'projects': projects,
+        'stages': Timelog._meta.get_field('stage').choices,
+        'sections': sections,
+        'buildings': buildings,
+        'marks': marks,
+        'tasks': tasks,
+    }
+
+    return render(request, 'task_manager/report_create.html', context)
+
