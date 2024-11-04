@@ -1,0 +1,97 @@
+{% extends 'task_manager/base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>Отчеты</h2>
+
+    <div class="report-section">
+        <h3>Трудозатраты по объектам</h3>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Объект</th>
+                    <th>Отдел</th>
+                    <th>Сотрудник</th>
+                    <th>Стадия</th>
+                    <th>ЗИС</th>
+                    <th>Марка</th>
+                    <th>Локальная задача</th>
+                    <th>Время</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for project_title, project_data in detailed_report_projects.items %}
+                    <tr>
+                        <td colspan="8"><strong>{{ project_title }}</strong></td>
+                    </tr>
+                    {% for entry in project_data.entries %}
+                        <tr>
+                            <td>{{ entry.project.title }}</td>
+                            <td>{{ entry.department.title }}</td>
+                            <td>{{ entry.user.first_name }} {{ entry.user.last_name }}</td>
+                            <td>{{ entry.stage }}</td>
+                            <td>{{ entry.building.title }}</td>
+                            <td>{{ entry.mark.title }}</td>
+                            <td>{{ entry.task.title }}</td>
+                            <td>{{ entry.time }}</td>
+                        </tr>
+                    {% endfor %}
+                    <tr>
+                        <td colspan="7" class="text-right"><strong>Итого по объекту {{ project_title }}:</strong></td>
+                        <td><strong>{{ project_data.total_time }}</strong></td>
+                    </tr>
+                {% endfor %}
+                <tr>
+                    <td colspan="7" class="text-right"><strong>Общий итог:</strong></td>
+                    <td><strong>{{ overall_total_time_projects }}</strong></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="report-section mt-5">
+        <h3>Трудозатраты по отделам</h3>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Отдел</th>
+                    <th>Сотрудник</th>
+                    <th>Объект</th>
+                    <th>Стадия</th>
+                    <th>ЗИС</th>
+                    <th>Марка</th>
+                    <th>Локальная задача</th>
+                    <th>Время</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for department_title, department_data in detailed_report_departments.items %}
+                    <tr>
+                        <td colspan="8"><strong>{{ department_title }}</strong></td>
+                    </tr>
+                    {% for entry in department_data.entries %}
+                        <tr>
+                            <td>{{ entry.department.title }}</td>
+                            <td>{{ entry.user.first_name }} {{ entry.user.last_name }}</td>
+                            <td>{{ entry.project.title }}</td>
+                            <td>{{ entry.stage }}</td>
+                            <td>{{ entry.building.title }}</td>
+                            <td>{{ entry.mark.title }}</td>
+                            <td>{{ entry.task.title }}</td>
+                            <td>{{ entry.time }}</td>
+                        </tr>
+                    {% endfor %}
+                    <tr>
+                        <td colspan="7" class="text-right"><strong>Итого по отделу {{ department_title }}:</strong></td>
+                        <td><strong>{{ department_data.total_time }}</strong></td>
+                    </tr>
+                {% endfor %}
+                <tr>
+                    <td colspan="7" class="text-right"><strong>Общий итог:</strong></td>
+                    <td><strong>{{ overall_total_time_departments }}</strong></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

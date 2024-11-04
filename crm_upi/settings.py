@@ -36,6 +36,7 @@ DB_HOST = env('DB_HOST')
 DB_NAME = env('DB_NAME')
 REDIS_URL = env('REDIS_REDIS_URL')
 
+LOGIN_URL = '/login/'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/

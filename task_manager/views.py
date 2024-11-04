@@ -11,7 +11,7 @@ from django.core.mail import send_mail
 from django.contrib.auth.models import UserManager
 from .models import *
 from .forms import *
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.views.decorators.cache import cache_page
 from django.utils import timezone
 
@@ -806,3 +806,49 @@ def report_create(request):
 
     return render(request, 'task_manager/report_create.html', context)
 
+
+def reports_view(request):
+    # Получаем все записи Timelog с оптимизацией связанных данных
+    timelogs = (
+        Timelog.objects
+        .select_related('project', 'department', 'user', 'building', 'mark', 'task')
+        .all()
+    )
+
+    # Группировка данных по проектам
+    detailed_report_projects = {}
+    for item in timelogs:
+        project_title = item.project.title
+        if project_title not in detailed_report_projects:
+            detailed_report_projects[project_title] = {
+                'entries': [],
+                'total_time': 0
+            }
+        detailed_report_projects[project_title]['entries'].append(item)
+        detailed_report_projects[project_title]['total_time'] += item.time
+
+    # Общий итог времени по всем проектам
+    overall_total_time_projects = sum([group['total_time'] for group in detailed_report_projects.values()])
+
+    # Группировка данных по отделам
+    detailed_report_departments = {}
+    for item in timelogs:
+        department_title = item.department.title
+        if department_title not in detailed_report_departments:
+            detailed_report_departments[department_title] = {
+                'entries': [],
+                'total_time': 0
+            }
+        detailed_report_departments[department_title]['entries'].append(item)
+        detailed_report_departments[department_title]['total_time'] += item.time
+
+    # Общий итог времени по всем отделам
+    overall_total_time_departments = sum([group['total_time'] for group in detailed_report_departments.values()])
+
+    context = {
+        'detailed_report_projects': detailed_report_projects,
+        'overall_total_time_projects': overall_total_time_projects,
+        'detailed_report_departments': detailed_report_departments,
+        'overall_total_time_departments': overall_total_time_departments,
+    }
+    return render(request, 'task_manager/reports.html', context)
