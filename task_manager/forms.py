@@ -195,7 +195,7 @@ class TaskTypeForm(forms.ModelForm):
 class TimelogForm(forms.ModelForm):
     class Meta:
         model = Timelog
-        fields = ['department', 'project', 'stage', 'section', 'building', 'mark', 'task', 'date', 'time']
+        fields = ['project', 'stage', 'section', 'building', 'mark', 'task', 'date', 'time']
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date'}),
         }

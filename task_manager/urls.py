@@ -69,5 +69,6 @@ urlpatterns = [
     path('', views.user_dashboard, name='user-dashboard'),
     path('reset-session/', views.reset_session, name='reset-session'),
     path('report/create/', views.report_create, name='report_create'),
+    path('reports/', views.reports_view, name='reports'),
 
 ]

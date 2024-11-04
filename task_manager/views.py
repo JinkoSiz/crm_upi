@@ -11,7 +11,7 @@ from django.core.mail import send_mail
 from django.contrib.auth.models import UserManager
 from .models import *
 from .forms import *
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.views.decorators.cache import cache_page
 from django.utils import timezone
 
@@ -752,7 +752,6 @@ def report_create(request):
 
     if request.method == 'POST':
         timelogs_data = []
-        departments = request.POST.getlist('department')
         projects = request.POST.getlist('project')
         stages = request.POST.getlist('stage')
         sections = request.POST.getlist('section')
@@ -761,11 +760,11 @@ def report_create(request):
         tasks = request.POST.getlist('task')
         times = request.POST.getlist('time')
 
-        for i in range(len(departments)):
+        for i in range(len(projects)):
             timelog = Timelog(
                 user=request.user,
                 role=request.user.role,
-                department_id=departments[i],
+                department=request.user.department,
                 project_id=projects[i],
                 stage=stages[i],
                 section_id=sections[i],
@@ -779,13 +778,20 @@ def report_create(request):
 
         # Сохраняем все таймлоги одним запросом
         Timelog.objects.bulk_create(timelogs_data)
+
+        # Очищаем кэш, чтобы подтянуть актуальные данные при следующем запросе
+        cache.delete('projects')
+        cache.delete('sections')
+        cache.delete('buildings')
+        cache.delete('marks')
+        cache.delete('tasks')
+
         return redirect('timelog-list')  # Перенаправляем на список таймлогов
 
     else:
         form = TimelogForm()
 
     # Загружаем данные из кэша или базы данных для селектов
-    departments = cache.get_or_set('departments', Department.objects.all(), timeout=60 * 15)
     projects = cache.get_or_set('projects', Project.objects.select_related('status').all(), timeout=60 * 15)
     sections = cache.get_or_set('sections', Section.objects.all(), timeout=60 * 15)
     buildings = cache.get_or_set('buildings', Building.objects.all(), timeout=60 * 15)
@@ -795,7 +801,6 @@ def report_create(request):
     context = {
         'form': form,
         'today': today,
-        'departments': departments,
         'projects': projects,
         'stages': Timelog._meta.get_field('stage').choices,
         'sections': sections,
@@ -806,3 +811,49 @@ def report_create(request):
 
     return render(request, 'task_manager/report_create.html', context)
 
+
+def reports_view(request):
+    # Получаем все записи Timelog с оптимизацией связанных данных
+    timelogs = (
+        Timelog.objects
+        .select_related('project', 'department', 'user', 'building', 'mark', 'task')
+        .all()
+    )
+
+    # Группировка данных по проектам
+    detailed_report_projects = {}
+    for item in timelogs:
+        project_title = item.project.title
+        if project_title not in detailed_report_projects:
+            detailed_report_projects[project_title] = {
+                'entries': [],
+                'total_time': 0
+            }
+        detailed_report_projects[project_title]['entries'].append(item)
+        detailed_report_projects[project_title]['total_time'] += item.time
+
+    # Общий итог времени по всем проектам
+    overall_total_time_projects = sum([group['total_time'] for group in detailed_report_projects.values()])
+
+    # Группировка данных по отделам
+    detailed_report_departments = {}
+    for item in timelogs:
+        department_title = item.department.title
+        if department_title not in detailed_report_departments:
+            detailed_report_departments[department_title] = {
+                'entries': [],
+                'total_time': 0
+            }
+        detailed_report_departments[department_title]['entries'].append(item)
+        detailed_report_departments[department_title]['total_time'] += item.time
+
+    # Общий итог времени по всем отделам
+    overall_total_time_departments = sum([group['total_time'] for group in detailed_report_departments.values()])
+
+    context = {
+        'detailed_report_projects': detailed_report_projects,
+        'overall_total_time_projects': overall_total_time_projects,
+        'detailed_report_departments': detailed_report_departments,
+        'overall_total_time_departments': overall_total_time_departments,
+    }
+    return render(request, 'task_manager/reports.html', context)
