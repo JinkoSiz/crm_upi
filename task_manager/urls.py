@@ -68,4 +68,6 @@ urlpatterns = [
     # Основная страница
     path('', views.user_dashboard, name='user-dashboard'),
     path('reset-session/', views.reset_session, name='reset-session'),
+    path('report/create/', views.report_create, name='report_create'),
+
 ]
