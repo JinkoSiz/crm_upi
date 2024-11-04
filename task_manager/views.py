@@ -722,6 +722,10 @@ def user_dashboard(request):
     user = request.user
     today = timezone.now().date()
 
+    # Если пользователь админ, перенаправляем его на страницу логов
+    if user.is_admin:
+        return redirect('timelog-list')
+
     # Получаем таймлог за текущий день для данного пользователя
     timelog = Timelog.objects.filter(user=user, date__date=today).first()
 
