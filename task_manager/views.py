@@ -649,9 +649,18 @@ def delete_task(request, pk):
 
 # TimeLog
 def timelog_list(request):
-    # Оптимизация запросов с использованием select_related и prefetch_related
-    timelogs = Timelog.objects.all().select_related('user', 'role', 'department', 'project', 'building', 'mark', 'task').prefetch_related('section')
+    # Кэшируем данные таймлогов, если кэш пуст
+    timelogs = cache.get('timelogs_cache')
+    if not timelogs:
+        timelogs = (
+            Timelog.objects.all()
+            .select_related('user', 'role', 'department', 'project', 'building', 'mark', 'task')
+            .prefetch_related('section')
+        )
+        # Сохраняем в кэше на 5 минут (300 секунд)
+        cache.set('timelogs_cache', timelogs, timeout=900)
 
+    # Применяем фильтры, если они переданы через GET запрос
     if request.GET.get('user'):
         timelogs = timelogs.filter(user__id=request.GET.get('user'))
     if request.GET.get('project'):
@@ -660,7 +669,7 @@ def timelog_list(request):
         timelogs = timelogs.filter(stage=request.GET.get('stage'))
     if request.GET.get('mark'):
         timelogs = timelogs.filter(mark__id=request.GET.get('mark'))
-    
+
     form = TimelogForm()
 
     context = {
@@ -684,6 +693,7 @@ def timelog_create(request):
             timelog.user = user
             timelog.role = role
             timelog.save()
+            cache.delete('timelogs_cache')
 
             return JsonResponse({'message': 'Таймлог успешно создан'}, status=200)
 
@@ -697,6 +707,7 @@ def timelog_update(request, pk):
         form = TimelogForm(request.POST, instance=timelog)
         if form.is_valid():
             form.save()
+            cache.delete('timelogs_cache')
             return redirect('timelog-list')
 
     context = {'form': form}
@@ -789,6 +800,7 @@ def report_create(request):
         cache.delete('buildings')
         cache.delete('marks')
         cache.delete('tasks')
+        cache.delete('timelogs_cache')
 
         return redirect('timelog-list')  # Перенаправляем на список таймлогов
 
