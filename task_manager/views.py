@@ -16,7 +16,6 @@ from django.views.decorators.cache import cache_page
 from django.utils import timezone
 
 
-
 def admin_required(login_url=None):
     return user_passes_test(lambda u: u.is_authenticated and u.is_admin, login_url=login_url)
 
@@ -49,6 +48,7 @@ def createDepartment(request):
     context = {'form': form}
     return render(request, 'task_manager/department_form.html', context)
 
+
 def updateDepartment(request, pk):
     department = get_object_or_404(Department, pk=pk)
     form = DepartmentForm(instance=department)
@@ -62,6 +62,7 @@ def updateDepartment(request, pk):
 
     context = {'form': form, 'department': department}
     return render(request, 'task_manager/department_form.html', context)
+
 
 def deleteDepartment(request, pk):
     department = get_object_or_404(Department, pk=pk)
@@ -141,26 +142,32 @@ def deleteRole(request, pk):
 # Юзеры
 @admin_required(login_url='login')
 def user(request):
-    cache_key = 'user_list'
-    users = cache.get(cache_key)
+    # Кэшируем списки отделов и ролей, чтобы избежать избыточных запросов
+    departments = cache.get_or_set('departments_cache', Department.objects.all(), timeout=60 * 15)
+    roles = cache.get_or_set('roles_cache', Role.objects.all(), timeout=60 * 15)
 
-    # Применяем кэш только если нет фильтров
-    if not users and not (request.GET.get('status') or request.GET.get('department') or request.GET.get('role') or request.GET.get('last_name')):
-        users = CustomUser.objects.select_related('department', 'role').all()
-        cache.set(cache_key, users, timeout=60 * 5)  # Кэшируем на 5 минут
-
-    # Применяем фильтры
+    # Применяем фильтры, если они есть
+    filters = Q()
     if request.GET.get('status'):
-        users = users.filter(status=request.GET.get('status'))
+        filters &= Q(status=request.GET.get('status'))
     if request.GET.get('department'):
-        users = users.filter(department__id=request.GET.get('department'))
+        filters &= Q(department__id=request.GET.get('department'))
     if request.GET.get('role'):
-        users = users.filter(role__id=request.GET.get('role'))
+        filters &= Q(role__id=request.GET.get('role'))
     if request.GET.get('last_name'):
-        users = users.filter(last_name__icontains=request.GET.get('last_name'))
+        filters &= Q(last_name__icontains=request.GET.get('last_name'))
 
-    departments = Department.objects.all()
-    roles = Role.objects.all()
+    # Применяем кэширование только для полного списка пользователей без фильтров
+    if filters:
+        # Если есть фильтры, применяем их напрямую
+        users = CustomUser.objects.select_related('department', 'role').filter(filters)
+    else:
+        # Используем кэш для полного списка пользователей без фильтров
+        users = cache.get('user_list')
+        if not users:
+            users = CustomUser.objects.select_related('department', 'role').all()
+            cache.set('user_list', users, timeout=60 * 5)
+
     form = CustomUserCreationForm()
 
     return render(request, 'task_manager/users_list.html', {
@@ -176,7 +183,10 @@ def createUser(request):
         form = CustomUserCreationForm(request.POST, request.FILES)
         if form.is_valid():
             user = form.save()
-            cache.delete('user_list')  # Очищаем кэш
+            # Очищаем кэш списка пользователей и отделов/ролей
+            cache.delete('user_list')
+            cache.delete('departments_cache')
+            cache.delete('roles_cache')
 
             return redirect('user-list')
     else:
@@ -194,6 +204,8 @@ def updateUser(request, pk):
 
             # Очищаем кэш после обновления пользователя
             cache.delete('user_list')
+            cache.delete('departments_cache')
+            cache.delete('roles_cache')
 
             return redirect('user-list')
     else:
@@ -210,6 +222,8 @@ def deleteUser(request, pk):
 
         # Очищаем кэш после удаления пользователя
         cache.delete('user_list')
+        cache.delete('departments_cache')
+        cache.delete('roles_cache')
 
         return redirect('user-list')
 
@@ -292,34 +306,59 @@ def reset_password(request, pk):
 
 @admin_required(login_url='login')
 def project(request):
-    # Используем select_related для выборки связанных данных статус проекта
-    projects = Project.objects.all().select_related('status').prefetch_related('project_buildings__building', 'project_sections__section')
-    
-    project_status = ProjectStatus.objects.all()
-    sections = Section.objects.all()  # Получаем все разделы
+    # Кэшируем проекты и связанные данные
+    projects = cache.get_or_set(
+        'projects_cache',
+        Project.objects.select_related('status').prefetch_related('project_buildings__building', 'project_sections__section'),
+        timeout=60 * 15  # Кэш на 15 минут
+    )
+
+    project_status = cache.get_or_set(
+        'project_status_cache',
+        ProjectStatus.objects.all(),
+        timeout=60 * 15
+    )
+
+    sections = cache.get_or_set(
+        'sections_cache',
+        Section.objects.all(),
+        timeout=60 * 15
+    )
+
     form = ProjectForm()
-    
+
     return render(request, 'task_manager/project_list.html', {
         'projects': projects,
         'project_status': project_status,
-        'sections': sections,  # Передаем разделы в шаблон
+        'sections': sections,
         'form': form
     })
 
+
 def project_detail(request, pk):
-    project = get_object_or_404(Project.objects.prefetch_related('project_buildings__building', 'project_sections__section'), pk=pk)
+    # Кэшируем детальные данные проекта
+    cache_key = f'project_detail_{pk}'
+    project_data = cache.get(cache_key)
 
-    buildings = project.project_buildings.values('building__pk', 'building__title')
-    sections = project.project_sections.values('section__pk', 'section__title')
+    if not project_data:
+        project = get_object_or_404(
+            Project.objects.prefetch_related('project_buildings__building', 'project_sections__section'), pk=pk
+        )
+        buildings = list(project.project_buildings.values('building__pk', 'building__title'))
+        sections = list(project.project_sections.values('section__pk', 'section__title'))
 
-    return JsonResponse({
-        'project': {
-            'title': project.title,
-            'status': project.status_id
-        },
-        'buildings': list(buildings),
-        'sections': list(sections)  # Добавляем секции для отображения
-    })
+        project_data = {
+            'project': {
+                'title': project.title,
+                'status': project.status_id
+            },
+            'buildings': buildings,
+            'sections': sections
+        }
+        cache.set(cache_key, project_data, timeout=60 * 15)
+
+    return JsonResponse(project_data)
+
 
 def createProject(request):
     if request.method == 'POST':
@@ -327,50 +366,58 @@ def createProject(request):
         status_id = request.POST['status']
         sections = request.POST.getlist('sections')
 
-        project = Project.objects.create(title=title, status_id=status_id)
+        with transaction.atomic():
+            project = Project.objects.create(title=title, status_id=status_id)
 
-        # Обработка зданий
-        buildings = request.POST.getlist('buildings[]')  # Получаем список зданий из формы
-        ProjectBuilding.objects.filter(project=project).delete()  # Удаляем старые здания
-        print(buildings)
-        for building_title in buildings:
-            # Проверяем, существует ли здание с таким названием, если нет - создаем
-            building, created = Building.objects.get_or_create(title=building_title)
-            ProjectBuilding.objects.create(project=project, building=building)
-        
-        # Добавляем выбранные разделы к проекту
-        for section_id in sections:
-            section = Section.objects.get(pk=section_id)
-            ProjectSection.objects.create(project=project, section=section)
+            # Обработка зданий
+            buildings = request.POST.getlist('buildings[]')
+            for building_title in buildings:
+                building, created = Building.objects.get_or_create(title=building_title)
+                ProjectBuilding.objects.create(project=project, building=building)
+
+            # Добавляем выбранные разделы к проекту
+            for section_id in sections:
+                section = Section.objects.get(pk=section_id)
+                ProjectSection.objects.create(project=project, section=section)
+
+            # Очищаем кэш после добавления проекта
+            cache.delete('projects_cache')
+            cache.delete('project_status_cache')
+            cache.delete('sections_cache')
 
         return JsonResponse({'message': 'Проект создан'})
+
 
 def updateProject(request, pk):
     if request.method == 'POST':
         project = get_object_or_404(Project, pk=pk)
-        
-        # Обновляем название и статус проекта
-        project.title = request.POST['title']
-        project.status_id = request.POST['status']
-        project.save()
 
-        # Обработка зданий
-        buildings = request.POST.getlist('buildings[]')  # Получаем список зданий из формы
-        ProjectBuilding.objects.filter(project=project).delete()  # Удаляем старые здания
-        print(buildings)
-        for building_title in buildings:
-            # Проверяем, существует ли здание с таким названием, если нет - создаем
-            building, created = Building.objects.get_or_create(title=building_title)
-            ProjectBuilding.objects.create(project=project, building=building)
+        with transaction.atomic():
+            # Обновляем название и статус проекта
+            project.title = request.POST['title']
+            project.status_id = request.POST['status']
+            project.save()
 
-        # Обработка разделов
-        sections = request.POST.getlist('sections[]')  # Получаем список разделов из формы
-        print(sections)
-        ProjectSection.objects.filter(project=project).delete()  # Удаляем старые разделы
-        for section_id in sections:
-            section = Section.objects.get(pk=section_id)
-            ProjectSection.objects.create(project=project, section=section)
-        
+            # Обработка зданий
+            buildings = request.POST.getlist('buildings[]')
+            ProjectBuilding.objects.filter(project=project).delete()
+            for building_title in buildings:
+                building, created = Building.objects.get_or_create(title=building_title)
+                ProjectBuilding.objects.create(project=project, building=building)
+
+            # Обработка разделов
+            sections = request.POST.getlist('sections[]')
+            ProjectSection.objects.filter(project=project).delete()
+            for section_id in sections:
+                section = Section.objects.get(pk=section_id)
+                ProjectSection.objects.create(project=project, section=section)
+
+            # Очищаем кэш после обновления проекта
+            cache.delete('projects_cache')
+            cache.delete(f'project_detail_{pk}')
+            cache.delete('project_status_cache')
+            cache.delete('sections_cache')
+
         return JsonResponse({'message': 'Проект обновлен'})
 
 
@@ -378,6 +425,13 @@ def deleteProject(request, pk):
     if request.method == 'POST':
         project = get_object_or_404(Project, pk=pk)
         project.delete()
+
+        # Очищаем кэш после удаления проекта
+        cache.delete('projects_cache')
+        cache.delete(f'project_detail_{pk}')
+        cache.delete('project_status_cache')
+        cache.delete('sections_cache')
+
         return JsonResponse({'message': 'Проект удален'})
 
 
@@ -601,18 +655,19 @@ def task_list(request):
     # Попробуем получить задачи из кэша
     cache_key = 'tasktype_list'
     tasks = cache.get(cache_key)
-    
+
     if not tasks:
         tasks = TaskType.objects.all()
         cache.set(cache_key, tasks, timeout=60 * 15)  # Кэшируем на 15 минут
-    
+
     form = TaskTypeForm()
-    
+
     return render(request, 'task_manager/task_list.html', {'tasks': tasks, 'form': form})
+
 
 def create_task(request):
     form = TaskTypeForm()
-    
+
     if request.method == 'POST':
         form = TaskTypeForm(request.POST)
         if form.is_valid():
@@ -620,30 +675,32 @@ def create_task(request):
             task.save()
             cache.delete('tasktype_list')  # Удаляем кэш после создания
             return redirect('task-list')
-    
+
     return render(request, 'task_manager/task_form.html', {'form': form})
+
 
 def update_task(request, pk):
     task = get_object_or_404(TaskType, pk=pk)
     form = TaskTypeForm(instance=task)
-    
+
     if request.method == 'POST':
         form = TaskTypeForm(request.POST, instance=task)
         if form.is_valid():
             form.save()
             cache.delete('tasktype_list')  # Удаляем кэш после обновления
             return redirect('task-list')
-    
+
     return render(request, 'task_manager/task_form.html', {'form': form, 'task': task})
+
 
 def delete_task(request, pk):
     task = get_object_or_404(TaskType, pk=pk)
-    
+
     if request.method == 'POST':
         task.delete()
         cache.delete('tasktype_list')  # Удаляем кэш после удаления
         return redirect('task-list')
-    
+
     return render(request, 'task_manager/task_confirm_delete.html', {'task': task})
 
 
@@ -679,6 +736,7 @@ def timelog_list(request):
 
     return render(request, 'task_manager/timelog_list.html', context)
 
+
 @login_required
 def timelog_create(request):
     if request.method == 'POST':
@@ -699,6 +757,7 @@ def timelog_create(request):
 
     return JsonResponse({'error': 'Неверный запрос'}, status=400)
 
+
 def timelog_update(request, pk):
     timelog = get_object_or_404(Timelog, pk=pk)
     form = TimelogForm(instance=timelog)
@@ -712,6 +771,7 @@ def timelog_update(request, pk):
 
     context = {'form': form}
     return render(request, 'task_manager/timelog_form.html', context)
+
 
 def timelog_delete(request, pk):
     timelog = get_object_or_404(Timelog, pk=pk)
