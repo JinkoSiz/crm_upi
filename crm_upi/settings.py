@@ -95,6 +95,9 @@ MIDDLEWARE = [
 
 INTERNAL_IPS = [
     '127.0.0.1',
+    'https://crm-upi.vercel.app',
+    'https://crm-upi-jinkosizs-projects-4c8f9ac9.vercel.app',
+    'https://crm-upi-git-main-jinkosizs-projects-4c8f9ac9.vercel.app',
 ]
 
 ROOT_URLCONF = 'crm_upi.urls'
