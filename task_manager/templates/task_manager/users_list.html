@@ -8,110 +8,72 @@
         <button type="button" class="btn add-user" data-toggle="modal" data-target="#addUserModal">
             Добавить Пользователя
         </button>
-        <!-- Filter Form -->
-        <form method="get" action="{% url 'user-list' %}" class="form-inline add-users-form">
-            <div class="form-group">
-                <label for="status" class="mr-2">Статус:</label>
-                <select name="status" id="status" class="form-control">
-                    <option value="">Все</option>
-                    <option value="draft" {% if request.GET.status == 'draft' %}selected{% endif %}>Черновик</option>
-                    <option value="invited" {% if request.GET.status == 'invited' %}selected{% endif %}>Приглашен</option>
-                    <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>Активен</option>
-                    <option value="fired" {% if request.GET.status == 'fired' %}selected{% endif %}>Уволен</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="department" class="mr-2">Отдел:</label>
-                <select name="department" id="department" class="form-control">
-                    <option value="">Все</option>
-                    {% for department in departments %}
-                        <option value="{{ department.pk }}" {% if request.GET.department == department.pk|stringformat:"s" %}selected{% endif %}>{{ department.title }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="role" class="mr-2">Должность:</label>
-                <select name="role" id="role" class="form-control">
-                    <option value="">Все</option>
-                    {% for role in roles %}
-                        <option value="{{ role.pk }}" {% if request.GET.role == role.pk|stringformat:"s" %}selected{% endif %}>{{ role.title }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="last_name" class="mr-2">Фамилия:</label>
-                <input type="text" name="last_name" id="last_name" value="{{ request.GET.last_name }}" class="form-control" placeholder="Введите фамилию">
-            </div>
-            <button type="submit" class="btn btn-primary btn-users-filter">Фильтр</button>
-        </form>
 
-        <!-- TABLE -->
-
-        <table class="table table-striped" id="usersTable">
-            <thead>
-                <tr>
-                    <th class="col-2">
-                        <button class="sorter">
-                            <p>ФИО</p>
-                            <span>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                    <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
-                            </span>
-                        </button>
-                    </th>
-                    <th class="col-1">
-                        <button class="sorter">
-                            <p>Отдел</p>
-                            <span>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                    <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
-                            </span>
-                        </button>
-                    </th>
-                    <th class="col-2">
-                        <button class="sorter">
-                            <p>Должность</p>
-                            <span>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                    <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
-                            </span>
-                        </button>
-                    </th>
-                    <th class="col-2">
-                        <button class="sorter">
-                            <p>Роль</p>
-                            <span>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                    <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
-                            </span>
-                        </button>
-                    </th>
-                    <th class="col-3">
-                        <p>Email</p>
-                    </th>
-                    <th class="col-1">
-                        <button class="sorter">
-                            <p>Статус</p>
-                            <span>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                    <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
-                            </span>
-                        </button>
-                    </th>
-                    <th class="col-1">
-                        <p>Действия</p>
-                    </th>
-                </tr>
-            </thead>
-            <tbody id="usersTableBody"></tbody>
-        </table>
-
-        <!-- TABLE -->
+        <div class="table-wrapper">
+            <table class="table table-striped" id="usersTable">
+                <thead>
+                    <tr>
+                        <th class="col-2">
+                            <button class="sorter">
+                                <p>ФИО</p>
+                                <span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                        <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>
+                            </button>
+                        </th>
+                        <th class="col-1">
+                            <button class="sorter">
+                                <p>Отдел</p>
+                                <span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                        <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>
+                            </button>
+                        </th>
+                        <th class="col-2">
+                            <button class="sorter">
+                                <p>Должность</p>
+                                <span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                        <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>
+                            </button>
+                        </th>
+                        <th class="col-2">
+                            <button class="sorter">
+                                <p>Роль</p>
+                                <span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                        <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>
+                            </button>
+                        </th>
+                        <th class="col-3">
+                            <p>Email</p>
+                        </th>
+                        <th class="col-1">
+                            <button class="sorter">
+                                <p>Статус</p>
+                                <span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                        <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>
+                            </button>
+                        </th>
+                        <th class="col-1">
+                            <p>Действия</p>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody"></tbody>
+            </table>
+        </div>
 
         <div class="pagination" id="pagination">
             <p id="pageInfo" class="page-info"></p>
