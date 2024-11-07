@@ -14,9 +14,8 @@ from pathlib import Path
 import environ
 import os
 
-
 env = environ.Env(
-    DEBUG=(bool, False)
+    DEBUG=(bool, True)
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -45,12 +44,12 @@ LOGIN_URL = '/login/'
 SECRET_KEY = f'{DJANGO_KEY}'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True #SSS
+DEBUG = True  #SSS
 
 CSRF_TRUSTED_ORIGINS = ['https://crm-upi.vercel.app',
-                 'https://crm-upi-jinkosizs-projects-4c8f9ac9.vercel.app',
-                 'https://crm-upi-git-main-jinkosizs-projects-4c8f9ac9.vercel.app',
-                 'https://127.0.0.1']
+                        'https://crm-upi-jinkosizs-projects-4c8f9ac9.vercel.app',
+                        'https://crm-upi-git-main-jinkosizs-projects-4c8f9ac9.vercel.app',
+                        'https://127.0.0.1']
 
 ALLOWED_HOSTS = ['crm-upi.vercel.app',
                  'crm-upi-jinkosizs-projects-4c8f9ac9.vercel.app',
@@ -62,7 +61,6 @@ SESSION_COOKIE_SECURE = True
 SECURE_SSL_REDIRECT = True
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 SESSION_CACHE_ALIAS = 'default'
-
 
 # Application definition
 
@@ -95,6 +93,9 @@ MIDDLEWARE = [
 
 INTERNAL_IPS = [
     '127.0.0.1',
+    'https://crm-upi.vercel.app',
+    'https://crm-upi-jinkosizs-projects-4c8f9ac9.vercel.app',
+    'https://crm-upi-git-main-jinkosizs-projects-4c8f9ac9.vercel.app',
 ]
 
 ROOT_URLCONF = 'crm_upi.urls'
@@ -117,7 +118,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'crm_upi.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
@@ -132,7 +132,6 @@ DATABASES = {
     }
 }
 
-
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
@@ -142,7 +141,6 @@ CACHES = {
         }
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -162,7 +160,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
@@ -171,7 +168,6 @@ TIME_ZONE = 'Europe/Moscow'  # Set the appropriate time zone
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
@@ -192,7 +188,6 @@ STATICFILES_DIRS = [
     BASE_DIR / 'static'
 ]
 
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
@@ -208,13 +203,21 @@ AWS_S3_ENDPOINT_URL = 'https://s3.timeweb.com'
 AWS_QUERYSTRING_AUTH = False
 AWS_S3_FILE_OVERWRITE = False
 
-
 AUTH_USER_MODEL = 'task_manager.CustomUser'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
-EMAIL_USE_TLS = True 
+EMAIL_USE_TLS = True
 EMAIL_HOST_USER = f'{EMAIL_USER}'  # Your email address
 EMAIL_HOST_PASSWORD = f'{EMAIL_PASSWORD}'  # Your email account password
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+
+def show_toolbar(request):
+    return True  # Всегда показывать toolbar (используйте только для отладки)
+
+
+DEBUG_TOOLBAR_CONFIG = {
+    'SHOW_TOOLBAR_CALLBACK': show_toolbar,
+}

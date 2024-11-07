@@ -1,0 +1,54 @@
+{% load custom_filters %}
+<table>
+    <thead>
+        <tr>
+            <th>Объект</th>
+            <th>ЗиС</th>
+            <th>Марка</th>
+            <th>Исполнитель</th>
+            <th>Часы</th>
+            <!-- Месяцы до последнего -->
+            {% for month in months_in_range %}
+                <th>{{ month|date:"F Y" }}</th>
+            {% endfor %}
+            <!-- Дни последнего месяца -->
+            {% for date in days_in_last_month %}
+                <th>{{ date|date:"d M Y" }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in report_data %}
+        <tr>
+            <td>{{ item.project__title }}</td>
+            <td>{{ item.building__title }}</td>
+            <td>{{ item.mark__title }}</td>
+            <td>{{ item.user_full_name }}</td>
+            <td>{{ item.total_hours }} ч</td>
+            {% with item_key=item.project__title|add:"|"|add:item.building__title|add:"|"|add:item.mark__title|add:"|"|add:item.user_full_name %}
+                <!-- Месяцы до последнего -->
+                {% for month in months_in_range %}
+                    {% with month_key=month|date:"Y-m" %}
+                        <td style="{% if grouped_hours|get_item:item_key|get_item:month_key %}background-color: #cce5ff;{% endif %}">
+                            {% if grouped_hours|get_item:item_key|get_item:month_key %}*{% else %}-{% endif %}
+                        </td>
+                    {% endwith %}
+                {% endfor %}
+                <!-- Дни последнего месяца -->
+                {% for date in days_in_last_month %}
+                    <td>
+                        {% with date_key=date|date:"Y-m-d" %}
+                            {% if monthly_hours|get_item:item_key|get_item:date_key %}*{% else %}-{% endif %}
+                        {% endwith %}
+                    </td>
+                {% endfor %}
+            {% endwith %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<form method="get" action="{% url 'export_to_excel' %}">
+    <input type="hidden" name="start_date" value="{{ start_date }}">
+    <input type="hidden" name="end_date" value="{{ end_date }}">
+    <button type="submit" class="btn btn-primary">Экспорт в Excel</button>
+</form>
