@@ -149,8 +149,26 @@
             }
         });
 
-        totalConter.value = counter;
+        totalConter.value = counter + ' часов';
     };
+
+    document.addEventListener('click', (e) => {
+        if(e.target.closest('.flex-block span')) {
+
+            const target = e.target;
+
+            console.log(target);
+            
+            const deletRowBtns = document.querySelectorAll('.flex-block span');
+
+            deletRowBtns.forEach(item => {
+                if(target.closest(item)) {
+                    console.log(item);
+                    console.log(item.parentElement)
+                }
+            })
+        }
+    })
         
     
     

@@ -124,7 +124,7 @@
             </li>
         </ul>
     </nav>
-    <nav class="handbooks active">
+    <nav class="handbooks">
         <ul>
             <li class="data-list" data-cid="projects"><a href="{% url 'project-list' %}">Проекты</a></li>
             <li class="data-list" data-cid="sections"><a href="{% url 'section-list' %}">Разделы</a></li>
@@ -140,12 +140,17 @@
 
         <span></span>
     </nav>
-    <nav class="reports">
+
+    <nav class="handbooks reports">
         <ul>
-            <li><a href="">Трудозатраты по объектам</a></li>
-            <li><a href="">Трудозатраты по сотрудникам</a></li>
-            <li><a href="">Итоговый отчет</a></li>
+            <li class="data-list" data-cid="reports"><p>Трудозатраты по объектам</p></li>
+            <li class="data-list" data-cid="labor-costs-sections"><p>Трудозатраты по сотрудникам</p></li>
+            <li class="data-list" data-cid="labor-costs-marks"><a href="#">Итоговый отчет</a></li>
         </ul>
+        <button data-cid="reports" type="button"  class="add-depart">Экспорт в Exсel</button>
+        <button data-cid="labor-costs-sections" type="button"  class="add-depart">Экспорт в Exсel</button>
+        <button data-cid="labor-costs-marks" type="button"  class="add-depart">Экспорт в Exсel</button>
+
         <span></span>
     </nav>
 
@@ -161,17 +166,52 @@
         const currentUrlPath = window.location.pathname.split('/')[1],
               adminBtnsListItem = document.querySelectorAll('.admin-main-navigation ul li'),
               adminHandbooksNavList = document.querySelector('.handbooks'),
+              adminReportsNavList = document.querySelector('.handbooks.reports'),
               adminLinksListItem = document.querySelectorAll('.data-list'),
               adminLinksBtnsListItem = document.querySelectorAll('.add-depart'),
               adminMainNavigation = document.querySelector('.admin-main-navigation'),
               header = document.querySelector('header'),
+              laborCostsProjects = document.querySelector('li.data-list[data-cid="reports"]'),
+              laborCostsProjectsSwitcher = document.querySelector('li.data-list[data-cid="reports"] p'),
+              laborCostsProjectsBtn = document.querySelector('button[data-cid="reports"]'),
+              laborCostsProjectsTable = document.querySelector('#laborCostsProjectsTable'),
+              laborCostsSections = document.querySelector('li[data-cid="labor-costs-sections"]'),
+              laborCostsSectionsSwitcher = document.querySelector('li.data-list[data-cid="labor-costs-sections"] p'),
+              laborCostsSectionsBtn = document.querySelector('button[data-cid="labor-costs-sections"]'),
+              laborCostsProjectsForm = document.querySelector('#laborCostsProjectsForm'),
+              laborCostsSectionsForm = document.querySelector('#laborCostsSectionsForm'),
+              laborCostsSectionsTable = document.querySelector('#laborCostsSectionsTable'),
               isAdmin = '{{user.is_admin}}';
 
+              console.log(laborCostsProjects, laborCostsSections, laborCostsProjectsBtn, laborCostsSectionsBtn);
+              
 
-        if(isAdmin === 'True'  &&  window.location.pathname == '/') {
-            console.log('redirecting');
-            console.log(typeof(isAdmin));
-            // window.location.href += 'timelogs';
+        function TabsForReportsOpen(listItem, btn, table, form) {
+            listItem.classList.add('active');
+            btn.classList.add('active');
+            table.style.display = 'block';
+            form.style.display='flex';
+        }
+
+        function TabsForReportsClose(listItem, btn, table, form) {
+            listItem.classList.remove('active');
+            btn.classList.remove('active');
+            table.style.display = 'none';
+            form.style.display='none';
+        }
+
+        if(laborCostsProjectsSwitcher) {
+            laborCostsProjectsSwitcher.addEventListener('click', () => {
+                TabsForReportsOpen(laborCostsProjects, laborCostsProjectsBtn, laborCostsProjectsTable, laborCostsProjectsForm);
+                TabsForReportsClose(laborCostsSections, laborCostsSectionsBtn, laborCostsSectionsTable, laborCostsSectionsForm);
+            });
+        }
+
+        if(laborCostsSectionsSwitcher) {
+            laborCostsSectionsSwitcher.addEventListener('click', () => {
+                TabsForReportsClose(laborCostsProjects, laborCostsProjectsBtn, laborCostsProjectsTable, laborCostsProjectsForm);
+                TabsForReportsOpen(laborCostsSections, laborCostsSectionsBtn, laborCostsSectionsTable, laborCostsSectionsForm);
+            });
         }
     
         
@@ -196,6 +236,7 @@
         function setStatus (url, mainList, secondaryList, secondaryListBtns) {
             
             adminHandbooksNavList.style.display = 'none';
+            adminReportsNavList.style.display = 'none';
             adminMainNavigation.style.display = 'block';
             header.style.display = 'flex';
 
@@ -261,9 +302,20 @@
                     break;
 
                 case 'reports':
-                    adminHandbooksNavList.style.display = 'none';
-                    dataMining(mainList, url);
+                    dataMining(mainList, 'reports');
+                    adminReportsNavList.style.display = 'flex';
+                    dataMining(secondaryList, url);
+                    dataMining(secondaryListBtns, url);
+                    TabsForReportsClose(laborCostsSections, laborCostsSectionsBtn, laborCostsSectionsTable, laborCostsSectionsForm);
                     break;
+
+                // case 'reports':
+                //     dataMining(mainList, 'reports');
+                //     adminReportsNavList.style.display = 'flex';
+                //     dataMining(secondaryList, url);
+                //     dataMining(secondaryListBtns, url);
+                //     TabsForReportsClose(laborCostsSections, laborCostsSectionsBtn, laborCostsSectionsTable);
+                //     break;
 
                 default: 
                     adminHandbooksNavList.style.display = 'none';
@@ -274,7 +326,7 @@
 
         setStatus(currentUrlPath, adminBtnsListItem, adminLinksListItem, adminLinksBtnsListItem);
 
-        
     });
+
 </script>
 </html>
