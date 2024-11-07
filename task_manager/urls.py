@@ -74,4 +74,7 @@ urlpatterns = [
     path('reset-session/', views.reset_session, name='reset-session'),
     path('final-report/', views.final_report, name='final-report'),
 
+    # Экспорт в эксель
+    path('export-to-excel/', views.export_to_excel, name='export_to_excel'),
+
 ]

@@ -1,26 +1,25 @@
-import pprint
 from datetime import timedelta, datetime
+import re
+import dateparser
 
-from django.core import paginator
+import openpyxl
+from django.utils.dateparse import parse_date
+from openpyxl.styles import PatternFill, Alignment
+from openpyxl.utils import get_column_letter
+from openpyxl import Workbook
 from django.core.cache import cache
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError
 from django.db.models.functions import Concat
-from django.db.models import Sum, F, Value
+from django.db.models import F, Value
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
-from django.utils.crypto import get_random_string
-from django.core.mail import send_mail
-from django.contrib.auth.models import UserManager
-from django.utils.dateparse import parse_date
-
-from .models import *
 from .forms import *
 from django.db.models import Q, Sum
-from django.views.decorators.cache import cache_page
 from django.utils import timezone
+from dateutil import parser
 
 
 def admin_required(login_url=None):
@@ -955,11 +954,13 @@ def get_months_in_range(start_date, end_date):
             current_date = current_date.replace(month=current_date.month + 1)
     return months[:-1]  # Все месяцы, кроме последнего
 
+
 def get_days_in_month(month_date):
     """Получение всех дней для последнего месяца"""
     next_month = month_date.replace(day=28) + timedelta(days=4)
     end_of_month = next_month - timedelta(days=next_month.day)
     return [month_date + timedelta(days=i) for i in range((end_of_month - month_date).days + 1)]
+
 
 def final_report(request):
     start_date = request.GET.get('start_date', timezone.now().replace(day=1).date())
@@ -1011,3 +1012,133 @@ def final_report(request):
     }
     print(context)
     return render(request, 'task_manager/final_report.html', context)
+
+
+def parse_russian_date(date_str):
+    # Словарь для замены русских названий месяцев на числовые значения
+    month_translation = {
+        'января': '01', 'февраля': '02', 'марта': '03',
+        'апреля': '04', 'мая': '05', 'июня': '06',
+        'июля': '07', 'августа': '08', 'сентября': '09',
+        'октября': '10', 'ноября': '11', 'декабря': '12'
+    }
+
+    # Убираем символ "г." в конце строки
+    date_str = re.sub(r'\sг\.$', '', date_str)
+
+    # Заменяем русские названия месяцев на числовые значения
+    for ru_month, num_month in month_translation.items():
+        date_str = date_str.replace(ru_month, num_month)
+
+    # Преобразуем строку в формат YYYY-MM-DD
+    try:
+        return datetime.strptime(date_str, '%d %m %Y').date()
+    except ValueError as e:
+        print(f"Ошибка преобразования даты: {e}")
+        return None
+
+
+def export_to_excel(request):
+    # Получаем строки дат из запроса
+    start_date_str = request.GET.get('start_date')
+    end_date_str = request.GET.get('end_date')
+
+    print("Received start_date_str:", start_date_str)
+    print("Received end_date_str:", end_date_str)
+
+    # Парсим даты с использованием dateparser
+    start_date = dateparser.parse(start_date_str).date() if start_date_str else timezone.now().replace(day=1).date()
+    end_date = dateparser.parse(end_date_str).date() if end_date_str else timezone.now().date()
+
+    # Проверка на наличие start_date и end_date после парсинга
+    if start_date is None or end_date is None:
+        print("Error: start_date or end_date is None")
+        return HttpResponse("Ошибка: некорректные даты", status=400)
+
+    print("Parsed start_date:", start_date)
+    print("Parsed end_date:", end_date)
+
+    # Получаем данные из базы данных
+    timelogs = Timelog.objects.filter(date__range=[start_date, end_date])
+
+    # Создаем переменные для хранения часов по месяцам и дням
+    grouped_hours = {}
+    monthly_hours = {}
+
+    last_month_key = end_date.strftime('%Y-%m')
+    for log in timelogs:
+        key_str = f"{log.project.title}|{log.building.title}|{log.mark.title}|{log.user.first_name} {log.user.last_name}"
+        month_key = log.date.strftime('%Y-%m')
+
+        if month_key != last_month_key:
+            # Группируем по месяцам, кроме последнего
+            if key_str not in grouped_hours:
+                grouped_hours[key_str] = {}
+            grouped_hours[key_str][month_key] = grouped_hours[key_str].get(month_key, 0) + log.time
+        else:
+            # Последний месяц по дням
+            if key_str not in monthly_hours:
+                monthly_hours[key_str] = {}
+            daily_key = log.date.strftime('%Y-%m-%d')
+            monthly_hours[key_str][daily_key] = log.time
+
+    # Создаем новую книгу Excel
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Отчет по таймлогам"
+
+    # Записываем заголовки
+    headers = ["Объект", "ЗиС", "Марка", "Исполнитель", "Часы"]
+    months_in_range = get_months_in_range(start_date, end_date)
+    days_in_last_month = get_days_in_month(end_date.replace(day=1))
+
+    for month in months_in_range:
+        headers.append(month.strftime("%B %Y"))  # Заголовок месяца
+    for day in days_in_last_month:
+        headers.append(day.strftime("%d %b %Y"))  # Заголовок дня
+
+    ws.append(headers)
+
+    # Стилизация для заливки ячеек с данными
+    fill_style = PatternFill(start_color="ADD8E6", end_color="ADD8E6", fill_type="solid")
+
+    # Обработка данных для экспорта
+    for item in timelogs.values('project__title', 'building__title', 'mark__title').annotate(
+        total_hours=Sum('time'),
+        user_full_name=Concat(F('user__first_name'), Value(' '), F('user__last_name'))
+    ):
+        row = [
+            item['project__title'],
+            item['building__title'],
+            item['mark__title'],
+            item['user_full_name'],
+            f"{item['total_hours']} ч"
+        ]
+
+        # Добавляем данные по месяцам
+        for month in months_in_range:
+            month_key = month.strftime("%Y-%m")
+            hours = grouped_hours.get(f"{item['project__title']}|{item['building__title']}|{item['mark__title']}|{item['user_full_name']}", {}).get(month_key, "-")
+            row.append(hours)
+            if hours != "-":
+                ws[f"{get_column_letter(len(row))}{ws.max_row}"].fill = fill_style  # Заливаем ячейку
+
+        # Добавляем данные по дням последнего месяца
+        for date in days_in_last_month:
+            day_key = date.strftime("%Y-%m-%d")
+            hours = monthly_hours.get(f"{item['project__title']}|{item['building__title']}|{item['mark__title']}|{item['user_full_name']}", {}).get(day_key, "-")
+            row.append("*" if hours != "-" else hours)
+
+        ws.append(row)
+
+    # Настройка ширины колонок и выравнивание
+    for col in range(1, len(headers) + 1):
+        ws.column_dimensions[get_column_letter(col)].width = 15
+        for cell in ws[get_column_letter(col)]:
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+
+    # Генерация ответа с файлом Excel
+    response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response["Content-Disposition"] = 'attachment; filename="timelog_report.xlsx"'
+    wb.save(response)
+    return response

@@ -47,3 +47,8 @@
         {% endfor %}
     </tbody>
 </table>
+<form method="get" action="{% url 'export_to_excel' %}">
+    <input type="hidden" name="start_date" value="{{ start_date }}">
+    <input type="hidden" name="end_date" value="{{ end_date }}">
+    <button type="submit" class="btn btn-primary">Экспорт в Excel</button>
+</form>
