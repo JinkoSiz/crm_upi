@@ -50,7 +50,8 @@ select.form-control:focus-visible  {
     box-shadow: none;
 }
 
-input[type=date] {
+input[type=date],
+input[type=text] {
     width: 175px;
     height: 40px;
     padding: 10px;
@@ -62,6 +63,7 @@ input[type=date] {
     line-height: 18px;
     border-radius: 5px;
     border: 1px solid var(--Text_Gray_40);
+    font-family: "Roboto", sans-serif;
 }
 
 input[type=date]::-webkit-calendar-picker-indicator {
@@ -151,6 +153,16 @@ button {
 
 tbody tr td ul {
     list-style: none;
+}
+
+tbody tr td {
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 18px;
+}
+
+tr.finish-tr {
+    background: var(--Secondary);
 }
 
 .container {
@@ -393,7 +405,8 @@ tbody tr td ul {
     margin-right: 10px;
 }
 
-nav.handbooks, nav.reports {
+nav.handbooks,
+nav.handbooks.reports {
     display: none;
     padding: 0 20px;
     justify-content: space-between;
@@ -402,27 +415,34 @@ nav.handbooks, nav.reports {
     border-radius: 10px 10px 0 0;
 }
 
-nav.handbooks.active, nav.reports.active {
+nav.handbooks.active,
+nav.handbooks.reports.active {
     display: flex;
 }
 
-nav.handbooks ul, nav.reports ul {
+nav.handbooks ul,
+nav.handbooks.reports ul {
     list-style: none;
     display: flex;
     align-items: center;
 }
 
-nav.handbooks ul li, nav.reports ul li {
+nav.handbooks ul li,
+nav.handbooks.reports ul li {
     padding: 34px 50px 34px 0;
     border-bottom: 2px solid var(--Text_Gray_20);
     z-index: 2;
+    height: 94px;
 }
 
-nav.handbooks ul li.active, nav.reports ul li.active {
+nav.handbooks ul li.active,
+nav.handbooks.reports ul li.active {
     border-bottom: 2px solid var(--Primary_blue);
 }
 
-nav.handbooks ul li a, nav.reports ul li a {
+nav.handbooks ul li a,
+nav.handbooks.reports ul li a,
+nav.handbooks.reports ul li p {
     color: var(--Text_Gray_40);
     font-feature-settings: 'liga' off, 'clig' off;
     font-size: 16px;
@@ -430,20 +450,26 @@ nav.handbooks ul li a, nav.reports ul li a {
     font-weight: 400;
     line-height: 18px; /* 112.5% */
     transition: .2s all;
+    cursor: pointer;
 }
 
-nav.handbooks ul li a:hover, nav.reports ul li a:hover {
+nav.handbooks ul li a:hover,
+nav.handbooks.reports ul li a:hover,
+nav.handbooks.reports ul li p:hover {
     text-decoration: none;
     color: var(--Primary_blue);
     transition: .2s all;
 }
 
-nav.handbooks ul li.active a, nav.reports ul li.active a {
+nav.handbooks ul li.active a,
+nav.handbooks.reports ul li.active a,
+nav.handbooks.reports ul li.active p {
     color: var(--Primary_blue);
     font-weight: 600;
 }
 
-nav.handbooks span, nav.reports span {
+nav.handbooks span,
+nav.handbooks.reports span {
     width: 96.8%;
     height: 2px;
     background-color: var(--Text_Gray_20);
@@ -484,6 +510,7 @@ button.add-depart {
     font-style: normal;
     font-weight: 600;
     line-height: 18px; /* 112.5% */
+    margin-bottom: 15px;
 }
 
 button.add-depart.active {
@@ -521,23 +548,32 @@ button.sorter span {
     justify-content: center;
 }
 
+.table-wrapper {
+    border: 1px solid var(--Text_Gray_20);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.table-wrapper.only-bottom {
+    border-radius: 0 0 10px 10px;
+}
+
 .table {
     background-color: var(--Text_Gray_10);
     margin: 0;
 }
 
 .table thead {
-    border: 1px solid var(--Text_Gray_20);
+    border: none;
     background: var(--Secondary);
 }
 
 .table tbody tr {
-    border: 1px solid var(--Text_Gray_20);
-    border-top: none;
+    border-bottom: 1px solid var(--Text_Gray_20);
 }
 
 .table tbody tr:last-child {
-    border-radius: 0 0 10px 10px;
+    border: none;
 }
 
 .table td, .table th, .table thead th {
@@ -777,6 +813,19 @@ button.sorter span {
     background: var(--Text_Gray_10);
     border-bottom: 0;
     padding: 20px;
+}
+
+.reports-form {
+    border-radius: 0;
+    border: 0;
+    background: var(--Text_Gray_10);
+    padding: 20px;
+}
+
+.reports-form .accept-btn,
+.add-users-form .accept-btn {
+    min-height: 40px;
+    height: 40px;
 }
 
 button.btn-users-filter {
@@ -1388,6 +1437,10 @@ h1.super-title {
     margin-right: 18px;
 }
 
+.flex-block span {
+    cursor: pointer;
+}
+
 .table-report-create thead tr th,
 .table-report-create tbody tr td {
     padding: 20px 10px;
@@ -1401,4 +1454,168 @@ h1.super-title {
 .table-report-create thead tr th:last-child,
 .table-report-create tbody tr td:last-child {
     padding: 20px 30px 20px 10px;
+}
+
+table#laborCostsSectionsTable thead tr th,
+table#laborCostsProjectsTable thead tr th,
+table#laborCostsSectionsTable tbody tr td,
+table#laborCostsProjectsTable tbody tr td {
+    padding: 20px 9px;
+}
+
+table#laborCostsSectionsTable thead tr th:first-child,
+table#laborCostsProjectsTable thead tr th:first-child,
+table#laborCostsSectionsTable tbody tr td:first-child,
+table#laborCostsProjectsTable tbody tr td:first-child {
+    padding-left: 20px;
+}
+
+table#laborCostsSectionsTable thead tr th:last-child,
+table#laborCostsProjectsTable thead tr th:last-child,
+table#laborCostsSectionsTable tbody tr td:last-child,
+table#laborCostsProjectsTable tbody tr td:last-child {
+    padding-right: 20px;
+}
+
+.table-striped#laborCostsSectionsTable tbody tr:nth-of-type(odd),
+.table-striped#laborCostsProjectsTable tbody tr:nth-of-type(odd) {
+    background-color: var(--Secondary);
+}
+
+table#usersTable thead {
+    border-radius: 10px 10px 0 0;
+}
+
+/* CSS CALENDAR */
+
+.datepicker {
+    position: absolute;
+    top: 100%;
+    z-index: 11;
+    background: #fff;
+    padding: 10px;
+    box-shadow: 0px 0px 8px 0px #00000026;
+    width: auto;
+    height: auto;
+    left: -50%;
+    top: 50px;
+    padding: 5px 27px;
+    border-radius: 10px;
+}
+
+.datepicker button {
+    cursor: pointer;
+    border: none;
+    border-radius: 100%;
+    background: transparent;
+    font-size: 12px;
+    font-weight: 400;
+    text-transform: uppercase;
+    transition: 0.3s;
+    touch-action: manipulation;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 32px;
+    padding: 0;
+    color: var(--Text_Gray_100);
+}
+
+.days,
+.dates {
+    display: grid;
+    grid-template-columns: repeat(7, 32px);
+    gap: 10px;
+    margin-block: 10px;
+}
+
+.days span {
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 18px;
+    text-align: center;
+    color: var(--Text_Gray_40);
+}
+
+.dates button {
+  color: var(--Text_Gray_100);
+  aspect-ratio: 1;
+}
+
+.dates button:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+  user-select: none;
+}
+
+.dates button:hover {
+  background: var(--Text_Gray_20);
+}
+
+.dates button.today {
+  background: var(--Secondary);
+  color: var(--Text_Gray_100);
+}
+
+.dates button.selected {
+  background: var(--Primary_blue);
+  color: var(--Text_Gray_10);
+}
+
+.datepicker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+}
+
+.month-input,
+.year-input {
+    border: none;
+    outline: none;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 18px;
+    text-align: center;
+    color: var(--Text_Gray_100);
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+.month-input:focus-visible,
+.year-input:focus-visible {
+    outline: none;
+}
+
+.datepicker-header input {
+  max-width: 64px;
+}
+
+.datepicker-header button {
+  color: slategray;
+}
+
+.datepicker-header button:hover {
+  color: mediumpurple;
+}
+
+.datepicker-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #eee;
+}
+
+.datepicker-footer button {
+  background: rgba(119, 136, 153, 0.1);
+  padding: 3px 10px;
+}
+
+.datepicker-footer button.apply {
+  background: mediumpurple;
+  color: #fff;
 }

@@ -21,106 +21,108 @@
                 <button type="button" class="btn btn-success" data-toggle="modal" data-target="#timelogModal">Добавить таймлог</button>
             </div>
         </form>
-        <table id="logsTable" class="table table-striped">
-            <thead>
-                <tr>
-                    <th style="width: 110px">
-                        <button class="sorter" >
-                            <p>Сотрудник</p>
-                            <span>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                    <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
-                            </span>
-                        </button>
-                    </th>
-                    <th >
-                        <button class="sorter">
-                            <p>Отдел</p>
-                            <span>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                    <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
-                            </span>
-                        </button>
-                    </th>
-                    <th >
-                        <button class="sorter"> 
-                            <p>Дата</p>
-                            <span>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                    <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
-                            </span>
-                        </button>
-                    </th>
-                    <th style="width: 153px">
-                        <button class="sorter">
-                            <p>Объект</p>
-                            <span>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                    <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
-                            </span>
-                        </button>
-                    </th>
-                    <th >
-                        <button class="sorter">
-                            <p>Стадия</p>
-                            <span>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                    <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
-                            </span>
-                        </button>
-                    </th>
-                    <th >
-                        <button class="sorter">
-                            <p>Раздел</p>
-                            <span>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                    <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
-                            </span>
-                        </button>
-                    </th>
-                    <th style="width: 223px">
-                        <button class="sorter">
-                            <p>ЗИС</p>
-                            <span>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                    <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
-                            </span>
-                        </button>
-                    </th>
-                    <th >
-                        <button class="sorter">
-                            <p>Марка</p>
-                            <span>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                    <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
-                            </span>
-                        </button>
-                    </th>
-                    <th >
-                        <button class="sorter">
-                            <p>Задача</p>
-                            <span>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                    <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
-                            </span>
-                        </button>
-                    </th>
-                    <th style="width: 88px">
-                        <p>Время</p>
-                    </th>
-                </tr>
-            </thead>
-            <tbody id="logsTableBody"></tbody>
-        </table>
+        <div class="table-wrapper only-bottom">
+            <table id="logsTable" class="table table-striped">
+                <thead>
+                    <tr>
+                        <th style="width: 110px">
+                            <button class="sorter" >
+                                <p>Сотрудник</p>
+                                <span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                        <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>
+                            </button>
+                        </th>
+                        <th >
+                            <button class="sorter">
+                                <p>Отдел</p>
+                                <span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                        <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>
+                            </button>
+                        </th>
+                        <th >
+                            <button class="sorter"> 
+                                <p>Дата</p>
+                                <span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                        <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>
+                            </button>
+                        </th>
+                        <th style="width: 153px">
+                            <button class="sorter">
+                                <p>Объект</p>
+                                <span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                        <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>
+                            </button>
+                        </th>
+                        <th >
+                            <button class="sorter">
+                                <p>Стадия</p>
+                                <span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                        <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>
+                            </button>
+                        </th>
+                        <th >
+                            <button class="sorter">
+                                <p>Раздел</p>
+                                <span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                        <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>
+                            </button>
+                        </th>
+                        <th style="width: 223px">
+                            <button class="sorter">
+                                <p>ЗИС</p>
+                                <span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                        <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>
+                            </button>
+                        </th>
+                        <th >
+                            <button class="sorter">
+                                <p>Марка</p>
+                                <span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                        <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>
+                            </button>
+                        </th>
+                        <th >
+                            <button class="sorter">
+                                <p>Задача</p>
+                                <span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                        <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>
+                            </button>
+                        </th>
+                        <th style="width: 88px">
+                            <p>Время</p>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="logsTableBody"></tbody>
+            </table>
+        </div>
     
         <div class="pagination" id="pagination">
             <p id="pageInfo" class="page-info"></p>
