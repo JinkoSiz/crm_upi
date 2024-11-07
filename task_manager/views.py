@@ -1,6 +1,11 @@
+import pprint
+from datetime import timedelta, datetime
+
 from django.core import paginator
 from django.core.cache import cache
 from django.db import IntegrityError, transaction
+from django.db.models.functions import Concat
+from django.db.models import Sum, F, Value
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse, JsonResponse
@@ -9,6 +14,8 @@ from django.contrib import messages
 from django.utils.crypto import get_random_string
 from django.core.mail import send_mail
 from django.contrib.auth.models import UserManager
+from django.utils.dateparse import parse_date
+
 from .models import *
 from .forms import *
 from django.db.models import Q, Sum
@@ -309,7 +316,8 @@ def project(request):
     # Кэшируем проекты и связанные данные
     projects = cache.get_or_set(
         'projects_cache',
-        Project.objects.select_related('status').prefetch_related('project_buildings__building', 'project_sections__section'),
+        Project.objects.select_related('status').prefetch_related('project_buildings__building',
+                                                                  'project_sections__section'),
         timeout=60 * 15  # Кэш на 15 минут
     )
 
@@ -933,3 +941,73 @@ def reports_view(request):
         'overall_total_time_departments': overall_total_time_departments,
     }
     return render(request, 'task_manager/reports.html', context)
+
+
+def get_months_in_range(start_date, end_date):
+    """Получение всех месяцев до последнего месяца в диапазоне"""
+    months = []
+    current_date = start_date.replace(day=1)
+    while current_date <= end_date.replace(day=1):
+        months.append(current_date)
+        if current_date.month == 12:
+            current_date = current_date.replace(year=current_date.year + 1, month=1)
+        else:
+            current_date = current_date.replace(month=current_date.month + 1)
+    return months[:-1]  # Все месяцы, кроме последнего
+
+def get_days_in_month(month_date):
+    """Получение всех дней для последнего месяца"""
+    next_month = month_date.replace(day=28) + timedelta(days=4)
+    end_of_month = next_month - timedelta(days=next_month.day)
+    return [month_date + timedelta(days=i) for i in range((end_of_month - month_date).days + 1)]
+
+def final_report(request):
+    start_date = request.GET.get('start_date', timezone.now().replace(day=1).date())
+    end_date = request.GET.get('end_date', timezone.now().date())
+
+    start_date = datetime.strptime(start_date, '%Y-%m-%d').date() if isinstance(start_date, str) else start_date
+    end_date = datetime.strptime(end_date, '%Y-%m-%d').date() if isinstance(end_date, str) else end_date
+
+    timelogs = Timelog.objects.filter(date__range=[start_date, end_date])
+
+    report_data = timelogs.values('project__title', 'building__title', 'mark__title').annotate(
+        total_hours=Sum('time'),
+        user_full_name=Concat(F('user__first_name'), Value(' '), F('user__last_name'))
+    )
+
+    # Получаем месяцы до последнего и дни последнего месяца
+    months_in_range = get_months_in_range(start_date, end_date)
+    days_in_last_month = get_days_in_month(end_date.replace(day=1))
+
+    # Группировка данных по месяцам и дням
+    monthly_hours = {}
+    grouped_hours = {}
+    last_month_key = end_date.strftime('%Y-%m')
+
+    for log in timelogs:
+        key_str = f"{log.project.title}|{log.building.title}|{log.mark.title}|{log.user.first_name} {log.user.last_name}"
+        month_key = log.date.strftime('%Y-%m')
+        day_key = log.date.strftime('%Y-%m-%d')
+
+        if month_key != last_month_key:
+            # Группируем по месяцам, кроме последнего
+            if key_str not in grouped_hours:
+                grouped_hours[key_str] = {}
+            grouped_hours[key_str][month_key] = grouped_hours[key_str].get(month_key, 0) + log.time
+        else:
+            # Последний месяц по дням
+            if key_str not in monthly_hours:
+                monthly_hours[key_str] = {}
+            monthly_hours[key_str][day_key] = log.time
+
+    context = {
+        'report_data': report_data,
+        'months_in_range': months_in_range,
+        'days_in_last_month': days_in_last_month,
+        'grouped_hours': grouped_hours,
+        'monthly_hours': monthly_hours,
+        'start_date': start_date,
+        'end_date': end_date,
+    }
+    print(context)
+    return render(request, 'task_manager/final_report.html', context)
