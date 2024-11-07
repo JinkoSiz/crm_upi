@@ -67,8 +67,14 @@ urlpatterns = [
 
     # Основная страница
     path('', views.user_dashboard, name='user-dashboard'),
-    path('reset-session/', views.reset_session, name='reset-session'),
-    path('report/create/', views.report_create, name='report_create'),
+
+    # Отчеты
     path('reports/', views.reports_view, name='reports'),
+    path('report/create/', views.report_create, name='report_create'),
+    path('reset-session/', views.reset_session, name='reset-session'),
+    path('final-report/', views.final_report, name='final-report'),
+
+    # Экспорт в эксель
+    path('export-to-excel/', views.export_to_excel, name='export_to_excel'),
 
 ]
