@@ -44,7 +44,7 @@ LOGIN_URL = '/login/'
 SECRET_KEY = f'{DJANGO_KEY}'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True  #SSS
+DEBUG = True  # Purely for deploy
 
 CSRF_TRUSTED_ORIGINS = ['https://crm-upi.vercel.app',
                         'https://crm-upi-jinkosizs-projects-4c8f9ac9.vercel.app',
