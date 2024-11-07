@@ -12,7 +12,7 @@ Projects List
                 <thead>
                     <tr>
                         <th class="col-2">
-                            <button class="sorter">
+                            <button class="sorter" id="nameFilterButton">
                                 <p>Название</p>
                                 <span>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -20,6 +20,10 @@ Projects List
                                     </svg>
                                 </span>
                             </button>
+                            <!-- Выпадающий список для фильтрации по названию -->
+                            <select id="nameFilterDropdown" class="filter-dropdown" style="display: none;">
+                                <option value="">Выберите название</option>
+                            </select>
                         </th>
                         <th class="col-3">
                             <button class="sorter">
@@ -238,6 +242,10 @@ Projects List
             sections.push($(this).val());
         });
         console.log(sections);
+
+        // Добавьте консольные логи здесь
+        console.log("Buildings:", buildings);
+        console.log("Sections:", sections);
         
         // Используем FormData для отправки данных
         let formData = new FormData();
@@ -257,6 +265,10 @@ Projects List
         console.log(sections);
 
         if (!currentProjectId) {
+            // Вывод содержимого FormData для отладки
+            for (let pair of formData.entries()) {
+                console.log(pair[0] + ': ' + pair[1]);
+            }
             // Создание нового проекта
             $.ajax({
                 url: '/projects/create/',
