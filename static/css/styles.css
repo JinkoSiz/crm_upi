@@ -22,6 +22,8 @@ select {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
+    background: url('https://s3.timeweb.com/7777fb51-34f4640c-d71e-4ace-b57e-e7997a1f4952/Vector.svg') no-repeat right;
+    background-position-x: 90%;
 }
 
 select::after,
@@ -66,14 +68,26 @@ input[type=text] {
     font-family: "Roboto", sans-serif;
 }
 
-input[type=date]::-webkit-calendar-picker-indicator {
+input[data-cid=calendar]::-webkit-calendar-picker-indicator {
     color: rgba(0, 0, 0, 0);
     opacity: 1;
     display: block;
-    background: url('../img/date.svg') no-repeat;
+    background: url('https://s3.timeweb.com/7777fb51-34f4640c-d71e-4ace-b57e-e7997a1f4952/calendar.svg') no-repeat;
     width: 20px;
     height: 22px;
     border-width: thin;
+}
+
+.datepicker-wrapper::after {
+    content: '';
+    position: absolute;
+    display: block;
+    background: url('https://s3.timeweb.com/7777fb51-34f4640c-d71e-4ace-b57e-e7997a1f4952/calendar.svg') no-repeat;
+    width: 20px;
+    height: 22px;
+    top: 50%;
+    transform: translateY(-50%);
+    right: 10px;
 }
 
 input[type=checkbox] {
@@ -1492,7 +1506,7 @@ table#usersTable thead {
     position: absolute;
     top: 100%;
     z-index: 11;
-    background: #fff;
+    background: var(--Text_Gray_10);
     padding: 10px;
     box-shadow: 0px 0px 8px 0px #00000026;
     width: auto;
@@ -1594,28 +1608,5 @@ table#usersTable thead {
   max-width: 64px;
 }
 
-.datepicker-header button {
-  color: slategray;
-}
 
-.datepicker-header button:hover {
-  color: mediumpurple;
-}
 
-.datepicker-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  padding-top: 10px;
-  border-top: 1px solid #eee;
-}
-
-.datepicker-footer button {
-  background: rgba(119, 136, 153, 0.1);
-  padding: 3px 10px;
-}
-
-.datepicker-footer button.apply {
-  background: mediumpurple;
-  color: #fff;
-}
