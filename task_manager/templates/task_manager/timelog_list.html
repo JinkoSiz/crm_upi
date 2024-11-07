@@ -7,15 +7,24 @@
         <form method="get" action="{% url 'user-list' %}" class="form-inline add-users-form">
             <div class="logs-form-wrapper">
                 <div class="logs-form-input-wrapper">
-                    <input type="date">
+                    <div class="datepicker-wrapper">
+                        <input type="text" class="date-input" data-cid="calendar" placeholder="Select date" />
+                    </div>
                     <span>—</span>
-                    <input type="date">
+                    <div class="datepicker-wrapper">
+                        <input type="text" class="date-input" data-cid="calendar" placeholder="Select date" />
+                    </div>
                 </div>
-                <select name="logs-timings" id="logsTimings">
-                    <option value="1">1</option>
-                    <option value="1">2</option>
-                    <option value="1">3</option>
-                </select>
+                <div class="select">
+                    <span class="select__current">Value 1</span>
+                    <div class="select__body">
+                        <div class="select__item">Value 1</div>
+                        <div class="select__item">Value 2</div>
+                        <div class="select__item">Value 3</div>
+                        <div class="select__item">Value 4</div>
+                        <div class="select__item">Value 5</div>
+                    </div>
+                </div>
                 <button class="accept-btn" type="submit">Применить</button>
                 <!-- Кнопка для создания нового таймлога -->
                 <button type="button" class="btn btn-success" data-toggle="modal" data-target="#timelogModal">Добавить таймлог</button>
