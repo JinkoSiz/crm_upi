@@ -371,13 +371,20 @@ def createProject(request):
     if request.method == 'POST':
         title = request.POST['title']
         status_id = request.POST['status']
-        sections = request.POST.getlist('sections')
+        sections = request.POST.getlist('sections[]')
+
+        print(sections)
+
+        for section_id in sections:
+            if not Section.objects.filter(pk=section_id).exists():
+                return JsonResponse({'error': f'Section {section_id} not found'}, status=400)
 
         with transaction.atomic():
             project = Project.objects.create(title=title, status_id=status_id)
 
             # Обработка зданий
             buildings = request.POST.getlist('buildings[]')
+            print("Received buildings:", buildings)  # Отладочный вывод
             for building_title in buildings:
                 building, created = Building.objects.get_or_create(title=building_title)
                 ProjectBuilding.objects.create(project=project, building=building)

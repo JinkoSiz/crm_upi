@@ -44,21 +44,23 @@ LOGIN_URL = '/login/'
 SECRET_KEY = f'{DJANGO_KEY}'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True  #SSS
+DEBUG = True  # Purely for deploy
 
 CSRF_TRUSTED_ORIGINS = ['https://crm-upi.vercel.app',
                         'https://crm-upi-jinkosizs-projects-4c8f9ac9.vercel.app',
                         'https://crm-upi-git-main-jinkosizs-projects-4c8f9ac9.vercel.app',
-                        'https://127.0.0.1']
+                        'https://127.0.0.1',
+                        'https://jinkosiz-crm-upi-9cfc.twc1.net']
 
 ALLOWED_HOSTS = ['crm-upi.vercel.app',
                  'crm-upi-jinkosizs-projects-4c8f9ac9.vercel.app',
                  'crm-upi-git-main-jinkosizs-projects-4c8f9ac9.vercel.app',
-                 '127.0.0.1']
+                 '127.0.0.1',
+                 'jinkosiz-crm-upi-9cfc.twc1.net']
 
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
-SECURE_SSL_REDIRECT = True
+SECURE_SSL_REDIRECT = False
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 SESSION_CACHE_ALIAS = 'default'
 
@@ -92,10 +94,7 @@ MIDDLEWARE = [
 ]
 
 INTERNAL_IPS = [
-    '127.0.0.1',
-    'https://crm-upi.vercel.app',
-    'https://crm-upi-jinkosizs-projects-4c8f9ac9.vercel.app',
-    'https://crm-upi-git-main-jinkosizs-projects-4c8f9ac9.vercel.app',
+    '127.0.0.1'
 ]
 
 ROOT_URLCONF = 'crm_upi.urls'
