@@ -70,6 +70,7 @@ urlpatterns = [
 
     # Отчеты
     path('reports/', views.reports_view, name='reports'),
+    path('reports-employees/', views.reports_employees, name='reports-employees'),
     path('report/create/', views.report_create, name='report_create'),
     path('reset-session/', views.reset_session, name='reset-session'),
     path('final-report/', views.final_report, name='final-report'),

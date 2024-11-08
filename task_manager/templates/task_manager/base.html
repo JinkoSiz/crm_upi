@@ -144,11 +144,11 @@
     <nav class="handbooks reports">
         <ul>
             <li class="data-list" data-cid="reports"><a href="{% url 'reports' %}">Трудозатраты по объектам</a></li>
-            <li class="data-list" data-cid="labor-costs-sections"><p>Трудозатраты по сотрудникам</p></li>
+            <li class="data-list" data-cid="reports-employees"><a href="{% url 'reports-employees' %}">Трудозатраты по сотрудникам</a></li>
             <li class="data-list" data-cid="final-report"><a href="{% url 'final-report' %}">Итоговый отчет</a></li>
         </ul>
         <button data-cid="reports" type="button"  class="add-depart">Экспорт в Exсel</button>
-        <button data-cid="labor-costs-sections" type="button"  class="add-depart">Экспорт в Exсel</button>
+        <button data-cid="reports-employees" type="button"  class="add-depart">Экспорт в Exсel</button>
         <button data-cid="final-report" type="button"  class="add-depart">Экспорт в Exсel</button>
 
         <span></span>
@@ -230,36 +230,6 @@
               laborCostsSectionsForm = document.querySelector('#laborCostsSectionsForm'),
               laborCostsSectionsTable = document.querySelector('#laborCostsSectionsTable'),
               isAdmin = '{{user.is_admin}}';
-
-        console.log(currentUrlPath);
-
-        function TabsForReportsOpen(listItem, btn, table, form) {
-            listItem.classList.add('active');
-            btn.classList.add('active');
-            table.style.display = 'block';
-            form.style.display='flex';
-        }
-
-        function TabsForReportsClose(listItem, btn, table, form) {
-            listItem.classList.remove('active');
-            btn.classList.remove('active');
-            table.style.display = 'none';
-            form.style.display='none';
-        }
-
-        if(laborCostsProjectsSwitcher) {
-            laborCostsProjectsSwitcher.addEventListener('click', () => {
-                TabsForReportsOpen(laborCostsProjects, laborCostsProjectsBtn, laborCostsProjectsTable, laborCostsProjectsForm);
-                TabsForReportsClose(laborCostsSections, laborCostsSectionsBtn, laborCostsSectionsTable, laborCostsSectionsForm);
-            });
-        }
-
-        if(laborCostsSectionsSwitcher) {
-            laborCostsSectionsSwitcher.addEventListener('click', () => {
-                TabsForReportsClose(laborCostsProjects, laborCostsProjectsBtn, laborCostsProjectsTable, laborCostsProjectsForm);
-                TabsForReportsOpen(laborCostsSections, laborCostsSectionsBtn, laborCostsSectionsTable, laborCostsSectionsForm);
-            });
-        }
     
         
         function dataMining(selector, urlPath) {
@@ -294,8 +264,6 @@
                     header.style.display = 'none';
                     const showPass = document.querySelector('.pass-input svg'),
                           passInput = document.querySelector('.pass-input input[type=password]')
-
-                    console.log(passInput);
                     
                     showPass.addEventListener('mousedown', () => {
                         passInput.setAttribute('type', 'text');
@@ -353,7 +321,13 @@
                     adminReportsNavList.style.display = 'flex';
                     dataMining(secondaryList, url);
                     dataMining(secondaryListBtns, url);
-                    TabsForReportsClose(laborCostsSections, laborCostsSectionsBtn, laborCostsSectionsTable, laborCostsSectionsForm);
+                    break;
+
+                case 'reports-employees':
+                    dataMining(mainList, 'reports');
+                    adminReportsNavList.style.display = 'flex';
+                    dataMining(secondaryList, url);
+                    dataMining(secondaryListBtns, url);
                     break;
 
                 case 'final-report':
@@ -395,8 +369,7 @@
         document.querySelectorAll('[data-cid="calendar"]').forEach((input) => {
             input.addEventListener("click", (e) => {
                 e.preventDefault();
-                openDateModal(input); // открываем календарь для выбранного инпута
-                console.log('CLICK');
+                openDateModal(input);
             });
         });
 
@@ -552,7 +525,6 @@
                 select.classList.remove('is-active');
             }
         });
-
     });
 
 </script>
