@@ -7,11 +7,11 @@
             <div class="logs-form-wrapper">
                 <div class="logs-form-input-wrapper">
                     <div class="datepicker-wrapper">
-                        <input type="text" name="start_date" value="{{ start_date }}" class="date-input" data-cid="calendar" placeholder="Дата начала" />
+                        <input type="text" class="date-input" data-cid="calendar" placeholder="Выберите дату" />
                     </div>
                     <span>—</span>
                     <div class="datepicker-wrapper">
-                        <input type="text" name="end_date" value="{{ end_date }}" class="date-input" data-cid="calendar" placeholder="Дата окончания" />
+                        <input type="text" class="date-input" data-cid="calendar" placeholder="Выберите дату" />
                     </div>
                 </div>
                 <div class="select">
@@ -27,20 +27,10 @@
                 <button class="accept-btn" type="submit">Применить</button>
             </div>
         </form>
-        <div id="laborCostsProjectsTable" class="table-wrapper only-bottom">
+        <div id="laborCostsSectionsTable" class="table-wrapper only-bottom">
             <table class="table">
                 <thead>
                     <tr>
-                        <th style="width: 170px">
-                            <button class="sorter" >
-                                <p>Объект</p>
-                                <span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                        <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                    </svg>
-                                </span>
-                            </button>
-                        </th>
                         <th style="width: 100px">
                             <button class="sorter" >
                                 <p>Отдел</p>
@@ -54,6 +44,16 @@
                         <th style="width: 140px">
                             <button class="sorter" >
                                 <p>Сотрудник</p>
+                                <span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                        <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>
+                            </button>
+                        </th>
+                        <th style="width: 170px">
+                            <button class="sorter" >
+                                <p>Объект</p>
                                 <span>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
                                         <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -114,12 +114,12 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for project_title, project_data in detailed_report_projects.items %}
-                        {% for entry in project_data.entries %}
+                    {% for department_title, department_data in detailed_report_departments.items %}
+                        {% for entry in department_data.entries %}
                             <tr>
-                                <td>{{ entry.project.title }}</td>
                                 <td>{{ entry.department.title }}</td>
                                 <td>{{ entry.user.first_name }} {{ entry.user.last_name }}</td>
+                                <td>{{ entry.project.title }}</td>
                                 <td>{{ entry.stage }}</td>
                                 <td>{{ entry.building.title }}</td>
                                 <td>{{ entry.mark.title }}</td>
@@ -128,8 +128,8 @@
                             </tr>
                         {% endfor %}
                         <tr class="finish-tr">
-                            <td colspan="7" class="text-left">Итого {{ project_title }}</td>
-                            <td colspan="1" class="text-left">{{ project_data.total_time }}</td>
+                            <td colspan="7" class="text-left">Итого {{ department_title }}</td>
+                            <td colspan="1" class="text-left">{{ department_data.total_time }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>

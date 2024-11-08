@@ -371,20 +371,13 @@ def createProject(request):
     if request.method == 'POST':
         title = request.POST['title']
         status_id = request.POST['status']
-        sections = request.POST.getlist('sections[]')
-
-        print(sections)
-
-        for section_id in sections:
-            if not Section.objects.filter(pk=section_id).exists():
-                return JsonResponse({'error': f'Section {section_id} not found'}, status=400)
+        sections = request.POST.getlist('sections')
 
         with transaction.atomic():
             project = Project.objects.create(title=title, status_id=status_id)
 
             # Обработка зданий
             buildings = request.POST.getlist('buildings[]')
-            print("Received buildings:", buildings)  # Отладочный вывод
             for building_title in buildings:
                 building, created = Building.objects.get_or_create(title=building_title)
                 ProjectBuilding.objects.create(project=project, building=building)
@@ -994,6 +987,51 @@ def reports_view(request):
     }
     return render(request, 'task_manager/reports.html', context)
 
+def reports_employees(request):
+    # Получаем все записи Timelog с оптимизацией связанных данных
+    timelogs = (
+        Timelog.objects
+        .select_related('project', 'department', 'user', 'building', 'mark', 'task')
+        .all()
+    )
+
+    # Группировка данных по проектам
+    detailed_report_projects = {}
+    for item in timelogs:
+        project_title = item.project.title
+        if project_title not in detailed_report_projects:
+            detailed_report_projects[project_title] = {
+                'entries': [],
+                'total_time': 0
+            }
+        detailed_report_projects[project_title]['entries'].append(item)
+        detailed_report_projects[project_title]['total_time'] += item.time
+
+    # Общий итог времени по всем проектам
+    overall_total_time_projects = sum([group['total_time'] for group in detailed_report_projects.values()])
+
+    # Группировка данных по отделам
+    detailed_report_departments = {}
+    for item in timelogs:
+        department_title = item.department.title
+        if department_title not in detailed_report_departments:
+            detailed_report_departments[department_title] = {
+                'entries': [],
+                'total_time': 0
+            }
+        detailed_report_departments[department_title]['entries'].append(item)
+        detailed_report_departments[department_title]['total_time'] += item.time
+
+    # Общий итог времени по всем отделам
+    overall_total_time_departments = sum([group['total_time'] for group in detailed_report_departments.values()])
+
+    context = {
+        'detailed_report_projects': detailed_report_projects,
+        'overall_total_time_projects': overall_total_time_projects,
+        'detailed_report_departments': detailed_report_departments,
+        'overall_total_time_departments': overall_total_time_departments,
+    }
+    return render(request, 'task_manager/reports_employees.html', context)
 
 def get_months_in_range(start_date, end_date):
     """Получение всех месяцев до последнего месяца в диапазоне"""
