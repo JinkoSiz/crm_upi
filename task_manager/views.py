@@ -902,12 +902,58 @@ def report_create(request):
     return render(request, 'task_manager/report_create.html', context)
 
 
+def parse_custom_date(date_str):
+    # Убираем день недели и удаляем символ "г." в конце, если он есть
+    date_str = date_str.split(",")[-1].strip()
+    date_str = date_str.replace(" г.", "").strip()
+
+    # Попробуем сначала стандартный формат "YYYY-MM-DD"
+    try:
+        return datetime.strptime(date_str, "%Y-%m-%d").date()
+    except ValueError:
+        pass
+
+    # Попробуем формат с русскими названиями месяцев
+    months = {
+        "января": "01", "февраля": "02", "марта": "03", "апреля": "04",
+        "мая": "05", "июня": "06", "июля": "07", "августа": "08",
+        "сентября": "09", "октября": "10", "ноября": "11", "декабря": "12"
+    }
+
+    # Обработка формата "дд ммм гггг"
+    match = re.match(r"(\d{1,2}) (\w+) (\d{4})", date_str)
+    if match:
+        day, month_str, year = match.groups()
+        month = months.get(month_str.lower())
+        if month:
+            return datetime.strptime(f"{year}-{month}-{day.zfill(2)}", "%Y-%m-%d").date()
+
+    # Обработка формата "дд.мм.гггг"
+    try:
+        return datetime.strptime(date_str, "%d.%m.%Y").date()
+    except ValueError:
+        pass
+
+    # Если не удалось распознать формат
+    raise ValueError(f"Unexpected date format: {date_str}")
+
+
 def reports_view(request):
-    # Получаем все записи Timelog с оптимизацией связанных данных
+    # Получаем начальную и конечную даты из GET параметров
+    start_date = request.GET.get('start_date', timezone.now().replace(day=1).date())
+    end_date = request.GET.get('end_date', timezone.now().date())
+
+    # Преобразуем даты с использованием новой функции
+    start_date = parse_custom_date(start_date) if isinstance(start_date, str) else start_date
+    end_date = parse_custom_date(end_date) if isinstance(end_date, str) else end_date
+
+    print(start_date, end_date)
+
+    # Фильтрация Timelog по диапазону дат
     timelogs = (
         Timelog.objects
+        .filter(date__range=[start_date, end_date])
         .select_related('project', 'department', 'user', 'building', 'mark', 'task')
-        .all()
     )
 
     # Группировка данных по проектам
@@ -973,8 +1019,9 @@ def final_report(request):
     start_date = request.GET.get('start_date', timezone.now().replace(day=1).date())
     end_date = request.GET.get('end_date', timezone.now().date())
 
-    start_date = datetime.strptime(start_date, '%Y-%m-%d').date() if isinstance(start_date, str) else start_date
-    end_date = datetime.strptime(end_date, '%Y-%m-%d').date() if isinstance(end_date, str) else end_date
+    # Преобразуем даты с использованием новой функции
+    start_date = parse_custom_date(start_date) if isinstance(start_date, str) else start_date
+    end_date = parse_custom_date(end_date) if isinstance(end_date, str) else end_date
 
     timelogs = Timelog.objects.filter(date__range=[start_date, end_date])
 
