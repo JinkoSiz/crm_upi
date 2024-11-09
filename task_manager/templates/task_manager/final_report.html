@@ -41,7 +41,7 @@
                         {% endfor %}
                             <!-- Дни последнего месяца -->
                         {% for date in days_in_last_month %}
-                            <th>{{ date|date:"d M Y" }}</th>
+                            <th>{{ date|date:"d" }}</th>
                         {% endfor %}
                         <!-- Месяцы до последнего -->
                     </tr>
