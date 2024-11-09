@@ -232,6 +232,8 @@
               laborCostsProjectsForm = document.querySelector('#laborCostsProjectsForm'),
               laborCostsSectionsForm = document.querySelector('#laborCostsSectionsForm'),
               laborCostsSectionsTable = document.querySelector('#laborCostsSectionsTable'),
+              dateInputStart = document.querySelector('input.date-input[name=start_date]'),
+              dateInputEnd = document.querySelector('input.date-input[name=end_date]'),
               isAdmin = '{{user.is_admin}}';
     
         
@@ -529,6 +531,9 @@
                 select.classList.remove('is-active');
             }
         });
+
+        console.log(dateInputStart, dateInputEnd);
+        
     });
 
 </script>
