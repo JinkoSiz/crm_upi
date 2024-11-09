@@ -711,8 +711,52 @@ def delete_task(request, pk):
     return render(request, 'task_manager/task_confirm_delete.html', {'task': task})
 
 
+def parse_custom_date(date_str):
+    # Убираем день недели и удаляем символ "г." в конце, если он есть
+    date_str = date_str.split(",")[-1].strip()
+    date_str = date_str.replace(" г.", "").strip()
+
+    # Попробуем сначала стандартный формат "YYYY-MM-DD"
+    try:
+        return datetime.strptime(date_str, "%Y-%m-%d").date()
+    except ValueError:
+        pass
+
+    # Попробуем формат с русскими названиями месяцев
+    months = {
+        "января": "01", "февраля": "02", "марта": "03", "апреля": "04",
+        "мая": "05", "июня": "06", "июля": "07", "августа": "08",
+        "сентября": "09", "октября": "10", "ноября": "11", "декабря": "12"
+    }
+
+    # Обработка формата "дд ммм гггг"
+    match = re.match(r"(\d{1,2}) (\w+) (\d{4})", date_str)
+    if match:
+        day, month_str, year = match.groups()
+        month = months.get(month_str.lower())
+        if month:
+            return datetime.strptime(f"{year}-{month}-{day.zfill(2)}", "%Y-%m-%d").date()
+
+    # Обработка формата "дд.мм.гггг"
+    try:
+        return datetime.strptime(date_str, "%d.%m.%Y").date()
+    except ValueError:
+        pass
+
+    # Если не удалось распознать формат
+    raise ValueError(f"Unexpected date format: {date_str}")
+
+
 # TimeLog
 def timelog_list(request):
+    # Получаем начальную и конечную даты из GET параметров
+    start_date = request.GET.get('start_date', timezone.now().replace(day=1).date())
+    end_date = request.GET.get('end_date', timezone.now().date())
+
+    # Преобразуем даты с использованием parse_custom_date, если они строковые
+    start_date = parse_custom_date(start_date) if isinstance(start_date, str) else start_date
+    end_date = parse_custom_date(end_date) if isinstance(end_date, str) else end_date
+
     # Кэшируем данные таймлогов, если кэш пуст
     timelogs = cache.get('timelogs_cache')
     if not timelogs:
@@ -724,7 +768,7 @@ def timelog_list(request):
         # Сохраняем в кэше на 5 минут (300 секунд)
         cache.set('timelogs_cache', timelogs, timeout=900)
 
-    # Применяем фильтры, если они переданы через GET запрос
+    # Применяем фильтры по параметрам
     if request.GET.get('user'):
         timelogs = timelogs.filter(user__id=request.GET.get('user'))
     if request.GET.get('project'):
@@ -734,11 +778,17 @@ def timelog_list(request):
     if request.GET.get('mark'):
         timelogs = timelogs.filter(mark__id=request.GET.get('mark'))
 
+    # Фильтрация по диапазону дат
+    if start_date and end_date:
+        timelogs = timelogs.filter(date__range=[start_date, end_date])
+
     form = TimelogForm()
 
     context = {
         'timelogs': timelogs,
-        'form': form
+        'form': form,
+        'start_date': start_date,
+        'end_date': end_date,
     }
 
     return render(request, 'task_manager/timelog_list.html', context)
@@ -895,42 +945,6 @@ def report_create(request):
     return render(request, 'task_manager/report_create.html', context)
 
 
-def parse_custom_date(date_str):
-    # Убираем день недели и удаляем символ "г." в конце, если он есть
-    date_str = date_str.split(",")[-1].strip()
-    date_str = date_str.replace(" г.", "").strip()
-
-    # Попробуем сначала стандартный формат "YYYY-MM-DD"
-    try:
-        return datetime.strptime(date_str, "%Y-%m-%d").date()
-    except ValueError:
-        pass
-
-    # Попробуем формат с русскими названиями месяцев
-    months = {
-        "января": "01", "февраля": "02", "марта": "03", "апреля": "04",
-        "мая": "05", "июня": "06", "июля": "07", "августа": "08",
-        "сентября": "09", "октября": "10", "ноября": "11", "декабря": "12"
-    }
-
-    # Обработка формата "дд ммм гггг"
-    match = re.match(r"(\d{1,2}) (\w+) (\d{4})", date_str)
-    if match:
-        day, month_str, year = match.groups()
-        month = months.get(month_str.lower())
-        if month:
-            return datetime.strptime(f"{year}-{month}-{day.zfill(2)}", "%Y-%m-%d").date()
-
-    # Обработка формата "дд.мм.гггг"
-    try:
-        return datetime.strptime(date_str, "%d.%m.%Y").date()
-    except ValueError:
-        pass
-
-    # Если не удалось распознать формат
-    raise ValueError(f"Unexpected date format: {date_str}")
-
-
 def reports_view(request):
     # Получаем начальную и конечную даты из GET параметров
     start_date = request.GET.get('start_date', timezone.now().replace(day=1).date())
@@ -939,8 +953,6 @@ def reports_view(request):
     # Преобразуем даты с использованием новой функции
     start_date = parse_custom_date(start_date) if isinstance(start_date, str) else start_date
     end_date = parse_custom_date(end_date) if isinstance(end_date, str) else end_date
-
-    print(start_date, end_date)
 
     # Фильтрация Timelog по диапазону дат
     timelogs = (
@@ -984,8 +996,11 @@ def reports_view(request):
         'overall_total_time_projects': overall_total_time_projects,
         'detailed_report_departments': detailed_report_departments,
         'overall_total_time_departments': overall_total_time_departments,
+        'start_date': start_date,
+        'end_date': end_date,
     }
     return render(request, 'task_manager/reports.html', context)
+
 
 def reports_employees(request):
     # Получаем все записи Timelog с оптимизацией связанных данных
@@ -1030,8 +1045,11 @@ def reports_employees(request):
         'overall_total_time_projects': overall_total_time_projects,
         'detailed_report_departments': detailed_report_departments,
         'overall_total_time_departments': overall_total_time_departments,
+        'start_date': start_date,
+        'end_date': end_date,
     }
     return render(request, 'task_manager/reports_employees.html', context)
+
 
 def get_months_in_range(start_date, end_date):
     """Получение всех месяцев до последнего месяца в диапазоне"""
@@ -1102,7 +1120,7 @@ def final_report(request):
         'start_date': start_date,
         'end_date': end_date,
     }
-    print(context)
+
     return render(request, 'task_manager/final_report.html', context)
 
 
@@ -1196,8 +1214,8 @@ def export_to_excel(request):
 
     # Обработка данных для экспорта
     for item in timelogs.values('project__title', 'building__title', 'mark__title').annotate(
-        total_hours=Sum('time'),
-        user_full_name=Concat(F('user__first_name'), Value(' '), F('user__last_name'))
+            total_hours=Sum('time'),
+            user_full_name=Concat(F('user__first_name'), Value(' '), F('user__last_name'))
     ):
         row = [
             item['project__title'],
@@ -1210,7 +1228,9 @@ def export_to_excel(request):
         # Добавляем данные по месяцам
         for month in months_in_range:
             month_key = month.strftime("%Y-%m")
-            hours = grouped_hours.get(f"{item['project__title']}|{item['building__title']}|{item['mark__title']}|{item['user_full_name']}", {}).get(month_key, "-")
+            hours = grouped_hours.get(
+                f"{item['project__title']}|{item['building__title']}|{item['mark__title']}|{item['user_full_name']}",
+                {}).get(month_key, "-")
             row.append(hours)
             if hours != "-":
                 ws[f"{get_column_letter(len(row))}{ws.max_row}"].fill = fill_style  # Заливаем ячейку
@@ -1218,7 +1238,9 @@ def export_to_excel(request):
         # Добавляем данные по дням последнего месяца
         for date in days_in_last_month:
             day_key = date.strftime("%Y-%m-%d")
-            hours = monthly_hours.get(f"{item['project__title']}|{item['building__title']}|{item['mark__title']}|{item['user_full_name']}", {}).get(day_key, "-")
+            hours = monthly_hours.get(
+                f"{item['project__title']}|{item['building__title']}|{item['mark__title']}|{item['user_full_name']}",
+                {}).get(day_key, "-")
             row.append("*" if hours != "-" else hours)
 
         ws.append(row)
