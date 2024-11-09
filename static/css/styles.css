@@ -565,6 +565,10 @@ button.sorter span {
     border-radius: 0 0 10px 10px;
 }
 
+.table-wrapper.only-bottom.scroller {
+    overflow-x: scroll;
+}
+
 .table {
     background-color: var(--Text_Gray_10);
     margin: 0;
@@ -581,6 +585,10 @@ button.sorter span {
 
 .table tbody tr:last-child {
     border: none;
+}
+
+.table thead th {
+    vertical-align: middle;
 }
 
 .table td, .table th, .table thead th {
@@ -1669,5 +1677,21 @@ table#usersTable thead {
     transition: .15s all;
 }
 
+form.export-exel-form {
+    display: none;
+}
 
-/*  */
+form.export-exel-form.active {
+    display: block;
+}
+
+.rotated {
+    width: 20px !important;
+}
+
+.rotated p {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-90deg);
+}
