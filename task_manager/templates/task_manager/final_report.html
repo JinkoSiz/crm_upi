@@ -27,7 +27,7 @@
                 <button class="accept-btn" type="submit">Применить</button>
             </div>
         </form>
-        <div class="table-wrapper only-bottom">
+        <div class="table-wrapper only-bottom scroller">
             <table class="table">
                 <thead>
                     <tr>
@@ -37,11 +37,11 @@
                         <th>Исполнитель</th>
                         <th>Часы</th>
                         {% for month in months_in_range %}
-                            <td>{{ month|date:"F Y" }}</td>
+                            <th class="rotated"><p>{{ month|date:"F Y" }}</p></th>
                         {% endfor %}
                             <!-- Дни последнего месяца -->
                         {% for date in days_in_last_month %}
-                            <td>{{ date|date:"d M Y" }}</td>
+                            <th>{{ date|date:"d M Y" }}</th>
                         {% endfor %}
                         <!-- Месяцы до последнего -->
                     </tr>
@@ -58,14 +58,14 @@
                             <!-- Месяцы до последнего -->
                             {% for month in months_in_range %}
                                 {% with month_key=month|date:"Y-m" %}
-                                    <td style="{% if grouped_hours|get_item:item_key|get_item:month_key %}background-color: #cce5ff;{% endif %}">
+                                    <td class="checking-days">
                                         {% if grouped_hours|get_item:item_key|get_item:month_key %}*{% else %}-{% endif %}
                                     </td>
                                 {% endwith %}
                             {% endfor %}
                             <!-- Дни последнего месяца -->
                             {% for date in days_in_last_month %}
-                                <td>
+                                <td class="checking-days">
                                     {% with date_key=date|date:"Y-m-d" %}
                                         {% if monthly_hours|get_item:item_key|get_item:date_key %}*{% else %}-{% endif %}
                                     {% endwith %}
@@ -77,11 +77,18 @@
                 </tbody>
             </table>
         </div>
-        
-        <form method="get" action="{% url 'export_to_excel' %}">
-            <input type="hidden" name="start_date" value="{{ start_date }}">
-            <input type="hidden" name="end_date" value="{{ end_date }}">
-            <button type="submit" class="btn btn-primary">Экспорт в Excel</button>
-        </form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const checkingDays = document.querySelectorAll('td.checking-days');
+
+        checkingDays.forEach(day => {
+            if(/^\s*\*\s*$/.test(day.textContent)) {
+                day.style.backgroundColor = "var(--Secondary)";
+                day.textContent ='КМ';
+            }
+        });
+    })
+</script>
 
 {% endblock %}

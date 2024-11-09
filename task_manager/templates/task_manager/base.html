@@ -147,9 +147,14 @@
             <li class="data-list" data-cid="reports-employees"><a href="{% url 'reports-employees' %}">Трудозатраты по сотрудникам</a></li>
             <li class="data-list" data-cid="final-report"><a href="{% url 'final-report' %}">Итоговый отчет</a></li>
         </ul>
-        <button data-cid="reports" type="button"  class="add-depart">Экспорт в Exсel</button>
-        <button data-cid="reports-employees" type="button"  class="add-depart">Экспорт в Exсel</button>
-        <button data-cid="final-report" type="button"  class="add-depart">Экспорт в Exсel</button>
+        <form method="get" action="{% url 'export_to_excel' %}" data-cid="final-report" class="export-exel-form">
+            <input type="hidden" name="start_date" value="{{ start_date }}">
+            <input type="hidden" name="end_date" value="{{ end_date }}">
+            <button type="submit" class="add-depart active">Экспорт в Excel</button>
+        </form>
+        <!-- <button data-cid="reports" type="button"  class="add-depart">Экспорт в Exсel</button> -->
+        <!-- <button data-cid="reports-employees" type="button"  class="add-depart">Экспорт в Exсel</button>
+        <button data-cid="final-report" type="button"  class="add-depart">Экспорт в Exсel</button> -->
 
         <span></span>
     </nav>
@@ -218,6 +223,7 @@
               adminLinksListItem = document.querySelectorAll('.data-list'),
               adminLinksBtnsListItem = document.querySelectorAll('.add-depart'),
               adminMainNavigation = document.querySelector('.admin-main-navigation'),
+              exportExelForms = document.querySelectorAll('form.export-exel-form'),
               header = document.querySelector('header'),
               laborCostsProjects = document.querySelector('li.data-list[data-cid="reports"]'),
               laborCostsProjectsSwitcher = document.querySelector('li.data-list[data-cid="reports"] p'),
@@ -334,7 +340,7 @@
                     dataMining(mainList, 'reports');
                     adminReportsNavList.style.display = 'flex';
                     dataMining(secondaryList, url);
-                    dataMining(secondaryListBtns, url);
+                    dataMining(exportExelForms, url);
                     break;
 
                 default: 
