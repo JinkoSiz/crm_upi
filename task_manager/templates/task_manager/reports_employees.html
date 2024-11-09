@@ -7,11 +7,11 @@
             <div class="logs-form-wrapper">
                 <div class="logs-form-input-wrapper">
                     <div class="datepicker-wrapper">
-                        <input type="text" class="date-input" data-cid="calendar" placeholder="Выберите дату" />
+                        <input type="text" name="start_date" value="{{ start_date }}" class="date-input" data-cid="calendar" placeholder="Дата начала" />
                     </div>
                     <span>—</span>
                     <div class="datepicker-wrapper">
-                        <input type="text" class="date-input" data-cid="calendar" placeholder="Выберите дату" />
+                        <input type="text" name="end_date" value="{{ end_date }}" class="date-input" data-cid="calendar" placeholder="Дата окончания" />
                     </div>
                 </div>
                 <div class="select">
