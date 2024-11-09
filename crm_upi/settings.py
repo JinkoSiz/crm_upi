@@ -171,9 +171,14 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-
-STATIC_URL = 'https://s3.timeweb.com/7777fb51-34f4640c-d71e-4ace-b57e-e7997a1f4952/static/'
+if DEBUG:
+    # Use local static files in development
+    STATIC_URL = '/static/'
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+else:
+    # Use S3 for static files in production
+    STATIC_URL = 'https://s3.timeweb.com/7777fb51-34f4640c-d71e-4ace-b57e-e7997a1f4952/static/'
+    STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
 # Media files (Uploaded content)
 MEDIA_URL = '/images/'
