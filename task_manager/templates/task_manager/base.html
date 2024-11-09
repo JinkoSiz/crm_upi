@@ -152,9 +152,6 @@
             <input type="hidden" name="end_date" value="{{ end_date }}">
             <button type="submit" class="add-depart active">Экспорт в Excel</button>
         </form>
-        <!-- <button data-cid="reports" type="button"  class="add-depart">Экспорт в Exсel</button> -->
-        <!-- <button data-cid="reports-employees" type="button"  class="add-depart">Экспорт в Exсel</button>
-        <button data-cid="final-report" type="button"  class="add-depart">Экспорт в Exсel</button> -->
 
         <span></span>
     </nav>
@@ -223,7 +220,7 @@
               adminLinksListItem = document.querySelectorAll('.data-list'),
               adminLinksBtnsListItem = document.querySelectorAll('.add-depart'),
               adminMainNavigation = document.querySelector('.admin-main-navigation'),
-              exportExelForms = document.querySelectorAll('form.export-exel-form'),
+              exportExelForms = document.querySelector('form.export-exel-form'),
               header = document.querySelector('header'),
               laborCostsProjects = document.querySelector('li.data-list[data-cid="reports"]'),
               laborCostsProjectsSwitcher = document.querySelector('li.data-list[data-cid="reports"] p'),
@@ -262,6 +259,7 @@
             adminReportsNavList.style.display = 'none';
             adminMainNavigation.style.display = 'block';
             header.style.display = 'flex';
+            exportExelForms.classList.remove('active');
 
             switch (url) {
 
@@ -326,21 +324,21 @@
                     dataMining(mainList, 'reports');
                     adminReportsNavList.style.display = 'flex';
                     dataMining(secondaryList, url);
-                    dataMining(secondaryListBtns, url);
+                    exportExelForms.classList.add('active');
                     break;
 
                 case 'reports-employees':
                     dataMining(mainList, 'reports');
                     adminReportsNavList.style.display = 'flex';
                     dataMining(secondaryList, url);
-                    dataMining(secondaryListBtns, url);
+                    exportExelForms.classList.add('active');
                     break;
 
                 case 'final-report':
                     dataMining(mainList, 'reports');
                     adminReportsNavList.style.display = 'flex';
                     dataMining(secondaryList, url);
-                    dataMining(exportExelForms, url);
+                    exportExelForms.classList.add('active');
                     break;
 
                 default: 

@@ -1687,6 +1687,7 @@ form.export-exel-form.active {
 
 .rotated {
     width: 20px !important;
+    height: 100px;
 }
 
 .rotated p {
