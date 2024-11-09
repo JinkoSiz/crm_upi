@@ -1003,6 +1003,14 @@ def reports_view(request):
 
 
 def reports_employees(request):
+    # Получаем начальную и конечную даты из GET параметров
+    start_date = request.GET.get('start_date', timezone.now().replace(day=1).date())
+    end_date = request.GET.get('end_date', timezone.now().date())
+
+    # Преобразуем даты с использованием новой функции
+    start_date = parse_custom_date(start_date) if isinstance(start_date, str) else start_date
+    end_date = parse_custom_date(end_date) if isinstance(end_date, str) else end_date
+
     # Получаем все записи Timelog с оптимизацией связанных данных
     timelogs = (
         Timelog.objects
