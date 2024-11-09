@@ -37,7 +37,7 @@
                         <th>Исполнитель</th>
                         <th>Часы</th>
                         {% for month in months_in_range %}
-                            <th class="rotated"><p>{{ month|date:"F Y" }}</p></th>
+                            <th class="rotated"><p>{{ month|date:"F" }}</p></th>
                         {% endfor %}
                             <!-- Дни последнего месяца -->
                         {% for date in days_in_last_month %}
