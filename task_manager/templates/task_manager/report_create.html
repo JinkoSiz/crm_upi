@@ -44,18 +44,34 @@
                     <tbody>
                         <tr>
                             <td>
-                                <select name="project" class="form-control">
+                                <div class="select" data-cid="simple-select">
+                                    <span class="select__current" data-value="{{ project.id }}">{{ project.title }}</span>
+                                    <div class="select__body">
+                                        {% for project in projects %}
+                                        <div class="select__item" data-value="{{ project.id }}">{{ project.title }}</div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <!-- <select name="project" class="form-control">
                                     {% for project in projects %}
                                         <option value="{{ project.id }}">{{ project.title }}</option>
                                     {% endfor %}
-                                </select>
+                                </select> -->
                             </td>
                             <td>
-                                <select name="stage" class="form-control">
+                                <div class="select" data-cid="simple-select">
+                                    <span class="select__current" data-value="{{ stage_value }}">{{ stage_display }}</span>
+                                    <div class="select__body">
+                                        {% for stage_value, stage_display in stages %}
+                                        <div class="select__item" data-value="{{ stage_value }}">{{ stage_display }}</div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <!-- <select name="stage" class="form-control">
                                     {% for stage_value, stage_display in stages %}
                                         <option value="{{ stage_value }}">{{ stage_display }}</option>
                                     {% endfor %}
-                                </select>
+                                </select> -->
                             </td>
                             <td>
                                 <select name="section" class="form-control">

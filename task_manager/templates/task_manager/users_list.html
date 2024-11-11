@@ -311,6 +311,10 @@
     function setupPagination(users) {
         const totalPages = Math.ceil(users.length / rowsPerPage);
 
+        if(totalPages <= 1) {
+            document.querySelector('#pagination').style.display = 'none';
+        }
+
         document.getElementById('prevPage').addEventListener('click', () => {
             if (currentPage > 1) {
                 currentPage--;

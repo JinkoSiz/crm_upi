@@ -587,6 +587,10 @@ button.sorter span {
     border: none;
 }
 
+.table.table-report-create tbody tr:last-child {
+    border-bottom: 1px solid var(--Text_Gray_20);
+}
+
 .table thead th {
     vertical-align: middle;
 }
@@ -1456,6 +1460,10 @@ h1.super-title {
     cursor: pointer;
 }
 
+.table-report-create tbody tr {
+    border-bottom: 1px solid var(--Text_Gray_20);
+}
+
 .table-report-create thead tr th,
 .table-report-create tbody tr td {
     padding: 20px 10px;
@@ -1622,6 +1630,11 @@ table#usersTable thead {
     border: 1px solid var(--Text_Gray_40);
     padding: 10px;
     outline: 0px solid var(--Primary_blue);
+}
+
+.select[data-cid=simple-select] {
+    margin-right: 0;
+    padding: 11px 10px;
 }
 
 .select.is-active {

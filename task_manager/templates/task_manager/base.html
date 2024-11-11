@@ -212,31 +212,29 @@
 </body>
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-
         const currentUrlPath = window.location.pathname.split('/')[1],
-              adminBtnsListItem = document.querySelectorAll('.admin-main-navigation ul li'),
-              adminHandbooksNavList = document.querySelector('.handbooks'),
-              adminReportsNavList = document.querySelector('.handbooks.reports'),
-              adminLinksListItem = document.querySelectorAll('.data-list'),
-              adminLinksBtnsListItem = document.querySelectorAll('.add-depart'),
-              adminMainNavigation = document.querySelector('.admin-main-navigation'),
-              exportExelForms = document.querySelector('form.export-exel-form'),
-              header = document.querySelector('header'),
-              laborCostsProjects = document.querySelector('li.data-list[data-cid="reports"]'),
-              laborCostsProjectsSwitcher = document.querySelector('li.data-list[data-cid="reports"] p'),
-              laborCostsProjectsBtn = document.querySelector('button[data-cid="reports"]'),
-              laborCostsProjectsTable = document.querySelector('#laborCostsProjectsTable'),
-              laborCostsSections = document.querySelector('li[data-cid="labor-costs-sections"]'),
-              laborCostsSectionsSwitcher = document.querySelector('li.data-list[data-cid="labor-costs-sections"] p'),
-              laborCostsSectionsBtn = document.querySelector('button[data-cid="labor-costs-sections"]'),
-              laborCostsProjectsForm = document.querySelector('#laborCostsProjectsForm'),
-              laborCostsSectionsForm = document.querySelector('#laborCostsSectionsForm'),
-              laborCostsSectionsTable = document.querySelector('#laborCostsSectionsTable'),
-              dateInputStart = document.querySelector('input.date-input[name=start_date]'),
-              dateInputEnd = document.querySelector('input.date-input[name=end_date]'),
-              isAdmin = '{{user.is_admin}}';
-    
-        
+            adminBtnsListItem = document.querySelectorAll('.admin-main-navigation ul li'),
+            adminHandbooksNavList = document.querySelector('.handbooks'),
+            adminReportsNavList = document.querySelector('.handbooks.reports'),
+            adminLinksListItem = document.querySelectorAll('.data-list'),
+            adminLinksBtnsListItem = document.querySelectorAll('.add-depart'),
+            adminMainNavigation = document.querySelector('.admin-main-navigation'),
+            exportExelForms = document.querySelector('form.export-exel-form'),
+            header = document.querySelector('header'),
+            laborCostsProjects = document.querySelector('li.data-list[data-cid="reports"]'),
+            laborCostsProjectsSwitcher = document.querySelector('li.data-list[data-cid="reports"] p'),
+            laborCostsProjectsBtn = document.querySelector('button[data-cid="reports"]'),
+            laborCostsProjectsTable = document.querySelector('#laborCostsProjectsTable'),
+            laborCostsSections = document.querySelector('li[data-cid="labor-costs-sections"]'),
+            laborCostsSectionsSwitcher = document.querySelector('li.data-list[data-cid="labor-costs-sections"] p'),
+            laborCostsSectionsBtn = document.querySelector('button[data-cid="labor-costs-sections"]'),
+            laborCostsProjectsForm = document.querySelector('#laborCostsProjectsForm'),
+            laborCostsSectionsForm = document.querySelector('#laborCostsSectionsForm'),
+            laborCostsSectionsTable = document.querySelector('#laborCostsSectionsTable'),
+            dateInputStart = document.querySelector('input.date-input[name=start_date]'),
+            dateInputEnd = document.querySelector('input.date-input[name=end_date]'),
+            isAdmin = '{{user.is_admin}}';
+
         function dataMining(selector, urlPath) {
             selector.forEach(item => {
                 item.classList.remove('active');
@@ -256,7 +254,6 @@
         }
 
         function setStatus (url, mainList, secondaryList, secondaryListBtns) {
-            
             adminHandbooksNavList.style.display = 'none';
             adminReportsNavList.style.display = 'none';
             adminMainNavigation.style.display = 'block';
@@ -264,12 +261,11 @@
             exportExelForms.classList.remove('active');
 
             switch (url) {
-
                 case 'login': 
                     adminMainNavigation.style.display = 'none';
                     header.style.display = 'none';
                     const showPass = document.querySelector('.pass-input svg'),
-                          passInput = document.querySelector('.pass-input input[type=password]')
+                        passInput = document.querySelector('.pass-input input[type=password]')
                     
                     showPass.addEventListener('mousedown', () => {
                         passInput.setAttribute('type', 'text');
@@ -288,33 +284,9 @@
                     break;
                     
                 case 'projects':
-                    setStatusForUpperList(mainList, 'projects');
-                    dataMining(secondaryList, url);
-                    dataMining(secondaryListBtns, url);
-                    adminHandbooksNavList.style.display = 'flex';
-                    break;
-
                 case 'sections':
-                    setStatusForUpperList(mainList, 'projects');
-                    dataMining(secondaryList, url);
-                    dataMining(secondaryListBtns, url);
-                    adminHandbooksNavList.style.display = 'flex';
-                    break;
-                
                 case 'marks':
-                    setStatusForUpperList(mainList, 'projects');
-                    dataMining(secondaryList, url);
-                    dataMining(secondaryListBtns, url);
-                    adminHandbooksNavList.style.display = 'flex';
-                    break;
-
                 case 'departments':
-                    setStatusForUpperList(mainList, 'projects');
-                    dataMining(secondaryList, url);
-                    dataMining(secondaryListBtns, url);
-                    adminHandbooksNavList.style.display = 'flex';
-                    break;
-                    
                 case 'roles':
                     setStatusForUpperList(mainList, 'projects');
                     dataMining(secondaryList, url);
@@ -323,19 +295,7 @@
                     break;
 
                 case 'reports':
-                    dataMining(mainList, 'reports');
-                    adminReportsNavList.style.display = 'flex';
-                    dataMining(secondaryList, url);
-                    exportExelForms.classList.add('active');
-                    break;
-
                 case 'reports-employees':
-                    dataMining(mainList, 'reports');
-                    adminReportsNavList.style.display = 'flex';
-                    dataMining(secondaryList, url);
-                    exportExelForms.classList.add('active');
-                    break;
-
                 case 'final-report':
                     dataMining(mainList, 'reports');
                     adminReportsNavList.style.display = 'flex';
@@ -353,199 +313,238 @@
         setStatus(currentUrlPath, adminBtnsListItem, adminLinksListItem, adminLinksBtnsListItem);
 
         const datepicker = document.querySelector(".datepicker-container");
-    let activeInput = null;
+        let activeInput = null;
 
-    const openDateModal = (input) => {
-        activeInput = input;
-        const wrapper = input.closest(".datepicker-wrapper");
-        wrapper.appendChild(datepicker);
-        datepicker.style.display = 'block';
-    };
+        const openDateModal = (input) => {
+            activeInput = input;
+            const wrapper = input.closest(".datepicker-wrapper");
+            wrapper.appendChild(datepicker);
+            datepicker.style.display = 'block';
+        };
 
-    const closeDateModal = () => {
-        datepicker.style.display = 'none';
-        activeInput = null;
-    };
+        const closeDateModal = () => {
+            datepicker.style.display = 'none';
+            activeInput = null;
+        };
 
-    document.querySelectorAll('[data-cid="calendar"]').forEach((input) => {
-        input.addEventListener("click", (e) => {
+        document.querySelectorAll('[data-cid="calendar"]').forEach((input) => {
+            input.addEventListener("click", (e) => {
+                e.preventDefault();
+                openDateModal(input);
+            });
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.datepicker-container') && !e.target.closest('[data-cid="calendar"]')) {
+                closeDateModal();
+            }
+        });
+
+        const yearInput = datepicker.querySelector(".year-input");
+        const monthInput = datepicker.querySelector(".month-input");
+        const nextBtn = datepicker.querySelector(".next");
+        const prevBtn = datepicker.querySelector(".prev");
+        const dates = datepicker.querySelector(".dates");
+
+        let selectedDate = new Date();
+        let year = selectedDate.getFullYear();
+        let month = selectedDate.getMonth();
+
+        nextBtn.addEventListener("click", (e) => {
+            if (month === 11) year++;
+            month = (month + 1) % 12;
+            displayDates();
             e.preventDefault();
-            openDateModal(input);
+        });
+
+        prevBtn.addEventListener("click", (e) => {
+            if (month === 0) year--;
+            month = (month - 1 + 12) % 12;
+            displayDates();
+            e.preventDefault();
+        });
+
+        monthInput.addEventListener("change", () => {
+            month = monthInput.selectedIndex;
+            displayDates();
+        });
+
+        yearInput.addEventListener("change", () => {
+            year = yearInput.value;
+            displayDates();
+        });
+
+        const updateYearMonth = () => {
+            monthInput.selectedIndex = month;
+            yearInput.value = year;
+        };
+
+        const handleDateClick = (e) => {
+            e.preventDefault();
+            const button = e.target;
+            const selected = dates.querySelector(".selected");
+            selected && selected.classList.remove("selected");
+
+            button.classList.add("selected");
+            selectedDate = new Date(year, month, parseInt(button.textContent));
+        };
+
+        const Apply = (e) => {
+            if (activeInput) {
+                activeInput.value = selectedDate.toLocaleDateString("ru-RU", {
+                    weekday: 'short',
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                });
+            }
+            closeDateModal();
+            e.preventDefault();
+        };
+
+        const displayDates = () => {
+            updateYearMonth();
+            dates.innerHTML = "";
+
+            const lastOfPrevMonth = new Date(year, month, 0);
+            for (let i = 0; i <= lastOfPrevMonth.getDay(); i++) {
+                const text = lastOfPrevMonth.getDate() - lastOfPrevMonth.getDay() + i;
+                const button = createButton(text, true, -1);
+                dates.appendChild(button);
+            }
+
+            const lastOfMonth = new Date(year, month + 1, 0);
+            for (let i = 1; i <= lastOfMonth.getDate(); i++) {
+                const button = createButton(i, false);
+                button.addEventListener("click", handleDateClick);
+                button.addEventListener("dblclick", Apply);
+                dates.appendChild(button);
+            }
+
+            const firstOfNextMonth = new Date(year, month + 1, 1);
+            for (let i = firstOfNextMonth.getDay(); i < 7; i++) {
+                const text = firstOfNextMonth.getDate() - firstOfNextMonth.getDay() + i;
+                const button = createButton(text, true, 1);
+                dates.appendChild(button);
+            }
+        };
+
+        const createButton = (text, isDisabled = false, type = 0) => {
+            const currentDate = new Date();
+            let comparisonDate = new Date(year, month + type, text);
+
+            const isToday = currentDate.getDate() === text && currentDate.getFullYear() === year && currentDate.getMonth() === month;
+            const selected = selectedDate.getTime() === comparisonDate.getTime();
+
+            const button = document.createElement("button");
+            button.textContent = text;
+            button.disabled = isDisabled;
+            button.classList.toggle("today", isToday && !isDisabled);
+            button.classList.toggle("selected", selected);
+            return button;
+        };
+
+        displayDates();
+
+        // Логика выбора периода и расчет дат
+        const selectPeriod = document.querySelector('.select[data-cid="select-for-calendar"]');
+        if (selectPeriod) {
+            const selectCurrent = selectPeriod.querySelector('.select__current');
+
+            const calculateDateRange = (period) => {
+                const endDate = new Date();
+                let startDate = new Date();
+                
+                switch (period) {
+                    case 'Неделя':
+                        startDate.setDate(endDate.getDate() - 7);
+                        break;
+                    case 'Месяц':
+                        startDate.setMonth(endDate.getMonth() - 1);
+                        break;
+                    case '3 месяца':
+                        startDate.setMonth(endDate.getMonth() - 3);
+                        break;
+                    case 'Пол года':
+                        startDate.setMonth(endDate.getMonth() - 6);
+                        break;
+                    case 'Год':
+                        startDate.setFullYear(endDate.getFullYear() - 1);
+                        break;
+                    default:
+                        return;
+                }
+
+                return { startDate, endDate };
+            };
+
+            const updateInputDates = (startDate, endDate) => {
+                dateInputStart.value = startDate.toLocaleDateString("ru-RU");
+                dateInputEnd.value = endDate.toLocaleDateString("ru-RU");
+            };
+
+            const displayDatesInCalendar = (startDate, endDate) => {
+                const start = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+                const end = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+
+                year = start.getFullYear();
+                month = start.getMonth();
+                displayDates();
+
+                dates.querySelectorAll("button").forEach(button => {
+                    const buttonDate = new Date(year, month, parseInt(button.textContent));
+
+                    if (buttonDate >= start && buttonDate <= end) {
+                        button.classList.add("selected-range");
+                    } else {
+                        button.classList.remove("selected-range");
+                    }
+                });
+            };
+
+            selectPeriod.addEventListener('click', function(event) {
+                if (event.target.classList.contains('select__item')) {
+                    const period = event.target.innerText;
+                    selectCurrent.innerText = period;
+                    const { startDate, endDate } = calculateDateRange(period);
+                    updateInputDates(startDate, endDate);
+                    displayDatesInCalendar(startDate, endDate);
+                }
+            });
+        }
+
+        // Универсальная логика для простых селектов
+        document.addEventListener('click', function(event) {
+            const target = event.target;
+
+            if (target.closest('.select')) {
+                const select = target.closest('.select');
+                select.classList.toggle('is-active');
+
+                document.querySelectorAll('.select.is-active').forEach(otherSelect => {
+                    if (otherSelect !== select) {
+                        otherSelect.classList.remove('is-active');
+                    }
+                });
+            } else {
+                document.querySelectorAll('.select.is-active').forEach(select => {
+                    select.classList.remove('is-active');
+                });
+            }
+
+            if (target.classList.contains('select__item') && target.closest('.select[data-cid="simple-select"]')) {
+                const selectItem = target;
+                const select = selectItem.closest('.select');
+                const currentText = select.querySelector('.select__current');
+
+                currentText.innerText = selectItem.innerText;
+                currentText.setAttribute('data-value', selectItem.getAttribute('data-value'));
+
+                select.classList.remove('is-active');
+            }
         });
     });
 
-    document.addEventListener('click', (e) => {
-        if (!e.target.closest('.datepicker-container') && !e.target.closest('[data-cid="calendar"]')) {
-            closeDateModal();
-        }
-    });
-
-    const yearInput = datepicker.querySelector(".year-input");
-    const monthInput = datepicker.querySelector(".month-input");
-    const nextBtn = datepicker.querySelector(".next");
-    const prevBtn = datepicker.querySelector(".prev");
-    const dates = datepicker.querySelector(".dates");
-
-    let selectedDate = new Date();
-    let year = selectedDate.getFullYear();
-    let month = selectedDate.getMonth();
-
-    nextBtn.addEventListener("click", (e) => {
-        if (month === 11) year++;
-        month = (month + 1) % 12;
-        displayDates();
-        e.preventDefault();
-    });
-
-    prevBtn.addEventListener("click", (e) => {
-        if (month === 0) year--;
-        month = (month - 1 + 12) % 12;
-        displayDates();
-        e.preventDefault();
-    });
-
-    monthInput.addEventListener("change", () => {
-        month = monthInput.selectedIndex;
-        displayDates();
-    });
-
-    yearInput.addEventListener("change", () => {
-        year = yearInput.value;
-        displayDates();
-    });
-
-    const updateYearMonth = () => {
-        monthInput.selectedIndex = month;
-        yearInput.value = year;
-    };
-
-    const handleDateClick = (e) => {
-        e.preventDefault();
-        const button = e.target;
-        const selected = dates.querySelector(".selected");
-        selected && selected.classList.remove("selected");
-
-        button.classList.add("selected");
-        selectedDate = new Date(year, month, parseInt(button.textContent));
-    };
-
-    const Apply = (e) => {
-        if (activeInput) {
-            activeInput.value = selectedDate.toLocaleDateString("ru-RU", {
-                weekday: 'short',
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit",
-            });
-        }
-        closeDateModal();
-        e.preventDefault();
-    };
-
-    const displayDates = () => {
-        updateYearMonth();
-        dates.innerHTML = "";
-
-        const lastOfPrevMonth = new Date(year, month, 0);
-        for (let i = 0; i <= lastOfPrevMonth.getDay(); i++) {
-            const text = lastOfPrevMonth.getDate() - lastOfPrevMonth.getDay() + i;
-            const button = createButton(text, true, -1);
-            dates.appendChild(button);
-        }
-
-        const lastOfMonth = new Date(year, month + 1, 0);
-        for (let i = 1; i <= lastOfMonth.getDate(); i++) {
-            const button = createButton(i, false);
-            button.addEventListener("click", handleDateClick);
-            button.addEventListener("dblclick", Apply);
-            dates.appendChild(button);
-        }
-
-        const firstOfNextMonth = new Date(year, month + 1, 1);
-        for (let i = firstOfNextMonth.getDay(); i < 7; i++) {
-            const text = firstOfNextMonth.getDate() - firstOfNextMonth.getDay() + i;
-            const button = createButton(text, true, 1);
-            dates.appendChild(button);
-        }
-    };
-
-    const createButton = (text, isDisabled = false, type = 0) => {
-        const currentDate = new Date();
-        let comparisonDate = new Date(year, month + type, text);
-
-        const isToday = currentDate.getDate() === text && currentDate.getFullYear() === year && currentDate.getMonth() === month;
-        const selected = selectedDate.getTime() === comparisonDate.getTime();
-
-        const button = document.createElement("button");
-        button.textContent = text;
-        button.disabled = isDisabled;
-        button.classList.toggle("today", isToday && !isDisabled);
-        button.classList.toggle("selected", selected);
-        return button;
-    };
-
-    displayDates();
-
-    // Новый функционал: выбор периода и расчет дат
-    const selectPeriod = document.querySelector('.select[data-cid="select-for-calendar"]');
-    const selectCurrent = selectPeriod.querySelector('.select__current');
-
-    const calculateDateRange = (period) => {
-        const endDate = new Date();
-        let startDate = new Date();
-        
-        switch (period) {
-            case 'Неделя':
-                startDate.setDate(endDate.getDate() - 7);
-                break;
-            case 'Месяц':
-                startDate.setMonth(endDate.getMonth() - 1);
-                break;
-            case '3 месяца':
-                startDate.setMonth(endDate.getMonth() - 3);
-                break;
-            case 'Пол года':
-                startDate.setMonth(endDate.getMonth() - 6);
-                break;
-            case 'Год':
-                startDate.setFullYear(endDate.getFullYear() - 1);
-                break;
-            default:
-                return;
-        }
-
-        return { startDate, endDate };
-    };
-
-    const updateInputDates = (startDate, endDate) => {
-        dateInputStart.value = startDate.toLocaleDateString("ru-RU");
-        dateInputEnd.value = endDate.toLocaleDateString("ru-RU");
-    };
-
-    const displayDatesInCalendar = (startDate, endDate) => {
-        // Здесь можно вставить логику для отображения начальной и конечной даты в календаре
-    };
-
-    document.addEventListener('click', function(event) {
-        if (event.target.closest('.select')) {
-            const select = event.target.closest('.select');
-            select.classList.toggle('is-active');
-        } else {
-            document.querySelectorAll('.select.is-active').forEach(select => {
-                select.classList.remove('is-active');
-            });
-        }
-
-        if (event.target.classList.contains('select__item')) {
-            const period = event.target.innerText;
-            selectCurrent.innerText = period;
-            const { startDate, endDate } = calculateDateRange(period);
-            updateInputDates(startDate, endDate);
-            displayDatesInCalendar(startDate, endDate);
-        }
-    });
-        
-    });
 
 </script>
 </html>
