@@ -8,7 +8,6 @@
         <button type="button" class="btn add-user" data-toggle="modal" data-target="#addUserModal">
             Добавить Пользователя
         </button>
-
         <div class="table-wrapper">
             <table class="table table-striped" id="usersTable">
                 <thead>
@@ -310,6 +309,10 @@
 
     function setupPagination(users) {
         const totalPages = Math.ceil(users.length / rowsPerPage);
+
+        if(totalPages <= 1) {
+            document.querySelector('#pagination').style.display = 'none';
+        }
 
         document.getElementById('prevPage').addEventListener('click', () => {
             if (currentPage > 1) {
