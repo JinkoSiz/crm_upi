@@ -232,6 +232,8 @@
               laborCostsProjectsForm = document.querySelector('#laborCostsProjectsForm'),
               laborCostsSectionsForm = document.querySelector('#laborCostsSectionsForm'),
               laborCostsSectionsTable = document.querySelector('#laborCostsSectionsTable'),
+              dateInputStart = document.querySelector('input.date-input[name=start_date]'),
+              dateInputEnd = document.querySelector('input.date-input[name=end_date]'),
               isAdmin = '{{user.is_admin}}';
     
         
@@ -351,184 +353,198 @@
         setStatus(currentUrlPath, adminBtnsListItem, adminLinksListItem, adminLinksBtnsListItem);
 
         const datepicker = document.querySelector(".datepicker-container");
-        let activeInput = null; // для хранения текущего активного инпута
+    let activeInput = null;
 
-        // Функция для открытия календаря под нужным input
-        const openDateModal = (input) => {
-            activeInput = input;
+    const openDateModal = (input) => {
+        activeInput = input;
+        const wrapper = input.closest(".datepicker-wrapper");
+        wrapper.appendChild(datepicker);
+        datepicker.style.display = 'block';
+    };
 
-            // Получаем родительский элемент `.datepicker-wrapper` и добавляем туда календарь
-            const wrapper = input.closest(".datepicker-wrapper");
-            wrapper.appendChild(datepicker);
-            datepicker.style.display = 'block'; // показываем календарь
-        };
+    const closeDateModal = () => {
+        datepicker.style.display = 'none';
+        activeInput = null;
+    };
 
-        // Функция для закрытия календаря
-        const closeDateModal = () => {
-            datepicker.style.display = 'none';
-            activeInput = null; // сбрасываем активный инпут
-        };
-
-        // Навешиваем событие на все элементы с атрибутом data-cid="calendar"
-        document.querySelectorAll('[data-cid="calendar"]').forEach((input) => {
-            input.addEventListener("click", (e) => {
-                e.preventDefault();
-                openDateModal(input);
-            });
-        });
-
-        // Обработчик закрытия календаря при клике вне его
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.datepicker-container') && !e.target.closest('[data-cid="calendar"]')) {
-                closeDateModal();
-            }
-        });
-
-        // Переменные для работы с календарем
-        const yearInput = datepicker.querySelector(".year-input");
-        const monthInput = datepicker.querySelector(".month-input");
-        const nextBtn = datepicker.querySelector(".next");
-        const prevBtn = datepicker.querySelector(".prev");
-        const dates = datepicker.querySelector(".dates");
-
-        let selectedDate = new Date();
-        let year = selectedDate.getFullYear();
-        let month = selectedDate.getMonth();
-
-        // Функции для навигации по месяцам
-        nextBtn.addEventListener("click", (e) => {
-            if (month === 11) year++;
-            month = (month + 1) % 12;
-            displayDates();
+    document.querySelectorAll('[data-cid="calendar"]').forEach((input) => {
+        input.addEventListener("click", (e) => {
             e.preventDefault();
+            openDateModal(input);
         });
+    });
 
-        prevBtn.addEventListener("click", (e) => {
-            if (month === 0) year--;
-            month = (month - 1 + 12) % 12;
-            displayDates();
-            e.preventDefault();
-        });
-
-        // Обработчик изменения месяца
-        monthInput.addEventListener("change", () => {
-            month = monthInput.selectedIndex;
-            displayDates();
-        });
-
-        // Обработчик изменения года
-        yearInput.addEventListener("change", () => {
-            year = yearInput.value;
-            displayDates();
-        });
-
-        const updateYearMonth = () => {
-            monthInput.selectedIndex = month;
-            yearInput.value = year;
-        };
-
-        const handleDateClick = (e) => {
-            e.preventDefault();
-            const button = e.target;
-            const selected = dates.querySelector(".selected");
-            selected && selected.classList.remove("selected");
-
-            button.classList.add("selected");
-            selectedDate = new Date(year, month, parseInt(button.textContent));
-        };
-
-        // Функция Apply для вставки даты в нужный инпут
-        const Apply = (e) => {
-            if (activeInput) {
-                activeInput.value = selectedDate.toLocaleDateString("ru-RU", {
-                    weekday: 'short',
-                    year: "numeric",
-                    month: "2-digit",
-                    day: "2-digit",
-                });
-            }
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.datepicker-container') && !e.target.closest('[data-cid="calendar"]')) {
             closeDateModal();
-            e.preventDefault();
-        };
+        }
+    });
 
-        // Функция отображения дат
-        const displayDates = () => {
-            updateYearMonth();
-            dates.innerHTML = "";
+    const yearInput = datepicker.querySelector(".year-input");
+    const monthInput = datepicker.querySelector(".month-input");
+    const nextBtn = datepicker.querySelector(".next");
+    const prevBtn = datepicker.querySelector(".prev");
+    const dates = datepicker.querySelector(".dates");
 
-            const lastOfPrevMonth = new Date(year, month, 0);
-            for (let i = 0; i <= lastOfPrevMonth.getDay(); i++) {
-                const text = lastOfPrevMonth.getDate() - lastOfPrevMonth.getDay() + i;
-                const button = createButton(text, true, -1);
-                dates.appendChild(button);
-            }
+    let selectedDate = new Date();
+    let year = selectedDate.getFullYear();
+    let month = selectedDate.getMonth();
 
-            const lastOfMonth = new Date(year, month + 1, 0);
-            for (let i = 1; i <= lastOfMonth.getDate(); i++) {
-                const button = createButton(i, false);
-                button.addEventListener("click", handleDateClick);
-                button.addEventListener("dblclick", Apply);
-                dates.appendChild(button);
-            }
-
-            const firstOfNextMonth = new Date(year, month + 1, 1);
-            for (let i = firstOfNextMonth.getDay(); i < 7; i++) {
-                const text = firstOfNextMonth.getDate() - firstOfNextMonth.getDay() + i;
-                const button = createButton(text, true, 1);
-                dates.appendChild(button);
-            }
-        };
-
-        const createButton = (text, isDisabled = false, type = 0) => {
-            const currentDate = new Date();
-            let comparisonDate = new Date(year, month + type, text);
-
-            const isToday = currentDate.getDate() === text && currentDate.getFullYear() === year && currentDate.getMonth() === month;
-            const selected = selectedDate.getTime() === comparisonDate.getTime();
-
-            const button = document.createElement("button");
-            button.textContent = text;
-            button.disabled = isDisabled;
-            button.classList.toggle("today", isToday && !isDisabled);
-            button.classList.toggle("selected", selected);
-            return button;
-        };
-
-        // Начальная инициализация отображения дат
+    nextBtn.addEventListener("click", (e) => {
+        if (month === 11) year++;
+        month = (month + 1) % 12;
         displayDates();
+        e.preventDefault();
+    });
 
-        document.addEventListener('click', function(event) {
-            // Переключение открытия/закрытия селекта при клике по .select
-            if (event.target.closest('.select')) {
-                const select = event.target.closest('.select');
-                select.classList.toggle('is-active');
+    prevBtn.addEventListener("click", (e) => {
+        if (month === 0) year--;
+        month = (month - 1 + 12) % 12;
+        displayDates();
+        e.preventDefault();
+    });
 
-                // Закрываем другие открытые селекты
-                document.querySelectorAll('.select.is-active').forEach(otherSelect => {
-                    if (otherSelect !== select) {
-                        otherSelect.classList.remove('is-active');
-                    }
-                });
-            } else {
-                // Закрытие всех селектов, если клик вне их области
-                document.querySelectorAll('.select.is-active').forEach(select => {
-                    select.classList.remove('is-active');
-                });
-            }
+    monthInput.addEventListener("change", () => {
+        month = monthInput.selectedIndex;
+        displayDates();
+    });
 
-            // Обработка выбора элемента в списке
-            if (event.target.classList.contains('select__item')) {
-                const selectItem = event.target;
-                const select = selectItem.closest('.select');
-                const currentText = select.querySelector('.select__current');
-                
-                // Устанавливаем выбранное значение в .select__current
-                currentText.innerText = selectItem.innerText;
-                
-                // Закрываем селект
+    yearInput.addEventListener("change", () => {
+        year = yearInput.value;
+        displayDates();
+    });
+
+    const updateYearMonth = () => {
+        monthInput.selectedIndex = month;
+        yearInput.value = year;
+    };
+
+    const handleDateClick = (e) => {
+        e.preventDefault();
+        const button = e.target;
+        const selected = dates.querySelector(".selected");
+        selected && selected.classList.remove("selected");
+
+        button.classList.add("selected");
+        selectedDate = new Date(year, month, parseInt(button.textContent));
+    };
+
+    const Apply = (e) => {
+        if (activeInput) {
+            activeInput.value = selectedDate.toLocaleDateString("ru-RU", {
+                weekday: 'short',
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+            });
+        }
+        closeDateModal();
+        e.preventDefault();
+    };
+
+    const displayDates = () => {
+        updateYearMonth();
+        dates.innerHTML = "";
+
+        const lastOfPrevMonth = new Date(year, month, 0);
+        for (let i = 0; i <= lastOfPrevMonth.getDay(); i++) {
+            const text = lastOfPrevMonth.getDate() - lastOfPrevMonth.getDay() + i;
+            const button = createButton(text, true, -1);
+            dates.appendChild(button);
+        }
+
+        const lastOfMonth = new Date(year, month + 1, 0);
+        for (let i = 1; i <= lastOfMonth.getDate(); i++) {
+            const button = createButton(i, false);
+            button.addEventListener("click", handleDateClick);
+            button.addEventListener("dblclick", Apply);
+            dates.appendChild(button);
+        }
+
+        const firstOfNextMonth = new Date(year, month + 1, 1);
+        for (let i = firstOfNextMonth.getDay(); i < 7; i++) {
+            const text = firstOfNextMonth.getDate() - firstOfNextMonth.getDay() + i;
+            const button = createButton(text, true, 1);
+            dates.appendChild(button);
+        }
+    };
+
+    const createButton = (text, isDisabled = false, type = 0) => {
+        const currentDate = new Date();
+        let comparisonDate = new Date(year, month + type, text);
+
+        const isToday = currentDate.getDate() === text && currentDate.getFullYear() === year && currentDate.getMonth() === month;
+        const selected = selectedDate.getTime() === comparisonDate.getTime();
+
+        const button = document.createElement("button");
+        button.textContent = text;
+        button.disabled = isDisabled;
+        button.classList.toggle("today", isToday && !isDisabled);
+        button.classList.toggle("selected", selected);
+        return button;
+    };
+
+    displayDates();
+
+    // Новый функционал: выбор периода и расчет дат
+    const selectPeriod = document.querySelector('.select[data-cid="select-for-calendar"]');
+    const selectCurrent = selectPeriod.querySelector('.select__current');
+
+    const calculateDateRange = (period) => {
+        const endDate = new Date();
+        let startDate = new Date();
+        
+        switch (period) {
+            case 'Неделя':
+                startDate.setDate(endDate.getDate() - 7);
+                break;
+            case 'Месяц':
+                startDate.setMonth(endDate.getMonth() - 1);
+                break;
+            case '3 месяца':
+                startDate.setMonth(endDate.getMonth() - 3);
+                break;
+            case 'Пол года':
+                startDate.setMonth(endDate.getMonth() - 6);
+                break;
+            case 'Год':
+                startDate.setFullYear(endDate.getFullYear() - 1);
+                break;
+            default:
+                return;
+        }
+
+        return { startDate, endDate };
+    };
+
+    const updateInputDates = (startDate, endDate) => {
+        dateInputStart.value = startDate.toLocaleDateString("ru-RU");
+        dateInputEnd.value = endDate.toLocaleDateString("ru-RU");
+    };
+
+    const displayDatesInCalendar = (startDate, endDate) => {
+        // Здесь можно вставить логику для отображения начальной и конечной даты в календаре
+    };
+
+    document.addEventListener('click', function(event) {
+        if (event.target.closest('.select')) {
+            const select = event.target.closest('.select');
+            select.classList.toggle('is-active');
+        } else {
+            document.querySelectorAll('.select.is-active').forEach(select => {
                 select.classList.remove('is-active');
-            }
-        });
+            });
+        }
+
+        if (event.target.classList.contains('select__item')) {
+            const period = event.target.innerText;
+            selectCurrent.innerText = period;
+            const { startDate, endDate } = calculateDateRange(period);
+            updateInputDates(startDate, endDate);
+            displayDatesInCalendar(startDate, endDate);
+        }
+    });
+        
     });
 
 </script>
