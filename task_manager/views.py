@@ -278,10 +278,12 @@ def send_invitation(request, pk):
         send_mail(
             'Приглашение на платформу Task Manager',
             f'Ваши учетные данные для входа:\nЛогин: {user.username}\nПароль: {password}',
-            'info@upi-test.ru',
+            'info@demotimetracker.ru',
             [user.email],
             fail_silently=False,
         )
+
+        print('Приглашение отправлено успешно.')
 
         messages.success(request, 'Приглашение отправлено успешно.')
     else:
