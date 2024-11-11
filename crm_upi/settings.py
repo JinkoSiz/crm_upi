@@ -51,10 +51,9 @@ CSRF_TRUSTED_ORIGINS = ['https://crm-upi.vercel.app',
                         'https://crm-upi-git-main-jinkosizs-projects-4c8f9ac9.vercel.app',
                         'https://127.0.0.1',
                         'https://jinkosiz-crm-upi-9cfc.twc1.net',
-                        'https://demotimetracker.ru/',
+                        'https://demotimetracker.ru',
                         'https://89.223.120.50',
-                        'http://upi-test.ru/',
-                        'https://upi-test.ru/']
+                        'https://upi-test.ru']
 
 ALLOWED_HOSTS = ['crm-upi.vercel.app',
                  'crm-upi-jinkosizs-projects-4c8f9ac9.vercel.app',
