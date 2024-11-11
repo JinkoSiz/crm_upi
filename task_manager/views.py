@@ -278,7 +278,7 @@ def send_invitation(request, pk):
         send_mail(
             'Приглашение на платформу Task Manager',
             f'Ваши учетные данные для входа:\nЛогин: {user.username}\nПароль: {password}',
-            'zpsk1977@gmail.com',
+            'info@upi-test.ru',
             [user.email],
             fail_silently=False,
         )
