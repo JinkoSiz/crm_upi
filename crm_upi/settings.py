@@ -214,9 +214,9 @@ AWS_S3_FILE_OVERWRITE = False
 AUTH_USER_MODEL = 'task_manager.CustomUser'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.timeweb.ru'
+EMAIL_PORT = 465
+EMAIL_USE_SSL = True
 EMAIL_HOST_USER = f'{EMAIL_USER}'  # Your email address
 EMAIL_HOST_PASSWORD = f'{EMAIL_PASSWORD}'  # Your email account password
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
