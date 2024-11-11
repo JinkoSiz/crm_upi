@@ -537,9 +537,17 @@
                 const select = selectItem.closest('.select');
                 const currentText = select.querySelector('.select__current');
 
+                // Устанавливаем текст и значение выбранного элемента
                 currentText.innerText = selectItem.innerText;
                 currentText.setAttribute('data-value', selectItem.getAttribute('data-value'));
 
+                // Находим скрытое поле и обновляем его значение
+                const hiddenInput = select.parentNode.querySelector('.hidden-input');
+                if (hiddenInput) {
+                    hiddenInput.value = selectItem.getAttribute('data-value');
+                }
+
+                // Закрываем селект
                 select.classList.remove('is-active');
             }
         });

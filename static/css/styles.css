@@ -40,9 +40,9 @@ input.form-controlfor:focus,
 select.form-control:focus,
 input.form-control:focus-visible,
 select.form-control:focus-visible  {
-    outline-color: var(--Primary_blue);
-    outline-width: 1px;
-    box-shadow: none;
+    outline: 1px solid var(--Primary_blue) !important;
+    border: 1px solid var(--Primary_blue) !important;
+    box-shadow: none !important;
 }
 
 input[type=date],
@@ -57,7 +57,7 @@ input[type=text] {
     font-weight: 400;
     line-height: 18px;
     border-radius: 5px;
-    border: 1px solid var(--Text_Gray_40);
+    border: 1px solid var(--Text_Gray_20);
     font-family: "Roboto", sans-serif;
 }
 
@@ -559,6 +559,10 @@ button.sorter span {
     border: 1px solid var(--Text_Gray_20);
     border-radius: 10px;
     overflow: hidden;
+}
+
+.table-wrapper.personal {
+    overflow: visible;
 }
 
 .table-wrapper.only-bottom {
@@ -1345,8 +1349,7 @@ p.main-info {
     background: var(--Text_Gray_10);
     height: 80px;
     border-radius: 0 0 10px 10px;
-    border: 1px solid var(--Text_Gray_20);
-    border-top: none;
+    border: none;
 }
 
 #addRowBtn span {
@@ -1454,6 +1457,13 @@ h1.super-title {
 
 .flex-block input {
     margin-right: 18px;
+    height: 40px;
+    color: var(--Text_Gray_100);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 18px;
+    padding: 11px 10px;
+    border: 1px solid var(--Text_Gray_20);
 }
 
 .flex-block span {
@@ -1627,14 +1637,16 @@ table#usersTable thead {
     width: 185px;
     height: 40px;
     border-radius: 5px;
-    border: 1px solid var(--Text_Gray_40);
+    border: 1px solid var(--Text_Gray_20);
     padding: 10px;
     outline: 0px solid var(--Primary_blue);
+    cursor: pointer;
 }
 
 .select[data-cid=simple-select] {
     margin-right: 0;
     padding: 11px 10px;
+    width: 100%;
 }
 
 .select.is-active {
@@ -1682,7 +1694,9 @@ table#usersTable thead {
     background-color: transparent;
     transition: .15s all;
     height: 38px;
-    padding: 10px 20px;
+    padding: 10px;
+    cursor: pointer;
+    text-align: center;
 }
 
 .select__item:hover {
