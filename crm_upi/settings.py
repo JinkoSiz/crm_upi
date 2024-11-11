@@ -50,13 +50,17 @@ CSRF_TRUSTED_ORIGINS = ['https://crm-upi.vercel.app',
                         'https://crm-upi-jinkosizs-projects-4c8f9ac9.vercel.app',
                         'https://crm-upi-git-main-jinkosizs-projects-4c8f9ac9.vercel.app',
                         'https://127.0.0.1',
-                        'https://jinkosiz-crm-upi-9cfc.twc1.net']
+                        'https://jinkosiz-crm-upi-9cfc.twc1.net',
+                        'https://demotimetracker.ru/',
+                        'https://89.223.120.50']
 
 ALLOWED_HOSTS = ['crm-upi.vercel.app',
                  'crm-upi-jinkosizs-projects-4c8f9ac9.vercel.app',
                  'crm-upi-git-main-jinkosizs-projects-4c8f9ac9.vercel.app',
                  '127.0.0.1',
-                 'jinkosiz-crm-upi-9cfc.twc1.net']
+                 'jinkosiz-crm-upi-9cfc.twc1.net',
+                 'demotimetracker.ru/',
+                 '89.223.120.50']
 
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
