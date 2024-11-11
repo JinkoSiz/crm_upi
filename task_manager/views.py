@@ -927,7 +927,7 @@ def report_create(request):
         cache.delete('tasks')
         cache.delete('timelogs_cache')
 
-        return redirect('timelog-list')  # Перенаправляем на список таймлогов
+        return redirect('user-dashboard')  # Перенаправляем на список таймлогов
 
     else:
         form = TimelogForm()
