@@ -109,7 +109,6 @@ class CustomUser(AbstractUser):
     def save(self, *args, **kwargs):
         # Save the user first to ensure it has an ID
         super().save(*args, **kwargs)
-
         # Custom logic when is_admin is set
         if self.is_admin or self.is_superuser:
             admin_group, created = Group.objects.get_or_create(name='Admin')
@@ -120,10 +119,16 @@ class CustomUser(AbstractUser):
             self.user_permissions.set(permissions)
             self.is_staff = True
             self.is_superuser = True
+            if self.status != 'invited' and self.status != 'active':
+                self.status = 'draft'
         else:
             # Clear admin rights if is_admin is False
             self.is_staff = False
             self.is_superuser = False
+            print(f'models {self.status}')
+            if self.status != 'invited' and self.status != 'active':
+                #print(f'models {self.status}')
+                self.status = 'draft'
             admin_group = Group.objects.filter(name='Admin').first()
             if admin_group:
                 self.groups.remove(admin_group)
