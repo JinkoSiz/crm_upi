@@ -90,6 +90,13 @@ input[type=checkbox] {
     border: 1px solid var(--Text_Gray_40) !important;
 }
 
+.select.error,
+.flex-block input.error,
+input.error {
+    border: 1px solid var(--Danger);
+    outline: 1px solid var(--Danger);
+}
+
 body {
     background: var(--Background);
 }
