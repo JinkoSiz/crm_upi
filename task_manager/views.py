@@ -189,6 +189,7 @@ def createUser(request):
         form = CustomUserCreationForm(request.POST, request.FILES)
         if form.is_valid():
             user = form.save()
+            print(user)
             # Очищаем кэш списка пользователей и отделов/ролей
             cache.delete('user_list')
             cache.delete('departments_cache')
@@ -857,11 +858,7 @@ def reset_session(request):
 def user_dashboard(request):
     user = request.user
     today = timezone.now().date()
-
-    # Если пользователь админ, перенаправляем его на страницу логов
-    if user.is_admin:
-        return redirect('timelog-list')
-
+    
     # Получаем таймлог за текущий день для данного пользователя
     timelog = Timelog.objects.filter(user=user, date__date=today).first()
 
