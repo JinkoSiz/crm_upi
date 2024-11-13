@@ -189,7 +189,6 @@ def createUser(request):
         form = CustomUserCreationForm(request.POST, request.FILES)
         if form.is_valid():
             user = form.save()
-            print(user)
             # Очищаем кэш списка пользователей и отделов/ролей
             cache.delete('user_list')
             cache.delete('departments_cache')
@@ -244,6 +243,15 @@ def user_login(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
+            # Если пользователь пригашен и входит впервые, меняем статус на активный
+            if user.status == 'invited':
+                user.status = 'active'
+                print(user.status)
+                user.save()
+                print(user.status)
+                # Очищаем кэш после обновления пользователя
+                cache.delete('user_list')
+                
             return redirect('user-dashboard')  # Redirect to your desired page after login
         else:
             messages.error(request, 'Invalid username or password')
@@ -259,10 +267,11 @@ def user_logout(request):
 
 def send_invitation(request, pk):
     # Выводим для отладки
-    print(f"Received pk from URL: {pk}")
-    print(f"Logged in user pk: {request.user.pk}")
+    # print(f"Received pk from URL: {pk}")
+    # print(f"Logged in user pk: {request.user.pk}")
     user = get_object_or_404(CustomUser, pk=pk)
-    if user.status != 'invited':
+    #print(f'invite: before {user.status}')
+    if user.status != 'invited' and user.status != 'active':
         # Генерация случайного логина
         username = get_random_string(length=8)
         while CustomUser.objects.filter(username=username).exists():
@@ -274,6 +283,11 @@ def send_invitation(request, pk):
         user.set_password(password)
         user.status = 'invited'
         user.save()
+        
+        # Очищаем кэш после обновления пользователя
+        cache.delete('user_list')
+
+        #print(f'invite: after {user.status}')
 
         # Синхронная отправка email
         send_mail(
@@ -858,7 +872,7 @@ def reset_session(request):
 def user_dashboard(request):
     user = request.user
     today = timezone.now().date()
-    
+
     # Получаем таймлог за текущий день для данного пользователя
     timelog = Timelog.objects.filter(user=user, date__date=today).first()
 

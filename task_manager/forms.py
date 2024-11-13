@@ -78,7 +78,10 @@ class CustomUserCreationForm(forms.ModelForm):
 
         # Обрабатываем роль пользователя
         is_admin = self.cleaned_data.get('is_admin')
-        user.is_admin = bool(is_admin)
+        if(is_admin == 'False'):
+            user.is_admin = False
+        else:
+            user.is_admin = True
 
         if not user.username:
             user.username = get_random_string(8)
