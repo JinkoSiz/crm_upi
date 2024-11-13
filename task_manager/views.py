@@ -278,10 +278,12 @@ def send_invitation(request, pk):
         send_mail(
             'Приглашение на платформу Task Manager',
             f'Ваши учетные данные для входа:\nЛогин: {user.username}\nПароль: {password}',
-            'zpsk1977@gmail.com',
+            'info@demotimetracker.ru',
             [user.email],
             fail_silently=False,
         )
+
+        print('Приглашение отправлено успешно.')
 
         messages.success(request, 'Приглашение отправлено успешно.')
     else:
@@ -925,7 +927,7 @@ def report_create(request):
         cache.delete('tasks')
         cache.delete('timelogs_cache')
 
-        return redirect('timelog-list')  # Перенаправляем на список таймлогов
+        return redirect('user-dashboard')  # Перенаправляем на список таймлогов
 
     else:
         form = TimelogForm()
