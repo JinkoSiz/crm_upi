@@ -128,7 +128,7 @@
             </div>
         </div>
         <div class="bottom-info">
-            <button type="submit" class="btn">Отправить отчет</button>
+            <button type="submit" class="btn" id="sendReport">Отправить отчет</button>
             <div class="input-block">
                 <label for="total-counter">Итого за день:</label>
                 <input type="text" id="total-counter" readonly>
@@ -142,7 +142,19 @@
 
     const addRowBtn = document.querySelector('#addRowBtn'),
           tableBody = document.querySelector('.table tbody'),
-          totalConter = document.querySelector('#total-counter');
+          totalConter = document.querySelector('#total-counter'),
+          sendReportBtn = document.querySelector('#sendReport');
+
+    
+    function inputsChecker() {
+        document.querySelectorAll('table tbody tr td input').forEach(input => {
+            if (input.value == '' || input.value == null || input.value == ' ') {
+                sendReportBtn.disabled = true;
+            } else {
+                sendReportBtn.disabled = false;
+            }
+        })
+    }
           
 
     totalConter.value = 0;
@@ -250,6 +262,8 @@
         });
 
         totalConter.value = counter + ' ' + getHourLabel(counter);
+
+        inputsChecker();
     }
 
     function getHourLabel(number) {
@@ -272,10 +286,13 @@
         }
     }
 
+    inputsChecker();
+
     document.addEventListener('click', (e) => {
         if (e.target.closest('.delete-row')) {
             e.target.closest('tr').remove();
             calcInputsValues();
+            inputsChecker();
         }
     });
     
