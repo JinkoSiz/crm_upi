@@ -436,6 +436,10 @@ Projects List
     function setupPagination(projects) {
         const totalPages = Math.ceil(projects.length / rowsPerPage);
 
+        if(totalPages <= 1) {
+            document.querySelector('#pagination').style.display = 'none';
+        }
+
         function navigate(direction) {
             if (direction === 'prev' && currentPage > 1) {
                 currentPage--;

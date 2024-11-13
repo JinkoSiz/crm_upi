@@ -189,6 +189,7 @@ def createUser(request):
         form = CustomUserCreationForm(request.POST, request.FILES)
         if form.is_valid():
             user = form.save()
+            print(user)
             # Очищаем кэш списка пользователей и отделов/ролей
             cache.delete('user_list')
             cache.delete('departments_cache')
@@ -257,6 +258,9 @@ def user_logout(request):
 
 
 def send_invitation(request, pk):
+    # Выводим для отладки
+    print(f"Received pk from URL: {pk}")
+    print(f"Logged in user pk: {request.user.pk}")
     user = get_object_or_404(CustomUser, pk=pk)
     if user.status != 'invited':
         # Генерация случайного логина
@@ -275,10 +279,12 @@ def send_invitation(request, pk):
         send_mail(
             'Приглашение на платформу Task Manager',
             f'Ваши учетные данные для входа:\nЛогин: {user.username}\nПароль: {password}',
-            'zpsk1977@gmail.com',
+            'info@demotimetracker.ru',
             [user.email],
             fail_silently=False,
         )
+
+        print('Приглашение отправлено успешно.')
 
         messages.success(request, 'Приглашение отправлено успешно.')
     else:
@@ -371,7 +377,7 @@ def createProject(request):
     if request.method == 'POST':
         title = request.POST['title']
         status_id = request.POST['status']
-        sections = request.POST.getlist('sections')
+        sections = request.POST.getlist('sections[]')
 
         with transaction.atomic():
             project = Project.objects.create(title=title, status_id=status_id)
@@ -558,6 +564,7 @@ def createSection(request):
         form = SectionForm(request.POST)
         if form.is_valid():
             form.save()
+            cache.delete('sections_cache')
             return redirect('section-list')
 
     return render(request, 'task_manager/section_form.html', {'form': form})
@@ -572,6 +579,7 @@ def updateSection(request, pk):
         form = SectionForm(request.POST, instance=section)
         if form.is_valid():
             form.save()
+            cache.delete('sections_cache')
 
             # Обновляем марки для секции
             marks = request.POST.getlist('marks')  # Получаем выбранные ID марок из формы
@@ -595,8 +603,9 @@ def updateSection(request, pk):
 
 def deleteSection(request, pk):
     section = get_object_or_404(Section, pk=pk)
-    if request.method == 'POST':
+    if request.method == 'POST': 
         section.delete()
+        cache.delete('sections_cache')
         return redirect('section-list')
 
     return render(request, 'task_manager/section_confirm_delete.html', {'section': section})
@@ -849,11 +858,7 @@ def reset_session(request):
 def user_dashboard(request):
     user = request.user
     today = timezone.now().date()
-
-    # Если пользователь админ, перенаправляем его на страницу логов
-    if user.is_admin:
-        return redirect('timelog-list')
-
+    
     # Получаем таймлог за текущий день для данного пользователя
     timelog = Timelog.objects.filter(user=user, date__date=today).first()
 
@@ -919,7 +924,7 @@ def report_create(request):
         cache.delete('tasks')
         cache.delete('timelogs_cache')
 
-        return redirect('timelog-list')  # Перенаправляем на список таймлогов
+        return redirect('user-dashboard')  # Перенаправляем на список таймлогов
 
     else:
         form = TimelogForm()
