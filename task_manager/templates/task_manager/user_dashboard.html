@@ -51,20 +51,4 @@
         </div>
     </div>
 </div>
-<script>
-    const isAdmin = "{{ user.is_admin|yesno:'Admin,User' }}",
-          createDiv = document.querySelector('#create');
-
-    console.log(isAdmin);
-
-    if (isAdmin == 'Admin')  {
-        const div = document.createElement('div');
-        div.innerHTML = 
-        `
-            <p class="admin_info"><a href="{% url 'timelog-list' %}">Тут</a> вы можете перейти на страницу админа</p>
-        `
-        createDiv.append(div);
-    }
-    
-</script>
 {% endblock %}

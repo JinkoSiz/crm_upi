@@ -51,6 +51,8 @@
         </div>
     </header>
 
+    <div id="adminDiv"></div>
+
     <nav class="admin-main-navigation">
         <ul>
             <li data-cid="timelogs">
@@ -211,6 +213,7 @@
 </div>
 </body>
 <script>
+
     document.addEventListener('DOMContentLoaded', () => {
         const currentUrlPath = window.location.pathname.split('/')[1],
             adminBtnsListItem = document.querySelectorAll('.admin-main-navigation ul li'),
@@ -251,6 +254,34 @@
                     item.classList.add('active');
                 }
             })
+        }
+
+        if(isAdmin) {
+
+            const div = document.createElement('div');
+            
+            if(currentUrlPath != '') {
+                const adminBlock = document.querySelector('#adminDiv');
+
+                div.innerHTML = 
+                `
+                <p class="admin_info"><a href="/">Нажмите</a>, чтобы перейти на страницу для заполнения отчета</p>
+                `;
+
+                div.style.marginBottom = '40px'
+                
+                adminBlock.append(div);
+                
+            } else {
+                const adminBlock = document.querySelector('#create');
+
+                div.innerHTML = 
+                `
+                <p class="admin_info"><a href="{% url 'timelog-list' %}">Нажмите</a>, чтобы перейти на страницу администратора</p>
+                `;
+
+                adminBlock.append(div);
+            }
         }
 
         function setStatus (url, mainList, secondaryList, secondaryListBtns) {
@@ -340,11 +371,12 @@
             }
         });
 
-        const yearInput = datepicker.querySelector(".year-input");
-        const monthInput = datepicker.querySelector(".month-input");
-        const nextBtn = datepicker.querySelector(".next");
-        const prevBtn = datepicker.querySelector(".prev");
-        const dates = datepicker.querySelector(".dates");
+        const yearInput = datepicker.querySelector(".year-input"),
+              monthInput = datepicker.querySelector(".month-input"),
+              nextBtn = datepicker.querySelector(".next"),
+              prevBtn = datepicker.querySelector(".prev"),
+              dates = datepicker.querySelector(".dates"),
+              adminBlock = document.querySelector('#adminBlock');
 
         let selectedDate = new Date();
         let year = selectedDate.getFullYear();
@@ -554,6 +586,8 @@
             }
         });
     });
+
+    
 
 
 </script>
