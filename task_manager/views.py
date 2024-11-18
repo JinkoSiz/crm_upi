@@ -363,28 +363,48 @@ def project(request):
 
 
 def project_detail(request, pk):
-    # Кэшируем детальные данные проекта
-    cache_key = f'project_detail_{pk}'
-    project_data = cache.get(cache_key)
+    try:
+        cache_key = f'project_detail_{pk}'
+        project_data = cache.get(cache_key)
 
-    if not project_data:
-        project = get_object_or_404(
-            Project.objects.prefetch_related('project_buildings__building', 'project_sections__section'), pk=pk
-        )
-        buildings = list(project.project_buildings.values('building__pk', 'building__title'))
-        sections = list(project.project_sections.values('section__pk', 'section__title'))
+        if not project_data:
+            project = Project.objects.prefetch_related(
+                'project_buildings__building',
+                'project_sections__section'
+            ).get(pk=pk)
 
-        project_data = {
-            'project': {
-                'title': project.title,
-                'status': project.status_id
-            },
-            'buildings': buildings,
-            'sections': sections
-        }
-        cache.set(cache_key, project_data, timeout=60 * 15)
+            buildings = [
+                {
+                    'building__pk': building['building__pk'],
+                    'building__title': building['building__title'].strip()  # Remove extra whitespace or newlines
+                }
+                for building in project.project_buildings.values('building__pk', 'building__title')
+            ]
 
-    return JsonResponse(project_data)
+            sections = [
+                {
+                    'section__pk': section['section__pk'],
+                    'section__title': section['section__title']
+                }
+                for section in project.project_sections.values('section__pk', 'section__title')
+            ]
+
+            project_data = {
+                'project': {
+                    'title': project.title,
+                    'status': str(project.status_id)  # Ensure UUID is serialized as a string
+                },
+                'buildings': buildings,
+                'sections': sections
+            }
+            cache.set(cache_key, project_data, timeout=60 * 15)
+
+        return JsonResponse(project_data)
+
+    except Project.DoesNotExist:
+        return JsonResponse({'error': 'Project not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 
 def createProject(request):

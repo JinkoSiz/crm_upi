@@ -190,9 +190,10 @@ Projects List
                     $('#id_status').val(data.project.status);
                     $('#buildingList').empty();
                     data.buildings.forEach(function (building) {
+                        const title = building.building__title.trim();
                         $('#buildingList').append(
                             `
-                                <li class="list-group-item" id="building-${building.building__pk}">${building.building__title} 
+                                <li class="list-group-item" id="building-${building.building__pk}">${title}
                                     <button class="delet-zis-btn" data-id="${building.building__pk}">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" viewBox="0 0 23 23" fill="none">
                                             <path d="M15.7604 5.41667V4.70833C15.7604 3.71657 15.7604 3.22069 15.5674 2.84189C15.3976 2.50869 15.1267 2.23779 14.7935 2.06801C14.4147 1.875 13.9188 1.875 12.9271 1.875H11.5104C10.5187 1.875 10.0228 1.875 9.64398 2.06801C9.31077 2.23779 9.03987 2.50869 8.87009 2.84189C8.67708 3.22069 8.67708 3.71657 8.67708 4.70833V5.41667M10.4479 10.2865V14.7135M13.9896 10.2865V14.7135M4.25 5.41667H20.1875M18.4167 5.41667V15.3333C18.4167 16.821 18.4167 17.5648 18.1272 18.133C17.8725 18.6328 17.4661 19.0392 16.9663 19.2938C16.3981 19.5833 15.6543 19.5833 14.1667 19.5833H10.2708C8.78319 19.5833 8.03937 19.5833 7.47117 19.2938C6.97137 19.0392 6.56501 18.6328 6.31035 18.133C6.02083 17.5648 6.02083 16.821 6.02083 15.3333V5.41667" stroke="#A6A6A6" stroke-width="1.77083" stroke-linecap="round" stroke-linejoin="round"/>
@@ -205,7 +206,7 @@ Projects List
 
                     // Отмечаем разделы как выбранные, если они уже связаны с проектом
                     data.sections.forEach(function (section) {
-                        $(`#section${section.section__pk}`).prop('checked', true);
+                         $(`#sectionsContent input[type="checkbox"][value="${section.section__pk}"]`).prop('checked', true);
                     });
                 }
             });
