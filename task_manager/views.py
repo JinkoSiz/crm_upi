@@ -452,6 +452,20 @@ def updateProject(request, pk):
                 building, created = Building.objects.get_or_create(title=building_title)
                 ProjectBuilding.objects.create(project=project, building=building)
 
+            # Удаление зданий
+            removed_buildings = request.POST.getlist('removed_buildings[]')
+            for building_id in removed_buildings:
+                try:
+                    project_building = ProjectBuilding.objects.get(project=project, building_id=building_id)
+                    project_building.delete()
+
+                    # Удаляем само здание, если оно не связано с другими проектами
+                    building = Building.objects.get(pk=building_id)
+                    if not ProjectBuilding.objects.filter(building=building).exists():
+                        building.delete()
+                except ProjectBuilding.DoesNotExist:
+                    continue
+
             # Обработка разделов
             sections = request.POST.getlist('sections[]')
             ProjectSection.objects.filter(project=project).delete()

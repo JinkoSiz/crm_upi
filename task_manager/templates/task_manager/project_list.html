@@ -174,6 +174,7 @@ Projects List
 <script>
     let currentProjectId = null;
     const csrfToken = '{{ csrf_token }}';
+    let removedBuildings = [];
 
     // Обработчик открытия модалки для создания/редактирования проекта
     $('#projectModal').on('show.bs.modal', function (event) {
@@ -220,55 +221,66 @@ Projects List
         }
     });
 
+    // Обработчик удаления здания из формы
+    $(document).on('click', '.delet-zis-btn', function (e) {
+        e.preventDefault();
+        const buildingId = $(this).data('id'); // Получаем ID здания
+        const listItem = $(this).closest('li'); // Находим элемент списка
+
+        if (buildingId) {
+            // Добавляем ID здания в массив для удаления
+            removedBuildings.push(buildingId);
+        }
+
+        // Удаляем элемент из DOM
+        listItem.remove();
+        console.log('Удаленные здания (временные):', removedBuildings);
+    });
+
     // Обработчик сохранения проекта
     $('#projectForm').on('submit', function (event) {
         event.preventDefault();
-        
+
         const title = $('#id_title').val();
         const status = $('#id_status').val();
-        
-        // Собираем список зданий из списка в модалке
+
         let buildings = [];
-        $('#buildingList li').each(function() {
-            let buildingTitle = $(this).clone().children('button').remove().end().text().trim();
+        $('#buildingList li').each(function () {
+            const buildingTitle = $(this).clone().children('button').remove().end().text().trim();
             if (buildingTitle) {
                 buildings.push(buildingTitle);
             }
         });
 
-        // Собираем выбранные разделы
         let sections = [];
-        $('input[name="sections"]:checked').each(function() {
+        $('input[name="sections"]:checked').each(function () {
             sections.push($(this).val());
         });
-        console.log(sections);
 
-        // Добавьте консольные логи здесь
-        console.log("Buildings:", buildings);
-        console.log("Sections:", sections);
-        
-        // Используем FormData для отправки данных
-        let formData = new FormData();
+        console.log('Добавленные здания:', buildings);
+        console.log('Удаленные здания:', removedBuildings);
+
+        const formData = new FormData();
         formData.append('title', title);
         formData.append('status', status);
         formData.append('csrfmiddlewaretoken', csrfToken);
-        
-        // Добавляем здания в FormData
+
+        // Добавляем здания
         for (let i = 0; i < buildings.length; i++) {
             formData.append('buildings[]', buildings[i]);
         }
 
-        // Добавляем разделы в FormData
+        // Добавляем разделы
         for (let i = 0; i < sections.length; i++) {
             formData.append('sections[]', sections[i]);
         }
-        console.log(sections);
+
+        // Добавляем удаленные здания
+        for (let i = 0; i < removedBuildings.length; i++) {
+            formData.append('removed_buildings[]', removedBuildings[i]);
+        }
 
         if (!currentProjectId) {
-            // Вывод содержимого FormData для отладки
-            for (let pair of formData.entries()) {
-                console.log(pair[0] + ': ' + pair[1]);
-            }
             // Создание нового проекта
             $.ajax({
                 url: '/projects/create/',
@@ -279,8 +291,8 @@ Projects List
                 success: function (data) {
                     location.reload(); // Обновляем страницу после создания
                 },
-                error: function(xhr, status, error) {
-                    console.error('Error:', error);
+                error: function (xhr, status, error) {
+                    console.error('Ошибка создания проекта:', error);
                 }
             });
         } else {
@@ -294,8 +306,8 @@ Projects List
                 success: function (data) {
                     location.reload(); // Обновляем страницу после редактирования
                 },
-                error: function(xhr, status, error) {
-                    console.error('Error:', error);
+                error: function (xhr, status, error) {
+                    console.error('Ошибка редактирования проекта:', error);
                 }
             });
         }
@@ -323,20 +335,43 @@ Projects List
         $('#buildingTitleInput').val('');
     });
 
-    // Обработчик удаления проекта
-    $(document).on('click', '.delete-project-btn', function () {
+    $(document).on('click', '.delete', function () {
         const projectId = $(this).data('id');
-        if (confirm('Вы уверены, что хотите удалить этот проект?')) {
+        $('#deleteProjectForm').data('id', projectId); // Сохраняем ID проекта в форме
+    });
+
+    $('#deleteConfirmationModal').on('show.bs.modal', function (event) {
+        const button = $(event.relatedTarget); // Кнопка, вызвавшая модалку
+        const projectId = button.data('id');  // Получаем ID из `data-id`
+
+        // Установите ID в кнопку подтверждения удаления
+        $('#deleteProjectForm .btn.btn-danger').data('id', projectId);
+    });
+
+    $(document).on('submit', '#deleteProjectForm', function (event) {
+        event.preventDefault(); // Отключаем стандартное поведение формы
+
+        const projectId = $(this).data('id'); // Получаем ID проекта
+        const csrfToken = '{{ csrf_token }}';
+
+        if (projectId) {
             $.ajax({
                 url: `/projects/${projectId}/delete/`,
                 method: 'POST',
                 data: {
-                    csrfmiddlewaretoken: csrfToken
+                    csrfmiddlewaretoken: csrfToken,
                 },
                 success: function () {
-                    location.reload();
-                }
+                    $('#deleteConfirmationModal').modal('hide'); // Закрываем модальное окно
+                    location.reload(); // Обновляем страницу
+                },
+                error: function (xhr, status, error) {
+                    console.error('Ошибка удаления:', error);
+                    alert('Произошла ошибка при удалении проекта.');
+                },
             });
+        } else {
+            alert('ID проекта отсутствует.');
         }
     });
 
