@@ -271,14 +271,15 @@
         let counter = 0;
 
         tableInputs.forEach(item => {
-            if (item.value !== '') {
+            if (item.value !== '' && parseInt(item.value) > 0) {
                 counter += parseInt(item.value);
+                console.log(typeof(parseInt(item.value)));
+                totalConter.value = counter + ' ' + getHourLabel(counter);
+                inputsChecker();
+            } else {
+                document.querySelector('#sendReport').disabled = true;
             }
         });
-
-        totalConter.value = counter + ' ' + getHourLabel(counter);
-
-        inputsChecker();
     }
 
     function getHourLabel(number) {
