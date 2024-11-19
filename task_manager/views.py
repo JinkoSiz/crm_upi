@@ -969,10 +969,10 @@ def report_create(request):
         Timelog.objects.bulk_create(timelogs_data)
 
         # Очищаем кэш, чтобы подтянуть актуальные данные при следующем запросе
-        cache.delete('projects')
-        cache.delete('sections')
+        cache.delete('projects_cache')
+        cache.delete('sections_cache')
         cache.delete('buildings')
-        cache.delete('marks')
+        cache.delete('mark_list')
         cache.delete('tasks')
         cache.delete('timelogs_cache')
 
@@ -982,10 +982,10 @@ def report_create(request):
         form = TimelogForm()
 
     # Загружаем данные из кэша или базы данных для селектов
-    projects = cache.get_or_set('projects', Project.objects.select_related('status').all(), timeout=60 * 15)
-    sections = cache.get_or_set('sections', Section.objects.all(), timeout=60 * 15)
+    projects = cache.get_or_set('projects_cache', Project.objects.select_related('status').all(), timeout=60 * 15)
+    sections = cache.get_or_set('sections_cache', Section.objects.all(), timeout=60 * 15)
     buildings = cache.get_or_set('buildings', Building.objects.all(), timeout=60 * 15)
-    marks = cache.get_or_set('marks', Mark.objects.all(), timeout=60 * 15)
+    marks = cache.get_or_set('mark_list', Mark.objects.all(), timeout=60 * 15)
     tasks = cache.get_or_set('tasks', TaskType.objects.all(), timeout=60 * 15)
 
     context = {
