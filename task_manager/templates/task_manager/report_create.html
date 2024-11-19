@@ -100,15 +100,7 @@
                                     </div>
                                 </td>
                                 <td style="width: 200px;">
-                                    <input type="hidden" name="task" class="hidden-input">
-                                    <div class="select" data-cid="simple-select">
-                                        <span class="select__current" data-value="">Локальная задача</span>
-                                        <div class="select__body">
-                                            {% for task in tasks %}
-                                            <div class="select__item" data-value="{{ task.id }}">{{ task.title }}</div>
-                                            {% endfor %}
-                                        </div>
-                                    </div>
+                                    <input type="text" name="task" class="form-control" placeholder="Локальная задача" style="width: 100%;">
                                 </td>
                                 <td style="width: 173px;">
                                     <div class="flex-block">
@@ -163,6 +155,14 @@
                 input.classList.add('error');
                 if (input.classList.contains('hidden-input')) {
                     selectChecker(input);
+                    if (input.name === 'section') {
+                        const stageInput = input.closest('tr').querySelector('input[name="stage"]');
+                        if (stageInput && stageInput.value.trim() === 'RD') {
+                            input.classList.remove('error');
+                            selectChecker(input);
+                            return;
+                        }
+                    }
                 }
                 hasError = true;
             } else {
@@ -172,9 +172,10 @@
                 }
             }
         });
+
         sendReportBtn.disabled = hasError;
     }
-          
+
 
     totalConter.value = 0;
     
@@ -238,15 +239,7 @@
                     </div>
                 </td>
                 <td style="width: 200px;">
-                    <input type="hidden" name="task" class="hidden-input">
-                    <div class="select" data-cid="simple-select">
-                        <span class="select__current" data-value="">Локальная задача</span>
-                        <div class="select__body">
-                            {% for task in tasks %}
-                            <div class="select__item" data-value="{{ task.id }}">{{ task.title }}</div>
-                            {% endfor %}
-                        </div>
-                    </div>
+                    <input type="text" name="task" class="form-control" placeholder="Локальная задача" style="width: 100%;">
                 </td>
                 <td style="width: 173px;">
                     <div class="flex-block">
@@ -272,7 +265,7 @@
     })
 
     function calcInputsValues() {
-        const tableInputs = document.querySelectorAll('input.form-control');
+        const tableInputs = document.querySelectorAll('input[name=time]');
         let counter = 0;
 
         tableInputs.forEach(item => {

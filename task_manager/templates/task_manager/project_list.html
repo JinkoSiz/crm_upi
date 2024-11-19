@@ -83,7 +83,7 @@ Projects List
             <form id="projectForm" method="post">
                 {% csrf_token %}
                 <div class="modal-header">
-                    <h5 class="modal-title" id="projectModalLabel">Создать/Редактировать проект</h5>
+                    <h5 class="modal-title" id="projectModalLabel"></h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -110,10 +110,15 @@ Projects List
                         </div>
                         <div id="zisContent">
                             <ul id="buildingList" class="list-group"></ul>
-                            <input type="text" id="buildingTitleInput" placeholder="Название нового проекта" class="form-control">
+                            <div id="modalZisToAddProj">
+                                <h5 class="add-project-title">Добавление нового проекта</h5>
+                                <label for="buildingTitleInput">Название</label>
+                                <input type="text" id="buildingTitleInput" placeholder="Название нового проекта" class="form-control">
+                                <button id="addBuildingBtn">Добавить</button>
+                            </div>
                             <div class="zis-btn-wrap">
                                 <p>Добавить новое здание</p>
-                                <button type="button" id="addBuildingBtn">
+                                <button type="button" id="openModalToAdd">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="9" height="10" viewBox="0 0 9 10" fill="none">
                                         <path d="M4.5 1V9M0.5 5H8.5" stroke="white" stroke-linecap="round" stroke-linejoin="round"/>
                                       </svg>
@@ -181,7 +186,22 @@ Projects List
         const button = $(event.relatedTarget); // Кнопка, вызвавшая модалку
         currentProjectId = button.data('id');  // Получаем id проекта, если редактируем
 
+        const btnOpenModalToAdd = document.querySelector('#openModalToAdd'),
+              modalToAdd = document.querySelector('#modalZisToAddProj');
+
+        btnOpenModalToAdd.addEventListener('click', (e) => {
+            e.preventDefault();
+            modalToAdd.classList.add('active');
+        });
+
+        document.addEventListener('click', (e) => {
+            if(modalToAdd.classList.contains('active') && !e.target.closest('#openModalToAdd') && !e.target.closest('#modalZisToAddProj')) {
+                modalToAdd.classList.remove('active');
+            }
+        })
+
         if (currentProjectId) {
+            document.querySelector('#projectModalLabel').textContent = 'Редактировать проект';
             // Редактирование проекта
             $.ajax({
                 url: `/projects/${currentProjectId}/`,
@@ -212,6 +232,7 @@ Projects List
                 }
             });
         } else {
+            document.querySelector('#projectModalLabel').textContent = 'Добавить проект';
             // Создание проекта
             $('#id_title').val('');
             $('#id_status').val('');
@@ -314,7 +335,8 @@ Projects List
     });
 
     // Обработчик добавления нового здания
-    $('#addBuildingBtn').on('click', function () {
+    $('#addBuildingBtn').on('click', function (e) {
+        e.preventDefault();
         const buildingTitle = $('#buildingTitleInput').val();
         if (!buildingTitle) {
             alert('Пожалуйста, введите название здания');
@@ -333,6 +355,7 @@ Projects List
             `
         );
         $('#buildingTitleInput').val('');
+        document.querySelector('#modalZisToAddProj').classList.remove('active');
     });
 
     $(document).on('click', '.delete', function () {
