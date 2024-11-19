@@ -151,24 +151,26 @@
         let hasError = false;
 
         document.querySelectorAll('table tbody tr td input').forEach(input => {
-            if (input.value.trim() === '') {
-                input.classList.add('error');
-                if (input.classList.contains('hidden-input')) {
-                    selectChecker(input);
-                    if (input.name === 'section') {
-                        const stageInput = input.closest('tr').querySelector('input[name="stage"]');
-                        if (stageInput && stageInput.value.trim() === 'RD') {
-                            input.classList.remove('error');
-                            selectChecker(input);
-                            return;
+            if (input.name != 'task') {
+                if (input.value.trim() === '') {
+                    input.classList.add('error');
+                    if (input.classList.contains('hidden-input')) {
+                        selectChecker(input);
+                        if (input.name === 'section') {
+                            const stageInput = input.closest('tr').querySelector('input[name="stage"]');
+                            if (stageInput && stageInput.value.trim() === 'RD') {
+                                input.classList.remove('error');
+                                selectChecker(input);
+                                return;
+                            }
                         }
                     }
-                }
-                hasError = true;
-            } else {
-                input.classList.remove('error');
-                if (input.classList.contains('hidden-input')) {
-                    selectChecker(input);
+                    hasError = true;
+                } else {
+                    input.classList.remove('error');
+                    if (input.classList.contains('hidden-input')) {
+                        selectChecker(input);
+                    }
                 }
             }
         });
