@@ -946,6 +946,10 @@ def report_create(request):
         times = request.POST.getlist('time')
 
         for i in range(len(projects)):
+            # Проверяем, существует ли задача, и создаем, если нужно
+            task_title = tasks[i].strip()
+            task, _ = TaskType.objects.get_or_create(title=task_title)
+
             timelog = Timelog(
                 user=request.user,
                 role=request.user.role,
@@ -955,7 +959,7 @@ def report_create(request):
                 section_id=sections[i],
                 building_id=buildings[i],
                 mark_id=marks[i],
-                task_id=tasks[i],
+                task_id=task.id,
                 time=int(times[i]),
                 date=today
             )
