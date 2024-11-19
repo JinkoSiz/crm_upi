@@ -4,6 +4,7 @@ import dateparser
 
 import openpyxl
 from django.utils.dateparse import parse_date
+from django.utils.timezone import now
 from openpyxl.styles import PatternFill, Alignment
 from openpyxl.utils import get_column_letter
 from openpyxl import Workbook
@@ -908,9 +909,12 @@ def user_dashboard(request):
     today = timezone.now().date()
 
     # Получаем таймлог за текущий день для данного пользователя
-    timelog = Timelog.objects.filter(user=user, date__date=today).first()
+    timelog = Timelog.objects.filter(user=user, date__date=today)
 
-    if request.method == 'POST' and not timelog:
+    # Считаем общее время
+    total_time = timelog.aggregate(total_time=Sum('time'))['total_time'] or 0
+
+    if request.method == 'POST' and not timelog.exists():
         form = TimelogForm(request.POST)
         if form.is_valid():
             new_timelog = form.save(commit=False)
@@ -927,6 +931,7 @@ def user_dashboard(request):
         'timelog': timelog,
         'form': form,
         'today': today,
+        'total_time': total_time
     }
     return render(request, 'task_manager/user_dashboard.html', context)
 

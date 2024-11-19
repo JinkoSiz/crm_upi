@@ -21,12 +21,12 @@
                     </svg>
                 </span>
                 <p>{{ today|date:"D d.m.Y" }}</p>
-                
+
             </h5>
             <p class="card-text">
-                Статус: 
-                {% if timelog %}
-                    Заполнено ({{ timelog.time }} часов)
+                Статус:
+                {% if total_time > 0 %}
+                    Заполнено ({{ total_time }} часов)
                 {% else %}
                     Не заполнено
                 {% endif %}
