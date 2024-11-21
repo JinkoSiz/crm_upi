@@ -151,24 +151,26 @@
         let hasError = false;
 
         document.querySelectorAll('table tbody tr td input').forEach(input => {
-            if (input.value.trim() === '') {
-                input.classList.add('error');
-                if (input.classList.contains('hidden-input')) {
-                    selectChecker(input);
-                    if (input.name === 'section') {
-                        const stageInput = input.closest('tr').querySelector('input[name="stage"]');
-                        if (stageInput && stageInput.value.trim() === 'RD') {
-                            input.classList.remove('error');
-                            selectChecker(input);
-                            return;
+            if (input.name != 'task') {
+                if (input.value.trim() === '') {
+                    input.classList.add('error');
+                    if (input.classList.contains('hidden-input')) {
+                        selectChecker(input);
+                        if (input.name === 'section') {
+                            const stageInput = input.closest('tr').querySelector('input[name="stage"]');
+                            if (stageInput && stageInput.value.trim() === 'RD') {
+                                input.classList.remove('error');
+                                selectChecker(input);
+                                return;
+                            }
                         }
                     }
-                }
-                hasError = true;
-            } else {
-                input.classList.remove('error');
-                if (input.classList.contains('hidden-input')) {
-                    selectChecker(input);
+                    hasError = true;
+                } else {
+                    input.classList.remove('error');
+                    if (input.classList.contains('hidden-input')) {
+                        selectChecker(input);
+                    }
                 }
             }
         });
@@ -269,14 +271,15 @@
         let counter = 0;
 
         tableInputs.forEach(item => {
-            if (item.value !== '') {
+            if (item.value !== '' && parseInt(item.value) > 0) {
                 counter += parseInt(item.value);
+                console.log(typeof(parseInt(item.value)));
+                totalConter.value = counter + ' ' + getHourLabel(counter);
+                inputsChecker();
+            } else {
+                document.querySelector('#sendReport').disabled = true;
             }
         });
-
-        totalConter.value = counter + ' ' + getHourLabel(counter);
-
-        inputsChecker();
     }
 
     function getHourLabel(number) {
