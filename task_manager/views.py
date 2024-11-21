@@ -4,6 +4,7 @@ import dateparser
 
 import openpyxl
 from django.utils.dateparse import parse_date
+from django.utils.timezone import now
 from openpyxl.styles import PatternFill, Alignment
 from openpyxl.utils import get_column_letter
 from openpyxl import Workbook
@@ -12,7 +13,7 @@ from django.db import IntegrityError
 from django.db.models.functions import Concat
 from django.db.models import F, Value
 from django.shortcuts import get_object_or_404, render, redirect
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
@@ -238,9 +239,17 @@ def deleteUser(request, pk):
 
 def user_login(request):
     if request.method == 'POST':
-        username = request.POST['username']
+        identifier = request.POST['username']
         password = request.POST['password']
+        User = get_user_model()
+        try:
+            user = User.objects.get(email=identifier)
+            username = user.username
+        except User.DoesNotExist:
+            username = identifier  # Если это логин, оставляем как есть
+
         user = authenticate(request, username=username, password=password)
+
         if user is not None:
             login(request, user)
             # Если пользователь пригашен и входит впервые, меняем статус на активный
@@ -329,7 +338,6 @@ def reset_password(request, pk):
 
 
 # Проекты
-
 @admin_required(login_url='login')
 def project(request):
     # Кэшируем проекты и связанные данные
@@ -660,7 +668,7 @@ def deleteSection(request, pk):
 
 
 # Марки
-@login_required(login_url='login')
+@admin_required(login_url='login')
 def mark(request):
     # Попробуем получить марки из кэша
     marks = cache.get('mark_list')
@@ -715,6 +723,7 @@ def deleteMark(request, pk):
 
 
 # Задачи
+@admin_required(login_url='login')
 def task_list(request):
     # Попробуем получить задачи из кэша
     cache_key = 'tasktype_list'
@@ -805,6 +814,7 @@ def parse_custom_date(date_str):
 
 
 # TimeLog
+@admin_required(login_url='login')
 def timelog_list(request):
     # Получаем начальную и конечную даты из GET параметров
     start_date = request.GET.get('start_date', timezone.now().replace(day=1).date())
@@ -851,7 +861,7 @@ def timelog_list(request):
     return render(request, 'task_manager/timelog_list.html', context)
 
 
-@login_required
+@admin_required(login_url='login')
 def timelog_create(request):
     if request.method == 'POST':
         form = TimelogForm(request.POST)
@@ -908,9 +918,12 @@ def user_dashboard(request):
     today = timezone.now().date()
 
     # Получаем таймлог за текущий день для данного пользователя
-    timelog = Timelog.objects.filter(user=user, date__date=today).first()
+    timelog = Timelog.objects.filter(user=user, date__date=today)
 
-    if request.method == 'POST' and not timelog:
+    # Считаем общее время
+    total_time = timelog.aggregate(total_time=Sum('time'))['total_time'] or 0
+
+    if request.method == 'POST' and not timelog.exists():
         form = TimelogForm(request.POST)
         if form.is_valid():
             new_timelog = form.save(commit=False)
@@ -927,8 +940,23 @@ def user_dashboard(request):
         'timelog': timelog,
         'form': form,
         'today': today,
+        'total_time': total_time
     }
     return render(request, 'task_manager/user_dashboard.html', context)
+
+
+def get_buildings(request):
+    project_id = request.GET.get('project_id')  # Получаем project_id из запроса
+    if not project_id:
+        return JsonResponse({'error': 'Missing project_id'}, status=400)
+
+    try:
+        # Используем ProjectBuilding для связи между проектом и зданиями
+        buildings = ProjectBuilding.objects.filter(project_id=project_id).select_related('building')
+        buildings_data = [{'id': pb.building.id, 'title': pb.building.title} for pb in buildings]
+        return JsonResponse({'buildings': buildings_data})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 
 @login_required
@@ -984,7 +1012,7 @@ def report_create(request):
     # Загружаем данные из кэша или базы данных для селектов
     projects = cache.get_or_set('projects_cache', Project.objects.select_related('status').all(), timeout=60 * 15)
     sections = cache.get_or_set('sections_cache', Section.objects.all(), timeout=60 * 15)
-    buildings = cache.get_or_set('buildings', Building.objects.all(), timeout=60 * 15)
+    # buildings = cache.get_or_set('buildings', Building.objects.all(), timeout=60 * 15)
     marks = cache.get_or_set('mark_list', Mark.objects.all(), timeout=60 * 15)
     tasks = cache.get_or_set('tasks', TaskType.objects.all(), timeout=60 * 15)
 
@@ -994,7 +1022,7 @@ def report_create(request):
         'projects': projects,
         'stages': Timelog._meta.get_field('stage').choices,
         'sections': sections,
-        'buildings': buildings,
+        'buildings': Building.objects.all(),
         'marks': marks,
         'tasks': tasks,
     }
@@ -1002,6 +1030,7 @@ def report_create(request):
     return render(request, 'task_manager/report_create.html', context)
 
 
+@admin_required(login_url='login')
 def reports_view(request):
     # Получаем начальную и конечную даты из GET параметров
     start_date = request.GET.get('start_date', timezone.now().replace(day=1).date())
@@ -1059,6 +1088,7 @@ def reports_view(request):
     return render(request, 'task_manager/reports.html', context)
 
 
+@admin_required(login_url='login')
 def reports_employees(request):
     # Получаем начальную и конечную даты из GET параметров
     start_date = request.GET.get('start_date', timezone.now().replace(day=1).date())
@@ -1071,8 +1101,8 @@ def reports_employees(request):
     # Получаем все записи Timelog с оптимизацией связанных данных
     timelogs = (
         Timelog.objects
+        .filter(date__range=[start_date, end_date])
         .select_related('project', 'department', 'user', 'building', 'mark', 'task')
-        .all()
     )
 
     # Группировка данных по проектам
@@ -1136,6 +1166,7 @@ def get_days_in_month(month_date):
     return [month_date + timedelta(days=i) for i in range((end_of_month - month_date).days + 1)]
 
 
+@admin_required(login_url='login')
 def final_report(request):
     start_date = request.GET.get('start_date', timezone.now().replace(day=1).date())
     end_date = request.GET.get('end_date', timezone.now().date())
@@ -1306,7 +1337,7 @@ def export_to_excel(request):
             hours = monthly_hours.get(
                 f"{item['project__title']}|{item['building__title']}|{item['mark__title']}|{item['user_full_name']}",
                 {}).get(day_key, "-")
-            row.append("*" if hours != "-" else hours)
+            row.append("КМ" if hours != "-" else hours)
 
         ws.append(row)
 
