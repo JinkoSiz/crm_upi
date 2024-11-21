@@ -259,23 +259,23 @@
         if(isAdmin) {
 
             const div = document.createElement('div');
-            
+
             if(currentUrlPath != '') {
                 const adminBlock = document.querySelector('#adminDiv');
 
-                div.innerHTML = 
+                div.innerHTML =
                 `
                 <p class="admin_info"><a href="/">Нажмите</a>, чтобы перейти на страницу для заполнения отчета</p>
                 `;
 
                 div.style.marginBottom = '40px'
-                
+
                 adminBlock.append(div);
-                
+
             } else {
                 const adminBlock = document.querySelector('#create');
 
-                div.innerHTML = 
+                div.innerHTML =
                 `
                 <p class="admin_info"><a href="{% url 'timelog-list' %}">Нажмите</a>, чтобы перейти на страницу администратора</p>
                 `;
@@ -292,7 +292,7 @@
             exportExelForms.classList.remove('active');
 
             switch (url) {
-                case 'login': 
+                case 'login':
                     adminMainNavigation.style.display = 'none';
                     header.style.display = 'none';
                     const showPass = document.querySelector('.pass-input svg'),
@@ -334,7 +334,7 @@
                     exportExelForms.classList.add('active');
                     break;
 
-                default: 
+                default:
                     adminHandbooksNavList.style.display = 'none';
                     adminMainNavigation.style.display = 'none';
                     break;
