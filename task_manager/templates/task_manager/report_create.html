@@ -104,7 +104,7 @@
                                 </td>
                                 <td style="width: 173px;">
                                     <div class="flex-block">
-                                        <input value type="number" name="time" class="form-control" placeholder="Время (в часах)">
+                                        <input type="number" name="time" min="1" class="form-control" placeholder="Время (в часах)">
                                         <span class="delete-row">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="23" height="24" viewBox="0 0 23 24" fill="none">
                                                 <path d="M15.7604 6.16667V5.45833C15.7604 4.46657 15.7604 3.97069 15.5674 3.59189C15.3976 3.25869 15.1267 2.98779 14.7935 2.81801C14.4147 2.625 13.9188 2.625 12.9271 2.625H11.5104C10.5187 2.625 10.0228 2.625 9.64398 2.81801C9.31077 2.98779 9.03987 3.25869 8.87009 3.59189C8.67708 3.97069 8.67708 4.46657 8.67708 5.45833V6.16667M10.4479 11.0365V15.4635M13.9896 11.0365V15.4635M4.25 6.16667H20.1875M18.4167 6.16667V16.0833C18.4167 17.571 18.4167 18.3148 18.1272 18.883C17.8725 19.3828 17.4661 19.7892 16.9663 20.0438C16.3981 20.3333 15.6543 20.3333 14.1667 20.3333H10.2708C8.78319 20.3333 8.03937 20.3333 7.47117 20.0438C6.97137 19.7892 6.56501 19.3828 6.31035 18.883C6.02083 18.3148 6.02083 17.571 6.02083 16.0833V6.16667" stroke="#A6A6A6" stroke-width="1.77083" stroke-linecap="round" stroke-linejoin="round"/>
@@ -303,6 +303,14 @@
         let counter = 0;
 
         tableInputs.forEach(item => {
+            item.addEventListener('input', function() {
+                if(this.value < 0) {
+                    this.value = 0;
+                    totalConter.value = counter + ' ' + getHourLabel(counter);
+                } else {
+                    totalConter.value = counter + ' ' + getHourLabel(counter);
+                }
+            })
             if (item.value !== '' && parseInt(item.value) > 0) {
                 counter += parseInt(item.value);
                 console.log(typeof(parseInt(item.value)));
