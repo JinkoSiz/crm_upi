@@ -1318,7 +1318,7 @@ def export_to_excel(request):
             item['building__title'],
             item['mark__title'],
             item['user_full_name'],
-            f"{item['total_hours']} ч"
+            f"{item['total_hours']}"
         ]
 
         # Добавляем данные по месяцам
