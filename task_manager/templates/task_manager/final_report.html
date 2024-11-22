@@ -85,12 +85,17 @@
         const checkingDays = document.querySelectorAll('td.checking-days');
 
         checkingDays.forEach(day => {
-            if(/^\s*\*\s*$/.test(day.textContent)) {
-                day.style.backgroundColor = "var(--Secondary)";
-                day.textContent ='КМ';
+            if (/^\s*\*\s*$/.test(day.textContent)) {
+                // Найдем ближайшую ячейку с маркой в текущей строке
+                const markCell = day.closest('tr').querySelector('td:nth-child(3)'); // Третья колонка содержит марку
+                if (markCell) {
+                    const markTitle = markCell.textContent.trim(); // Получаем значение марки
+                    day.style.backgroundColor = "var(--Secondary)";
+                    day.textContent = markTitle; // Устанавливаем текст марки вместо "КМ"
+                }
             }
         });
-    })
+    });
 </script>
 
 {% endblock %}
