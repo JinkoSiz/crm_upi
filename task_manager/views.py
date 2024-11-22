@@ -1318,7 +1318,7 @@ def export_to_excel(request):
             item['building__title'],
             item['mark__title'],
             item['user_full_name'],
-            f"{item['total_hours']} ч"
+            f"{item['total_hours']}"
         ]
 
         # Добавляем данные по месяцам
@@ -1337,7 +1337,7 @@ def export_to_excel(request):
             hours = monthly_hours.get(
                 f"{item['project__title']}|{item['building__title']}|{item['mark__title']}|{item['user_full_name']}",
                 {}).get(day_key, "-")
-            row.append("КМ" if hours != "-" else hours)
+            row.append(item['mark__title'] if hours != "-" else hours)
 
         ws.append(row)
 
