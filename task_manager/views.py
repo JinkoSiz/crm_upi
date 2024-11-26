@@ -970,8 +970,6 @@ def get_buildings(request):
 def report_create(request):
     # Получаем дату из запроса или используем текущую
     requested_date = request.GET.get('date')
-    print('requested')
-    print(requested_date)
 
     if requested_date:
         selected_date = parse_russian_date(requested_date)  # Используем ваш парсер
