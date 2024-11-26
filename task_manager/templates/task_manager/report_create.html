@@ -131,6 +131,38 @@
     </form>
 <script>
 
+    document.addEventListener('DOMContentLoaded', () => {
+        const projectSelect = document.querySelector('input[name="project"] + .select'); // Выбор проекта
+        const buildingSelect = document.querySelector('input[name="building"] + .select'); // Выбор здания
+
+        projectSelect.addEventListener('click', async (e) => {
+            const projectId = e.target.closest('.select__item')?.dataset.value;
+
+            if (projectId) {
+                try {
+                    // Уведомление о загрузке данных
+                    buildingSelect.querySelector('.select__body').innerHTML = '<div>Загрузка...</div>';
+
+                    // Запрос данных
+                    const response = await fetch(`/get-buildings/?project_id=${projectId}`);
+                    if (!response.ok) {
+                        throw new Error('Ошибка загрузки зданий');
+                    }
+
+                    const data = await response.json();
+
+                    // Очистка и обновление списка зданий
+                    const buildingOptions = data.buildings.map(building => {
+                        return `<div class="select__item" data-value="${building.id}">${building.title}</div>`;
+                    }).join('');
+                    buildingSelect.querySelector('.select__body').innerHTML = buildingOptions;
+                } catch (error) {
+                    console.error('Ошибка загрузки зданий:', error);
+                    buildingSelect.querySelector('.select__body').innerHTML = '<div>Ошибка загрузки</div>';
+                }
+            }
+        });
+    });
 
     const addRowBtn = document.querySelector('#addRowBtn'),
           tableBody = document.querySelector('.table tbody'),
@@ -223,9 +255,9 @@
                     <div class="select" data-cid="simple-select">
                         <span class="select__current" data-value="">ЗИС</span>
                         <div class="select__body">
-                            {% for building in buildings %}
-                            <div class="select__item" data-value="{{ building.id }}">{{ building.title }}</div>
-                            {% endfor %}
+
+                            <div class="select__item" data-value="">Выберите проект</div>
+
                         </div>
                     </div>
                 </td>

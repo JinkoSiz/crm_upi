@@ -431,15 +431,14 @@
 
                 const adminBlock = document.querySelector('#adminDiv');
 
-                div.innerHTML = 
+                div.innerHTML =
                 `
                 <p class="admin_info"><a href="/">Нажмите</a>, чтобы перейти на страницу для заполнения отчета</p>
                 `;
 
                 div.style.marginBottom = '40px'
-                
-                adminBlock.append(div);
 
+                adminBlock.append(div);
             }
 
         }
@@ -452,7 +451,7 @@
             exportExelForms.classList.remove('active');
 
             switch (url) {
-                case 'login': 
+                case 'login':
                     adminMainNavigation.style.display = 'none';
                     header.style.display = 'none';
                     const showPass = document.querySelector('.pass-input svg'),
@@ -496,7 +495,7 @@
                     exportExelForms.classList.add('active');
                     break;
 
-                default: 
+                default:
                     adminHandbooksNavList.style.display = 'none';
                     adminMainNavigation.style.display = 'none';
                     break;

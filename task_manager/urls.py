@@ -74,6 +74,7 @@ urlpatterns = [
     path('report/create/', views.report_create, name='report_create'),
     path('reset-session/', views.reset_session, name='reset-session'),
     path('final-report/', views.final_report, name='final-report'),
+    path('get-buildings/', views.get_buildings, name='get-buildings'),
 
     # Экспорт в эксель
     path('export-to-excel/', views.export_to_excel, name='export_to_excel'),
