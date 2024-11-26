@@ -244,7 +244,9 @@
         
         <ul class="search-list">
             <span>Вернуться к списку</span>
-            <li></li>
+            {% for department in all_departments %}
+            <li>{{ department.title }}</li>
+            {% endfor %}
         </ul>
         <ul class="finde-items active"></ul>
     </div>
@@ -262,7 +264,9 @@
         
         <ul class="search-list">
             <span>Вернуться к списку</span>
-            <li></li>
+            {% for role in all_roles %}
+            <li>{{ role.title }}</li>
+            {% endfor %}
         </ul>
         <ul class="finde-items active"></ul>
     </div>
@@ -280,7 +284,12 @@
         
         <ul class="search-list">
             <span>Вернуться к списку</span>
-            <li></li>
+            <li>Проработка</li>
+            <li>Проектирование</li>
+            <li>Экспертиза</li>
+            <li>Рабочая документация</li>
+            <li>Авторский надзор</li>
+            <li>Архив</li>
         </ul>
         <ul class="finde-items active"></ul>
     </div>
@@ -298,7 +307,8 @@
         
         <ul class="search-list">
             <span>Вернуться к списку</span>
-            <li></li>
+            <li>Admin</li>
+            <li>User</li>
         </ul>
         <ul class="finde-items active"></ul>
     </div>
@@ -316,7 +326,9 @@
         
         <ul class="search-list">
             <span>Вернуться к списку</span>
-            <li></li>
+            {% for project in all_projects %}
+            <li>{{ project.title }}</li>
+            {% endfor %}
         </ul>
         <ul class="finde-items active"></ul>
     </div>
@@ -334,7 +346,9 @@
         
         <ul class="search-list">
             <span>Вернуться к списку</span>
-            <li></li>
+            <li>РД</li>
+            <li>ОТР</li>
+            <li>ПД</li>
         </ul>
         <ul class="finde-items active"></ul>
     </div>
@@ -352,7 +366,9 @@
         
         <ul class="search-list">
             <span>Вернуться к списку</span>
-            <li></li>
+            {% for section in all_sections %}
+            <li>{{ section.title }}</li>
+            {% endfor %}
         </ul>
         <ul class="finde-items active"></ul>
     </div>
@@ -370,7 +386,9 @@
         
         <ul class="search-list">
             <span>Вернуться к списку</span>
-            <li></li>
+            {% for building in all_buildings %}
+            <li>{{ building.title }}</li>
+            {% endfor %}
         </ul>
         <ul class="finde-items active"></ul>
     </div>
@@ -388,7 +406,9 @@
         
         <ul class="search-list">
             <span>Вернуться к списку</span>
-            <li></li>
+            {% for mark in all_marks %}
+            <li>{{ mark.title }}</li>
+            {% endfor %}
         </ul>
         <ul class="finde-items active"></ul>
     </div>
@@ -406,7 +426,9 @@
         
         <ul class="search-list">
             <span>Вернуться к списку</span>
-            <li></li>
+            {% for task in all_tasks %}
+            <li>{{ task.title }}</li>
+            {% endfor %}
         </ul>
         <ul class="finde-items active"></ul>
     </div>
@@ -795,7 +817,9 @@
             }
         });
 
-        const filterBtns = document.querySelectorAll('button.sorter');
+        //ОТСЮДА КОРМИ
+
+        const filterBtns = document.querySelectorAll('button.sorter'); 
         const filterModals = document.querySelectorAll('.fiter-modal-search');
 
         autoAppendModal();

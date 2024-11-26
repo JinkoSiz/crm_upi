@@ -1292,10 +1292,11 @@ p.main-info {
     line-height: 18px;
     text-align: left;
     color: var(--Text_Gray_100);
+    margin-bottom: 60px;
 }
 
 .card {
-    margin-top: 60px;
+    margin-top: 20px;
     padding: 20px 30px;
     border-radius: 10px;
     border: 1px solid var(--Text_Gray_20);
@@ -1995,4 +1996,8 @@ p.admin_info a:hover {
 .fiter-modal-search .finde-items li span:hover {
     opacity: 1;
     transition: .2s all;
+}
+
+.table-wrapper.only-bottom.scroller .table button.sorter[data-cid=project] .fiter-modal-search{
+    left: 86px;
 }
