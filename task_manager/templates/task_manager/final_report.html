@@ -33,17 +33,55 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Объект</th>
-                        <th>ЗиС</th>
-                        <th>Марка</th>
-                        <th>Исполнитель</th>
-                        <th>Часы</th>
+                        <th>
+                            <button class="sorter" data-cid="project">
+                                <p>Объект</p>
+                                <span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                        <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>
+                            </button>
+                        </th>
+                        <th>
+                            <button class="sorter" data-cid="zis">
+                                <p>ЗиС</p>
+                                <span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                        <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>
+                            </button>
+                        </th>
+                        <th>
+                            <button class="sorter" data-cid="mark">
+                                <p>Марка</p>
+                                <span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                        <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>
+                            </button>
+                        </th>
+                        <th>
+                            <button class="sorter" data-cid="employees">
+                                <p>Исполнитель</p>
+                                <span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                        <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>
+                            </button>
+                        </th>
+                        <th>
+                            <p>Часы</p>
+                        </th>
                         {% for month in months_in_range %}
                             <th class="rotated"><p>{{ month|date:"F" }}</p></th>
                         {% endfor %}
                             <!-- Дни последнего месяца -->
                         {% for date in days_in_last_month %}
-                            <th>{{ date|date:"d" }}</th>
+                            <th><p>{{ date|date:"d" }}</p></th>
                         {% endfor %}
                         <!-- Месяцы до последнего -->
                     </tr>
