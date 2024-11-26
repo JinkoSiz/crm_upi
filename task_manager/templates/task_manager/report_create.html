@@ -8,9 +8,10 @@
         </span>
         Вернуться на главную
     </a>
-    <h1 class="super-title">Отчет о выполненной работе за {{ today|date:"d.m.Y" }}</h1>
+    <h1 class="super-title">Отчет о выполненной работе за {{ selected_date|date:"d.m.Y" }}</h1>
     <form method="post" action="{% url 'report_create' %}">
         {% csrf_token %}
+        <input type="hidden" name="date" value="{{ selected_date|date:'Y-m-d' }}">
         <div class="row">
             <div class="col-md-12">
                 <div class="table-wrapper personal">
@@ -125,42 +126,51 @@
                 <label for="total-counter">Итого за день:</label>
                 <input type="text" id="total-counter" readonly>
             </div>
-            
         </div>
-        
     </form>
 <script>
 
-    document.addEventListener('DOMContentLoaded', () => {
-        const projectSelect = document.querySelector('input[name="project"] + .select'); // Выбор проекта
-        const buildingSelect = document.querySelector('input[name="building"] + .select'); // Выбор здания
+    // Функция для добавления обработчиков событий к строке
+    function addEventListenersForRow(row) {
+        const projectSelect = row.querySelector('input[name="project"] + .select');
+        const buildingSelect = row.querySelector('input[name="building"] + .select');
 
-        projectSelect.addEventListener('click', async (e) => {
-            const projectId = e.target.closest('.select__item')?.dataset.value;
+        if (projectSelect) {
+            projectSelect.addEventListener('click', async (e) => {
+                const projectId = e.target.closest('.select__item')?.dataset.value;
 
-            if (projectId) {
-                try {
-                    // Уведомление о загрузке данных
-                    buildingSelect.querySelector('.select__body').innerHTML = '<div>Загрузка...</div>';
+                if (projectId) {
+                    try {
+                        // Уведомление о загрузке данных
+                        buildingSelect.querySelector('.select__body').innerHTML = '<div>Загрузка...</div>';
 
-                    // Запрос данных
-                    const response = await fetch(`/get-buildings/?project_id=${projectId}`);
-                    if (!response.ok) {
-                        throw new Error('Ошибка загрузки зданий');
+                        // Запрос данных
+                        const response = await fetch(`/get-buildings/?project_id=${projectId}`);
+                        if (!response.ok) {
+                            throw new Error('Ошибка загрузки зданий');
+                        }
+
+                        const data = await response.json();
+
+                        // Очистка и обновление списка зданий
+                        const buildingOptions = data.buildings.map(building => {
+                            return `<div class="select__item" data-value="${building.id}">${building.title}</div>`;
+                        }).join('');
+                        buildingSelect.querySelector('.select__body').innerHTML = buildingOptions;
+                    } catch (error) {
+                        console.error('Ошибка загрузки зданий:', error);
+                        buildingSelect.querySelector('.select__body').innerHTML = '<div>Ошибка загрузки</div>';
                     }
-
-                    const data = await response.json();
-
-                    // Очистка и обновление списка зданий
-                    const buildingOptions = data.buildings.map(building => {
-                        return `<div class="select__item" data-value="${building.id}">${building.title}</div>`;
-                    }).join('');
-                    buildingSelect.querySelector('.select__body').innerHTML = buildingOptions;
-                } catch (error) {
-                    console.error('Ошибка загрузки зданий:', error);
-                    buildingSelect.querySelector('.select__body').innerHTML = '<div>Ошибка загрузки</div>';
                 }
-            }
+            });
+        }
+    }
+
+    // Добавление обработчиков событий для всех существующих строк
+    document.addEventListener('DOMContentLoaded', () => {
+        const rows = document.querySelectorAll('.table tbody tr');
+        rows.forEach(row => {
+            addEventListenersForRow(row);
         });
     });
 
@@ -212,7 +222,7 @@
 
 
     totalConter.value = 0;
-    
+
     addRowBtn.addEventListener('click', () => {
         const line = document.createElement('tr');
         line.innerHTML = `
@@ -290,6 +300,7 @@
         tableBody.append(line);
         calcInputsValues();
         inputsChecker();
+        addEventListenersForRow(line);
     });
 
     document.addEventListener('input', (e) => {
@@ -351,7 +362,7 @@
             inputsChecker();
         }
     });
-    
-    
+
+
 </script>
 {% endblock %}
