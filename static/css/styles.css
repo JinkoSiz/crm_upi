@@ -1862,8 +1862,8 @@ p.admin_info a:hover {
 }
 
 .fiter-modal-search {
-    width: 200px;
-    max-height: 200px;
+    width: 205px;
+    max-height: 280px;
     padding: 10px;
     border-radius: 10px;
     opacity: 0;
@@ -1912,11 +1912,16 @@ p.admin_info a:hover {
 }
 
 
-.fiter-modal-search .search-list {
+.fiter-modal-search .search-list,
+.fiter-modal-search .finde-items {
     display: none;
+    overflow-y: auto;
+    max-height: 200px;
+    height: auto;
 }
 
-.fiter-modal-search .finde-items {
+.fiter-modal-search .search-list.active,
+.fiter-modal-search .finde-items.active {
     display: block;
 }
 
@@ -1935,7 +1940,9 @@ p.admin_info a:hover {
     display: flex;
 }
 
-.fiter-modal-search .search-block #search:active
+.fiter-modal-search .search-list li {
+    width: 77%;
+}
 
 .fiter-modal-search .search-list li:hover {
     cursor: pointer;
@@ -1943,8 +1950,37 @@ p.admin_info a:hover {
     transition: .2s all ease;
 }
 
-.fiter-modal-search .search-list li {
-    width: 77%;
+.fiter-modal-search .search-list li.active {
+    background-color: var(--Secondary);
+}
+
+.fiter-modal-search .search-list span {
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 18px;
+    width: auto;
+    height: auto;
+    margin: 10px 0;
+    padding: 0;
+    cursor: pointer;
+    color: var(--Text_Gray_40);
+    transition: .2s all;
+    display: block;
+    padding: 0 10px;
+    text-align: left;
+}
+
+.fiter-modal-search .search-list span:hover {
+    transition: .2s all;
+    color: var(--Text_Gray_100);
+}
+
+.fiter-modal-search .finde-items li.placeholder {
+    display: block;
+    text-align: center;
+    color: var(--Text_Gray_40);
+    font-size: 16px;
+    line-height: 18px;
 }
 
 .fiter-modal-search .finde-items li span {
