@@ -8,9 +8,10 @@
         </span>
         Вернуться на главную
     </a>
-    <h1 class="super-title">Отчет о выполненной работе за {{ today|date:"d.m.Y" }}</h1>
+    <h1 class="super-title">Отчет о выполненной работе за {{ selected_date|date:"d.m.Y" }}</h1>
     <form method="post" action="{% url 'report_create' %}">
         {% csrf_token %}
+        <input type="hidden" name="date" value="{{ selected_date|date:'Y-m-d' }}">
         <div class="row">
             <div class="col-md-12">
                 <div class="table-wrapper personal">
@@ -125,9 +126,7 @@
                 <label for="total-counter">Итого за день:</label>
                 <input type="text" id="total-counter" readonly>
             </div>
-            
         </div>
-        
     </form>
 <script>
 
