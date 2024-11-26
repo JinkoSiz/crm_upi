@@ -1,9 +1,7 @@
-from datetime import timedelta, datetime
+from datetime import datetime, timedelta, timezone
 import re
 import dateparser
-
-import openpyxl
-from django.utils.dateparse import parse_date
+import pytz
 from django.utils.timezone import now
 from openpyxl.styles import PatternFill, Alignment
 from openpyxl.utils import get_column_letter
@@ -20,7 +18,6 @@ from django.contrib import messages
 from .forms import *
 from django.db.models import Q, Sum
 from django.utils import timezone
-from dateutil import parser
 
 
 def admin_required(login_url=None):
@@ -915,32 +912,42 @@ def reset_session(request):
 @login_required
 def user_dashboard(request):
     user = request.user
-    today = timezone.now().date()
+    moscow_tz = pytz.timezone("Europe/Moscow")
 
-    # Получаем таймлог за текущий день для данного пользователя
-    timelog = Timelog.objects.filter(user=user, date__date=today)
+    # Получаем диапазон всех дат от момента создания пользователя до текущей даты
+    start_date = user.created_at.astimezone(moscow_tz).date()
+    end_date = now().astimezone(moscow_tz).date()
+    dates_range = [start_date + timedelta(days=i) for i in range((end_date - start_date).days + 1)]
 
-    # Считаем общее время
-    total_time = timelog.aggregate(total_time=Sum('time'))['total_time'] or 0
+    # Получаем уже заполненные таймлоги пользователя и преобразуем в список дат
+    filled_timelogs = Timelog.objects.filter(user=user).values_list('date', flat=True)
+    filled_dates = {
+        log_date.astimezone(moscow_tz).date() if isinstance(log_date, datetime) else log_date
+        for log_date in filled_timelogs
+    }
 
-    if request.method == 'POST' and not timelog.exists():
-        form = TimelogForm(request.POST)
-        if form.is_valid():
-            new_timelog = form.save(commit=False)
-            new_timelog.user = user
-            new_timelog.role = user.role  # Предполагаем, что у пользователя есть роль
-            new_timelog.date = timezone.now()  # Устанавливаем дату на текущую
-            new_timelog.save()
-            return redirect('user-dashboard')
-    else:
-        form = TimelogForm()
+    # Формируем список отчетов
+    reports_to_fill = [
+        {"date": date, "is_filled": date in filled_dates}
+        for date in dates_range
+    ]
+
+    if request.method == 'POST':
+        # Обработка отправки таймлога
+        date_to_fill = request.POST.get('date')
+        if date_to_fill:
+            form = TimelogForm(request.POST)
+            if form.is_valid():
+                new_timelog = form.save(commit=False)
+                new_timelog.user = user
+                new_timelog.role = user.role
+                new_timelog.date = date_to_fill
+                new_timelog.save()
+                return redirect('user-dashboard')
 
     context = {
         'user': user,
-        'timelog': timelog,
-        'form': form,
-        'today': today,
-        'total_time': total_time
+        'reports_to_fill': reports_to_fill,
     }
     return render(request, 'task_manager/user_dashboard.html', context)
 
@@ -961,7 +968,17 @@ def get_buildings(request):
 
 @login_required
 def report_create(request):
-    today = timezone.now().date()
+    # Получаем дату из запроса или используем текущую
+    requested_date = request.GET.get('date')
+    print('requested')
+    print(requested_date)
+
+    if requested_date:
+        selected_date = parse_russian_date(requested_date)  # Используем ваш парсер
+        if not selected_date:
+            selected_date = timezone.now().date()  # Если не удалось распарсить, используем текущую
+    else:
+        selected_date = timezone.now().date()
 
     if request.method == 'POST':
         timelogs_data = []
@@ -972,6 +989,7 @@ def report_create(request):
         marks = request.POST.getlist('mark')
         tasks = request.POST.getlist('task')
         times = request.POST.getlist('time')
+        post_date = request.POST.get('date')
 
         for i in range(len(projects)):
             # Проверяем, существует ли задача, и создаем, если нужно
@@ -989,7 +1007,7 @@ def report_create(request):
                 mark_id=marks[i],
                 task_id=task.id,
                 time=int(times[i]),
-                date=today
+                date=post_date
             )
             timelogs_data.append(timelog)
 
@@ -1012,13 +1030,12 @@ def report_create(request):
     # Загружаем данные из кэша или базы данных для селектов
     projects = cache.get_or_set('projects_cache', Project.objects.select_related('status').all(), timeout=60 * 15)
     sections = cache.get_or_set('sections_cache', Section.objects.all(), timeout=60 * 15)
-    # buildings = cache.get_or_set('buildings', Building.objects.all(), timeout=60 * 15)
     marks = cache.get_or_set('mark_list', Mark.objects.all(), timeout=60 * 15)
     tasks = cache.get_or_set('tasks', TaskType.objects.all(), timeout=60 * 15)
 
     context = {
         'form': form,
-        'today': today,
+        'selected_date': selected_date,
         'projects': projects,
         'stages': Timelog._meta.get_field('stage').choices,
         'sections': sections,
