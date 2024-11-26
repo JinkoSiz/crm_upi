@@ -223,11 +223,12 @@
         </div>
         
         <ul class="search-list">
-            <li></li>
+            <span>Вернуться к списку</span>
+            {% for user in all_users %}
+            <li>{{ user.first_name }} {{ user.last_name }}</li>
+            {% endfor %}
         </ul>
-        <ul class="finde-items">
-            <li><span>+</span></li>
-        </ul>
+        <ul class="finde-items active"></ul>
     </div>
     <!-- Отдел -->
     <div class="fiter-modal-search" data-cid="department">
@@ -242,11 +243,74 @@
         </div>
         
         <ul class="search-list">
-            <li></li>
+            <span>Вернуться к списку</span>
+            {% for department in all_departments %}
+            <li>{{ department.title }}</li>
+            {% endfor %}
         </ul>
-        <ul class="finde-items">
-            <li><span>+</span></li>
+        <ul class="finde-items active"></ul>
+    </div>
+    <!-- Должность -->
+    <div class="fiter-modal-search" data-cid="role">
+        <div class="search-block">
+            <input type="text" id="search">
+            <input type="text" id="searchHidden" hidden>
+            <span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
+                    <path d="M15.75 15.75L12.4875 12.4875M14.25 8.25C14.25 11.5637 11.5637 14.25 8.25 14.25C4.93629 14.25 2.25 11.5637 2.25 8.25C2.25 4.93629 4.93629 2.25 8.25 2.25C11.5637 2.25 14.25 4.93629 14.25 8.25Z" stroke="#8C8E90" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </span>
+        </div>
+        
+        <ul class="search-list">
+            <span>Вернуться к списку</span>
+            {% for role in all_roles %}
+            <li>{{ role.title }}</li>
+            {% endfor %}
         </ul>
+        <ul class="finde-items active"></ul>
+    </div>
+    <!-- Статус -->
+    <div class="fiter-modal-search" data-cid="status">
+        <div class="search-block">
+            <input type="text" id="search">
+            <input type="text" id="searchHidden" hidden>
+            <span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
+                    <path d="M15.75 15.75L12.4875 12.4875M14.25 8.25C14.25 11.5637 11.5637 14.25 8.25 14.25C4.93629 14.25 2.25 11.5637 2.25 8.25C2.25 4.93629 4.93629 2.25 8.25 2.25C11.5637 2.25 14.25 4.93629 14.25 8.25Z" stroke="#8C8E90" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </span>
+        </div>
+        
+        <ul class="search-list">
+            <span>Вернуться к списку</span>
+            <li>Проработка</li>
+            <li>Проектирование</li>
+            <li>Экспертиза</li>
+            <li>Рабочая документация</li>
+            <li>Авторский надзор</li>
+            <li>Архив</li>
+        </ul>
+        <ul class="finde-items active"></ul>
+    </div>
+    <!-- Роль -->
+    <div class="fiter-modal-search" data-cid="is_admin">
+        <div class="search-block">
+            <input type="text" id="search">
+            <input type="text" id="searchHidden" hidden>
+            <span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
+                    <path d="M15.75 15.75L12.4875 12.4875M14.25 8.25C14.25 11.5637 11.5637 14.25 8.25 14.25C4.93629 14.25 2.25 11.5637 2.25 8.25C2.25 4.93629 4.93629 2.25 8.25 2.25C11.5637 2.25 14.25 4.93629 14.25 8.25Z" stroke="#8C8E90" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </span>
+        </div>
+        
+        <ul class="search-list">
+            <span>Вернуться к списку</span>
+            <li>Admin</li>
+            <li>User</li>
+        </ul>
+        <ul class="finde-items active"></ul>
     </div>
     <!-- Объект -->
     <div class="fiter-modal-search" data-cid="project">
@@ -261,11 +325,12 @@
         </div>
         
         <ul class="search-list">
-            <li></li>
+            <span>Вернуться к списку</span>
+            {% for project in all_projects %}
+            <li>{{ project.title }}</li>
+            {% endfor %}
         </ul>
-        <ul class="finde-items">
-            <li><span>+</span></li>
-        </ul>
+        <ul class="finde-items active"></ul>
     </div>
     <!-- Стадия -->
     <div class="fiter-modal-search" data-cid="stage">
@@ -280,11 +345,12 @@
         </div>
         
         <ul class="search-list">
-            <li></li>
+            <span>Вернуться к списку</span>
+            <li>РД</li>
+            <li>ОТР</li>
+            <li>ПД</li>
         </ul>
-        <ul class="finde-items">
-            <li><span>+</span></li>
-        </ul>
+        <ul class="finde-items active"></ul>
     </div>
     <!-- Раздел -->
     <div class="fiter-modal-search" data-cid="section">
@@ -299,11 +365,12 @@
         </div>
         
         <ul class="search-list">
-            <li></li>
+            <span>Вернуться к списку</span>
+            {% for section in all_sections %}
+            <li>{{ section.title }}</li>
+            {% endfor %}
         </ul>
-        <ul class="finde-items">
-            <li><span>+</span></li>
-        </ul>
+        <ul class="finde-items active"></ul>
     </div>
     <!-- ЗИС -->
     <div class="fiter-modal-search" data-cid="zis">
@@ -318,11 +385,12 @@
         </div>
         
         <ul class="search-list">
-            <li></li>
+            <span>Вернуться к списку</span>
+            {% for building in all_buildings %}
+            <li>{{ building.title }}</li>
+            {% endfor %}
         </ul>
-        <ul class="finde-items">
-            <li><span>+</span></li>
-        </ul>
+        <ul class="finde-items active"></ul>
     </div>
     <!-- Марка -->
     <div class="fiter-modal-search" data-cid="mark">
@@ -337,11 +405,12 @@
         </div>
         
         <ul class="search-list">
-            <li></li>
+            <span>Вернуться к списку</span>
+            {% for mark in all_marks %}
+            <li>{{ mark.title }}</li>
+            {% endfor %}
         </ul>
-        <ul class="finde-items">
-            <li><span>+</span></li>
-        </ul>
+        <ul class="finde-items active"></ul>
     </div>
     <!-- Задача -->
     <div class="fiter-modal-search" data-cid="task">
@@ -356,11 +425,12 @@
         </div>
         
         <ul class="search-list">
-            <li></li>
+            <span>Вернуться к списку</span>
+            {% for task in all_tasks %}
+            <li>{{ task.title }}</li>
+            {% endfor %}
         </ul>
-        <ul class="finde-items">
-            <li><span>+</span></li>
-        </ul>
+        <ul class="finde-items active"></ul>
     </div>
 </div>
 </body>
@@ -747,11 +817,14 @@
             }
         });
 
-        const filterBtns = document.querySelectorAll('button.sorter');
+        //ОТСЮДА КОРМИ
+
+        const filterBtns = document.querySelectorAll('button.sorter'); 
         const filterModals = document.querySelectorAll('.fiter-modal-search');
 
         autoAppendModal();
 
+        // Привязка модальных окон к кнопкам
         function autoAppendModal() {
             filterBtns.forEach(btn => {
                 const matchingModal = Array.from(filterModals).find(
@@ -763,6 +836,7 @@
             });
         }
 
+        // Открытие соответствующего модального окна
         function openTargetModal(selector) {
             filterModals.forEach(modal => {
                 modal.classList.toggle('active', modal.dataset.cid === selector);
@@ -783,6 +857,173 @@
                 filterModals.forEach(modal => modal.classList.remove('active'));
             }
         });
+
+        function updatePlaceholder(findeItems, selectedItems) {
+            // Находим или создаём placeholder элемент
+            let placeholder = findeItems.querySelector('.placeholder');
+
+            if (selectedItems.length === 0) {
+                // Если фильтры не выбраны, добавляем placeholder
+                if (!placeholder) {
+                    placeholder = document.createElement('li');
+                    placeholder.classList.add('placeholder');
+                    placeholder.textContent = 'Выберите фильтр';
+                    findeItems.appendChild(placeholder);
+                }
+            } else {
+                // Если есть выбранные фильтры, удаляем placeholder
+                if (placeholder) {
+                    findeItems.removeChild(placeholder);
+                }
+            }
+        }
+
+        // Добавление функционала к каждому модальному окну
+        filterModals.forEach(block => {
+            const searchInput = block.querySelector('.search-block input[type="text"]');
+            const searchHiddenInput = block.querySelector('.search-block input[type="text"][hidden]');
+            const searchList = block.querySelector('.search-list');
+            const findeItems = block.querySelector('.finde-items');
+            const backToList = block.querySelector('.search-list span');
+            const dataCid = block.dataset.cid; // Уникальный идентификатор блока
+            const selectedItems = []; // Массив для хранения выбранных элементов
+
+            // Активировать список при нажатии на поле ввода
+            searchInput.addEventListener('click', () => {
+                searchList.classList.add('active');
+                findeItems.classList.remove('active');
+            });
+
+            backToList.addEventListener('click', () => {
+                searchList.classList.remove('active');
+                findeItems.classList.add('active');
+            })
+
+            searchInput.addEventListener('input', () => {
+                const query = searchInput.value.toLowerCase().trim();
+
+                Array.from(searchList.children).forEach(item => {
+                    const itemText = item.textContent.toLowerCase().trim();
+                    // Показываем элемент, если текст совпадает с запросом, иначе скрываем
+                    if (itemText.includes(query)) {
+                        item.style.display = '';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+
+            // Обработка клика по элементу списка
+            searchList.addEventListener('click', (event) => {
+                if (event.target.tagName === 'LI') {
+                    const selectedValue = event.target.textContent.trim();
+
+                    // Проверяем, был ли элемент ранее добавлен
+                    const isAlreadySelected = selectedItems.includes(selectedValue);
+                    const listItem = event.target; // Ссылка на текущий элемент LI
+
+                    if (!isAlreadySelected) {
+                        // Добавляем элемент
+                        selectedItems.push(selectedValue);
+
+                        // Добавляем элемент в finde-items
+                        const newItem = document.createElement('li');
+                        newItem.innerHTML = `${selectedValue} <span>+</span>`;
+                        findeItems.appendChild(newItem);
+
+                        // Добавляем класс "active" элементу списка
+                        listItem.classList.add('active');
+
+                        // Обновляем скрытое поле
+                        searchHiddenInput.value = JSON.stringify(selectedItems);
+
+                        // Отправляем данные на сервер
+                        sendToBackend(dataCid, selectedItems);
+                    } else {
+                        // Если элемент уже был выбран, убираем его
+                        selectedItems.splice(selectedItems.indexOf(selectedValue), 1); // Удаляем из массива
+                        listItem.classList.remove('active'); // Убираем класс "active"
+
+                        // Удаляем элемент из finde-items
+                        const itemToRemove = Array.from(findeItems.children).find(
+                            child => child.textContent.trim().startsWith(selectedValue)
+                        );
+                        if (itemToRemove) {
+                            findeItems.removeChild(itemToRemove);
+                        }
+
+                        // Обновляем скрытое поле
+                        searchHiddenInput.value = JSON.stringify(selectedItems);
+
+                        // Отправляем обновлённый список на сервер
+                        sendToBackend(dataCid, selectedItems);
+                    }
+                    updatePlaceholder(findeItems, selectedItems);
+                }
+            });
+
+            findeItems.addEventListener('click', (event) => {
+                if (event.target.tagName === 'SPAN' && event.target.textContent === '+') {
+                    event.stopPropagation();
+                    const parentLi = event.target.closest('li');
+                    const selectedValue = parentLi.textContent.trim().replace(' +', ''); // Убираем текст кнопки
+
+                    // Удаляем элемент из массива selectedItems
+                    selectedItems.splice(selectedItems.indexOf(selectedValue), 1);
+
+                    // Убираем класс "active" у соответствующего элемента из search-list
+                    const listItemToDeactivate = Array.from(searchList.children).find(
+                        child => child.textContent.trim() === selectedValue
+                    );
+                    if (listItemToDeactivate) {
+                        listItemToDeactivate.classList.remove('active');
+                    }
+
+                    // Удаляем элемент из finde-items
+                    findeItems.removeChild(parentLi);
+
+                    // Обновляем скрытое поле
+                    searchHiddenInput.value = JSON.stringify(selectedItems);
+
+                    // Отправляем обновлённый список на сервер
+                    sendToBackend(dataCid, selectedItems);
+                }
+                updatePlaceholder(findeItems, selectedItems);
+            });
+
+            updatePlaceholder(findeItems, selectedItems);
+        });
+
+        // Функция отправки данных на сервер
+        function sendToBackend(cid, data) {
+            fetch('/your-backend-endpoint/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken() // Если используется CSRF-токен
+                },
+                body: JSON.stringify({ cid, selected_items: data })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(`Response for ${cid}:`, data);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        // Получение CSRF-токена для Django
+        function getCSRFToken() {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
+                if (cookie.startsWith('csrftoken=')) {
+                    return cookie.split('=')[1];
+                }
+            }
+            return '';
+        }
 
     });
 
