@@ -225,7 +225,7 @@
         <ul class="search-list">
             <span>Вернуться к списку</span>
             {% for user in all_users %}
-            <li>{{ user.first_name }} {{ user.last_name }}</li>
+            <li>{{ user.full_name }}</li>
             {% endfor %}
         </ul>
         <ul class="finde-items active"></ul>
@@ -346,9 +346,9 @@
         
         <ul class="search-list">
             <span>Вернуться к списку</span>
-            <li>РД</li>
-            <li>ОТР</li>
-            <li>ПД</li>
+            <li>RD</li>
+            <li>OTR</li>
+            <li>PD</li>
         </ul>
         <ul class="finde-items active"></ul>
     </div>
@@ -1011,6 +1011,13 @@
                 .catch(error => {
                     console.error('Error:', error);
                 });
+            const form = new URLSearchParams(window.location.search);
+
+            // Обновляем параметры фильтрации
+            form.set(cid, data.join(','));
+
+            // Обновляем URL
+            window.location.href = `${window.location.pathname}?${form.toString()}`;
         }
 
         // Получение CSRF-токена для Django
