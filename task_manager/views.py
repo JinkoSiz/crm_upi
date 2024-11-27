@@ -34,6 +34,11 @@ def department(request):
         departmentObj = Department.objects.all()
         cache.set('department_list', departmentObj, timeout=60 * 15)  # Кэшируем на 15 минут
 
+    selected_departments = request.GET.getlist('department')
+
+    if selected_departments:
+        departmentObj = departmentObj.filter(title__in=selected_departments)
+
     form = DepartmentForm()
     return render(request, 'task_manager/departments_list.html', {'departments': departmentObj, 'form': form})
 
@@ -88,6 +93,11 @@ def role(request):
     if not roleObj:
         roleObj = Role.objects.all()
         cache.set('role_list', roleObj, 600)  # Кэшируем на 10 минут (600 секунд)
+
+    selected_roles = request.GET.getlist('role')
+
+    if selected_roles:
+        roleObj = roleObj.filter(title__in=selected_roles)
 
     form = RoleForm()
     return render(request, 'task_manager/roles_list.html', {'roles': roleObj, 'form': form})
@@ -150,27 +160,35 @@ def user(request):
     departments = cache.get_or_set('departments_cache', Department.objects.all(), timeout=60 * 15)
     roles = cache.get_or_set('roles_cache', Role.objects.all(), timeout=60 * 15)
 
-    # Применяем фильтры, если они есть
-    filters = Q()
-    if request.GET.get('status'):
-        filters &= Q(status=request.GET.get('status'))
-    if request.GET.get('department'):
-        filters &= Q(department__id=request.GET.get('department'))
-    if request.GET.get('role'):
-        filters &= Q(role__id=request.GET.get('role'))
-    if request.GET.get('last_name'):
-        filters &= Q(last_name__icontains=request.GET.get('last_name'))
+    # Фильтры из GET-запроса
+    selected_departments = request.GET.getlist('department')
+    selected_users = request.GET.getlist('employees')
+    selected_roles = request.GET.getlist('role')
+    selected_status = request.GET.get('is_admin')
 
-    # Применяем кэширование только для полного списка пользователей без фильтров
-    if filters:
-        # Если есть фильтры, применяем их напрямую
-        users = CustomUser.objects.select_related('department', 'role').filter(filters)
-    else:
-        # Используем кэш для полного списка пользователей без фильтров
-        users = cache.get('user_list')
-        if not users:
-            users = CustomUser.objects.select_related('department', 'role').all()
-            cache.set('user_list', users, timeout=60 * 5)
+    # Получаем пользователей с учетом фильтров
+    users = CustomUser.objects.select_related('department', 'role')
+
+    # Применяем фильтры, если они указаны
+    if selected_departments:
+        users = users.filter(department__title__in=selected_departments)
+    if selected_status:
+        if selected_status.lower() == 'admin':  # Преобразуем в boolean
+            users = users.filter(is_admin=True)
+        elif selected_status.lower() == 'user':
+            users = users.filter(is_admin=False)
+    if selected_roles:
+        users = users.filter(role__title__in=selected_roles)
+    if selected_users:
+        user_filters = Q()
+        for full_name in selected_users:
+            name_parts = full_name.split()
+            if len(name_parts) == 2:  # Учитываем имя и фамилию
+                first_name, last_name = name_parts
+                user_filters |= Q(first_name__iexact=first_name, last_name__iexact=last_name)
+            elif len(name_parts) == 1:  # Если только имя или фамилия
+                user_filters |= Q(first_name__iexact=name_parts[0]) | Q(last_name__iexact=name_parts[0])
+        users = users.filter(user_filters)
 
     form = CustomUserCreationForm()
 
@@ -178,7 +196,7 @@ def user(request):
         'users': users,
         'form': form,
         'departments': departments,
-        'roles': roles
+        'roles': roles,
     })
 
 
@@ -356,6 +374,24 @@ def project(request):
         Section.objects.all(),
         timeout=60 * 15
     )
+
+    # Фильтры из GET-запроса
+    selected_projects = request.GET.getlist('project')
+    selected_sections = request.GET.getlist('section')
+    selected_statuses = request.GET.getlist('status')
+    selected_buildings = request.GET.getlist('zis')
+
+    # Применяем фильтры, если они указаны
+    if selected_projects:
+        projects = projects.filter(title__in=selected_projects)
+    if selected_sections:
+        projects = projects.filter(project_sections__section__title__in=selected_sections)
+    if selected_statuses:
+        # Получаем UUIDs для выбранных статусов
+        status_ids = ProjectStatus.objects.filter(title__in=selected_statuses).values_list('id', flat=True)
+        projects = projects.filter(status_id__in=status_ids)
+    if selected_buildings:
+        projects = projects.filter(project_buildings__building__title__in=selected_buildings)
 
     form = ProjectForm()
 
@@ -601,6 +637,12 @@ def building_delete(request, building_id):
 def section(request):
     sections = Section.objects.all()
     available_marks = Mark.objects.all()  # Получаем все доступные марки
+
+    selected_sections = request.GET.getlist('section')
+
+    if selected_sections:
+        sections = sections.filter(title__in=selected_sections)
+
     form = SectionForm()
 
     return render(request, 'task_manager/sections_list.html', {
@@ -673,6 +715,11 @@ def mark(request):
         # Если кэш пуст, загружаем данные из базы и кэшируем
         marks = Mark.objects.all()
         cache.set('mark_list', marks, timeout=60 * 15)  # Кэшируем на 15 минут
+
+    selected_marks = request.GET.getlist('mark')
+
+    if selected_marks:
+        marks = marks.filter(title__in=selected_marks)
 
     form = MarkForm()
     return render(request, 'task_manager/mark_list.html', {'marks': marks, 'form': form})
@@ -821,6 +868,16 @@ def timelog_list(request):
     start_date = parse_custom_date(start_date) if isinstance(start_date, str) else start_date
     end_date = parse_custom_date(end_date) if isinstance(end_date, str) else end_date
 
+    # Фильтры из GET-запроса
+    selected_projects = request.GET.getlist('project')
+    selected_departments = request.GET.getlist('department')
+    selected_users = request.GET.getlist('employees')
+    selected_stages = request.GET.getlist('stage')
+    selected_sections = request.GET.getlist('section')
+    selected_buildings = request.GET.getlist('zis')
+    selected_marks = request.GET.getlist('mark')
+    selected_tasks = request.GET.getlist('task')
+
     # Кэшируем данные таймлогов, если кэш пуст
     timelogs = cache.get('timelogs_cache')
     if not timelogs:
@@ -832,15 +889,27 @@ def timelog_list(request):
         # Сохраняем в кэше на 5 минут (300 секунд)
         cache.set('timelogs_cache', timelogs, timeout=900)
 
-    # Применяем фильтры по параметрам
-    if request.GET.get('user'):
-        timelogs = timelogs.filter(user__id=request.GET.get('user'))
-    if request.GET.get('project'):
-        timelogs = timelogs.filter(project__id=request.GET.get('project'))
-    if request.GET.get('stage'):
-        timelogs = timelogs.filter(stage=request.GET.get('stage'))
-    if request.GET.get('mark'):
-        timelogs = timelogs.filter(mark__id=request.GET.get('mark'))
+    # Применяем фильтры, если они указаны
+    if selected_projects:
+        timelogs = timelogs.filter(project__title__in=selected_projects)
+    if selected_sections:
+        timelogs = timelogs.filter(section__title__in=selected_sections)
+    if selected_departments:
+        timelogs = timelogs.filter(department__title__in=selected_departments)
+    if selected_users:
+        user_filters = Q()
+        for full_name in selected_users:
+            first_name, last_name = full_name.split()
+            user_filters |= Q(user__first_name=first_name, user__last_name=last_name)
+        timelogs = timelogs.filter(user_filters)
+    if selected_stages:
+        timelogs = timelogs.filter(stage__in=selected_stages)
+    if selected_buildings:
+        timelogs = timelogs.filter(building__title__in=selected_buildings)
+    if selected_marks:
+        timelogs = timelogs.filter(mark__title__in=selected_marks)
+    if selected_tasks:
+        timelogs = timelogs.filter(task__title__in=selected_tasks)
 
     # Фильтрация по диапазону дат
     if start_date and end_date:
@@ -1055,12 +1124,41 @@ def reports_view(request):
     start_date = parse_custom_date(start_date) if isinstance(start_date, str) else start_date
     end_date = parse_custom_date(end_date) if isinstance(end_date, str) else end_date
 
+    # Фильтры из GET-запроса
+    selected_projects = request.GET.getlist('project')
+    selected_departments = request.GET.getlist('department')
+    selected_users = request.GET.getlist('employees')
+    selected_stages = request.GET.getlist('stage')
+    selected_buildings = request.GET.getlist('zis')
+    selected_marks = request.GET.getlist('mark')
+    selected_tasks = request.GET.getlist('task')
+
     # Фильтрация Timelog по диапазону дат
     timelogs = (
         Timelog.objects
         .filter(date__range=[start_date, end_date])
         .select_related('project', 'department', 'user', 'building', 'mark', 'task')
     )
+
+    # Применяем фильтры, если они указаны
+    if selected_projects:
+        timelogs = timelogs.filter(project__title__in=selected_projects)
+    if selected_departments:
+        timelogs = timelogs.filter(department__title__in=selected_departments)
+    if selected_users:
+        user_filters = Q()
+        for full_name in selected_users:
+            first_name, last_name = full_name.split()
+            user_filters |= Q(user__first_name=first_name, user__last_name=last_name)
+        timelogs = timelogs.filter(user_filters)
+    if selected_stages:
+        timelogs = timelogs.filter(stage__in=selected_stages)
+    if selected_buildings:
+        timelogs = timelogs.filter(building__title__in=selected_buildings)
+    if selected_marks:
+        timelogs = timelogs.filter(mark__title__in=selected_marks)
+    if selected_tasks:
+        timelogs = timelogs.filter(task__title__in=selected_tasks)
 
     # Группировка данных по проектам
     detailed_report_projects = {}
@@ -1113,12 +1211,41 @@ def reports_employees(request):
     start_date = parse_custom_date(start_date) if isinstance(start_date, str) else start_date
     end_date = parse_custom_date(end_date) if isinstance(end_date, str) else end_date
 
+    # Фильтры из GET-запроса
+    selected_projects = request.GET.getlist('project')
+    selected_departments = request.GET.getlist('department')
+    selected_users = request.GET.getlist('employees')
+    selected_stages = request.GET.getlist('stage')
+    selected_buildings = request.GET.getlist('zis')
+    selected_marks = request.GET.getlist('mark')
+    selected_tasks = request.GET.getlist('task')
+
     # Получаем все записи Timelog с оптимизацией связанных данных
     timelogs = (
         Timelog.objects
         .filter(date__range=[start_date, end_date])
         .select_related('project', 'department', 'user', 'building', 'mark', 'task')
     )
+
+    # Применяем фильтры, если они указаны
+    if selected_projects:
+        timelogs = timelogs.filter(project__title__in=selected_projects)
+    if selected_departments:
+        timelogs = timelogs.filter(department__title__in=selected_departments)
+    if selected_users:
+        user_filters = Q()
+        for full_name in selected_users:
+            first_name, last_name = full_name.split()
+            user_filters |= Q(user__first_name=first_name, user__last_name=last_name)
+        timelogs = timelogs.filter(user_filters)
+    if selected_stages:
+        timelogs = timelogs.filter(stage__in=selected_stages)
+    if selected_buildings:
+        timelogs = timelogs.filter(building__title__in=selected_buildings)
+    if selected_marks:
+        timelogs = timelogs.filter(mark__title__in=selected_marks)
+    if selected_tasks:
+        timelogs = timelogs.filter(task__title__in=selected_tasks)
 
     # Группировка данных по проектам
     detailed_report_projects = {}
@@ -1190,7 +1317,27 @@ def final_report(request):
     start_date = parse_custom_date(start_date) if isinstance(start_date, str) else start_date
     end_date = parse_custom_date(end_date) if isinstance(end_date, str) else end_date
 
+    # Фильтры из GET-запроса
+    selected_projects = request.GET.getlist('project')
+    selected_users = request.GET.getlist('employees')
+    selected_buildings = request.GET.getlist('zis')
+    selected_marks = request.GET.getlist('mark')
+
     timelogs = Timelog.objects.filter(date__range=[start_date, end_date])
+
+    # Применяем фильтры, если они указаны
+    if selected_projects:
+        timelogs = timelogs.filter(project__title__in=selected_projects)
+    if selected_users:
+        user_filters = Q()
+        for full_name in selected_users:
+            first_name, last_name = full_name.split()
+            user_filters |= Q(user__first_name=first_name, user__last_name=last_name)
+        timelogs = timelogs.filter(user_filters)
+    if selected_buildings:
+        timelogs = timelogs.filter(building__title__in=selected_buildings)
+    if selected_marks:
+        timelogs = timelogs.filter(mark__title__in=selected_marks)
 
     report_data = timelogs.values('project__title', 'building__title', 'mark__title').annotate(
         total_hours=Sum('time'),
