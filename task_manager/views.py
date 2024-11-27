@@ -165,11 +165,22 @@ def user(request):
     selected_users = request.GET.getlist('employees')
     selected_roles = request.GET.getlist('role')
     selected_status = request.GET.get('is_admin')
+    selected_status_user = request.GET.getlist('status_user')
 
     # Получаем пользователей с учетом фильтров
     users = CustomUser.objects.select_related('department', 'role')
 
+    status_mapping = {
+        'Черновик': 'draft',
+        'Приглашен': 'invited',
+        'Активен': 'active',
+        'Уволен': 'fired'
+    }
+
     # Применяем фильтры, если они указаны
+    if selected_status_user:
+        mapped_statuses = [status_mapping.get(status) for status in selected_status_user if status in status_mapping]
+        users = users.filter(status__in=mapped_statuses)
     if selected_departments:
         users = users.filter(department__title__in=selected_departments)
     if selected_status:
