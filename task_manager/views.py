@@ -1550,3 +1550,14 @@ def export_to_excel(request):
     response["Content-Disposition"] = 'attachment; filename="timelog_report.xlsx"'
     wb.save(response)
     return response
+
+
+@login_required
+def get_buildings_for_project(request, project_id):
+    # Получаем здания для выбранного проекта
+    buildings = Building.objects.filter(project_id=project_id)
+
+    # Формируем ответ в виде списка зданий
+    building_data = [{'id': building.id, 'name': building.name} for building in buildings]
+
+    return JsonResponse({'buildings': building_data})
