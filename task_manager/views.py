@@ -392,17 +392,22 @@ def project(request):
     selected_statuses = request.GET.getlist('status')
     selected_buildings = request.GET.getlist('zis')
 
-    # Применяем фильтры, если они указаны
+    # Создаем Q-объекты для фильтров
+    filter_conditions = Q()
+
     if selected_projects:
-        projects = projects.filter(title__in=selected_projects)
+        filter_conditions &= Q(title__in=selected_projects)
     if selected_sections:
-        projects = projects.filter(project_sections__section__title__in=selected_sections)
+        filter_conditions &= Q(project_sections__section__title__in=selected_sections)
     if selected_statuses:
         # Получаем UUIDs для выбранных статусов
         status_ids = ProjectStatus.objects.filter(title__in=selected_statuses).values_list('id', flat=True)
-        projects = projects.filter(status_id__in=status_ids)
+        filter_conditions &= Q(status_id__in=status_ids)
     if selected_buildings:
-        projects = projects.filter(project_buildings__building__title__in=selected_buildings)
+        filter_conditions &= Q(project_buildings__building__title__in=selected_buildings)
+
+    # Применяем фильтры
+    projects = projects.filter(filter_conditions)
 
     form = ProjectForm()
 
