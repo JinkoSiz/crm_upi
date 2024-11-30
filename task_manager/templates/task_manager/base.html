@@ -152,6 +152,21 @@
         <form method="get" action="{% url 'export_to_excel' %}" data-cid="final-report" class="export-exel-form">
             <input type="hidden" name="start_date" value="{{ start_date }}">
             <input type="hidden" name="end_date" value="{{ end_date }}">
+            {% if request.GET.project %}
+                <input type="hidden" name="project" value="{{ request.GET.project }}">
+            {% endif %}
+
+            {% if request.GET.employees %}
+                <input type="hidden" name="employees" value="{{ request.GET.employees }}">
+            {% endif %}
+
+            {% if request.GET.zis %}
+                <input type="hidden" name="zis" value="{{ request.GET.zis }}">
+            {% endif %}
+
+            {% if request.GET.mark %}
+                <input type="hidden" name="mark" value="{{ request.GET.mark }}">
+            {% endif %}
             <button type="submit" class="add-depart active">Экспорт в Excel</button>
         </form>
 

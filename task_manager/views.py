@@ -1350,6 +1350,11 @@ def final_report(request):
     if selected_marks:
         timelogs = timelogs.filter(mark__title__in=selected_marks)
 
+    # Используем select_related для оптимизации запросов
+    timelogs = timelogs.select_related(
+        'project', 'building', 'mark', 'user'
+    )
+
     report_data = timelogs.values('project__title', 'building__title', 'mark__title').annotate(
         total_hours=Sum('time'),
         user_full_name=Concat(F('user__first_name'), Value(' '), F('user__last_name'))
@@ -1422,9 +1427,6 @@ def export_to_excel(request):
     start_date_str = request.GET.get('start_date')
     end_date_str = request.GET.get('end_date')
 
-    print("Received start_date_str:", start_date_str)
-    print("Received end_date_str:", end_date_str)
-
     # Парсим даты с использованием dateparser
     start_date = dateparser.parse(start_date_str).date() if start_date_str else timezone.now().replace(day=1).date()
     end_date = dateparser.parse(end_date_str).date() if end_date_str else timezone.now().date()
@@ -1434,11 +1436,34 @@ def export_to_excel(request):
         print("Error: start_date or end_date is None")
         return HttpResponse("Ошибка: некорректные даты", status=400)
 
-    print("Parsed start_date:", start_date)
-    print("Parsed end_date:", end_date)
-
+    # Получаем фильтры из GET-запроса
+    selected_projects = request.GET.getlist('project')
+    selected_users = request.GET.getlist('employees')
+    selected_buildings = request.GET.getlist('zis')
+    selected_marks = request.GET.getlist('mark')
     # Получаем данные из базы данных
     timelogs = Timelog.objects.filter(date__range=[start_date, end_date])
+    print(f'start {timelogs}')
+
+    # Применяем фильтры, если они указаны
+    if selected_projects:
+        timelogs = timelogs.filter(project__title__in=selected_projects)
+    if selected_users:
+        user_filters = Q()
+        for full_name in selected_users:
+            # Проверка на пустую строку и попытка разделить имя и фамилию
+            if full_name.strip():  # Если строка не пуста
+                try:
+                    first_name, last_name = full_name.split()
+                    user_filters |= Q(user__first_name=first_name, user__last_name=last_name)
+                except ValueError:
+                    # В случае, если имя не разделяется на два слова, просто пропускаем
+                    continue
+        timelogs = timelogs.filter(user_filters)
+    if selected_buildings:
+        timelogs = timelogs.filter(building__title__in=selected_buildings)
+    if selected_marks:
+        timelogs = timelogs.filter(mark__title__in=selected_marks)
 
     # Создаем переменные для хранения часов по месяцам и дням
     grouped_hours = {}
