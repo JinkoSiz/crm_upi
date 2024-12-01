@@ -152,6 +152,21 @@
         <form method="get" action="{% url 'export_to_excel' %}" data-cid="final-report" class="export-exel-form">
             <input type="hidden" name="start_date" value="{{ start_date }}">
             <input type="hidden" name="end_date" value="{{ end_date }}">
+            {% if request.GET.project %}
+                <input type="hidden" name="project" value="{{ request.GET.project }}">
+            {% endif %}
+
+            {% if request.GET.employees %}
+                <input type="hidden" name="employees" value="{{ request.GET.employees }}">
+            {% endif %}
+
+            {% if request.GET.zis %}
+                <input type="hidden" name="zis" value="{{ request.GET.zis }}">
+            {% endif %}
+
+            {% if request.GET.mark %}
+                <input type="hidden" name="mark" value="{{ request.GET.mark }}">
+            {% endif %}
             <button type="submit" class="add-depart active">Экспорт в Excel</button>
         </form>
 
@@ -225,7 +240,7 @@
         <ul class="search-list">
             <span>Вернуться к списку</span>
             {% for user in all_users %}
-            <li>{{ user.first_name }} {{ user.last_name }}</li>
+            <li>{{ user.full_name }}</li>
             {% endfor %}
         </ul>
         <ul class="finde-items active"></ul>
@@ -293,6 +308,27 @@
         </ul>
         <ul class="finde-items active"></ul>
     </div>
+    <!-- Статус USER-->
+    <div class="fiter-modal-search" data-cid="status_user">
+        <div class="search-block">
+            <input type="text" id="search">
+            <input type="text" id="searchHidden" hidden>
+            <span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
+                    <path d="M15.75 15.75L12.4875 12.4875M14.25 8.25C14.25 11.5637 11.5637 14.25 8.25 14.25C4.93629 14.25 2.25 11.5637 2.25 8.25C2.25 4.93629 4.93629 2.25 8.25 2.25C11.5637 2.25 14.25 4.93629 14.25 8.25Z" stroke="#8C8E90" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </span>
+        </div>
+
+        <ul class="search-list">
+            <span>Вернуться к списку</span>
+            <li>Активен</li>
+            <li>Черновик</li>
+            <li>Приглашен</li>
+            <li>Уволен</li>
+        </ul>
+        <ul class="finde-items active"></ul>
+    </div>
     <!-- Роль -->
     <div class="fiter-modal-search" data-cid="is_admin">
         <div class="search-block">
@@ -346,9 +382,9 @@
         
         <ul class="search-list">
             <span>Вернуться к списку</span>
-            <li>РД</li>
-            <li>ОТР</li>
-            <li>ПД</li>
+            <li>RD</li>
+            <li>OTR</li>
+            <li>PD</li>
         </ul>
         <ul class="finde-items active"></ul>
     </div>
@@ -1011,6 +1047,13 @@
                 .catch(error => {
                     console.error('Error:', error);
                 });
+            const form = new URLSearchParams(window.location.search);
+
+            // Обновляем параметры фильтрации
+            form.set(cid, data.join(','));
+
+            // Обновляем URL
+            window.location.href = `${window.location.pathname}?${form.toString()}`;
         }
 
         // Получение CSRF-токена для Django
