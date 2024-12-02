@@ -8,8 +8,7 @@
 
 
 
-{% for report in reports_to_fill %}
-{% if not report.is_filled %}
+{% for report in reports_to_display %}
 <div class="card">
     <div class="card-body">
         <div class="card-row">
@@ -32,28 +31,20 @@
                     Не заполнено
                 {% endif %}
             </p>
-            {% if not report.is_filled %}
-                <!-- Форма для создания нового таймлога -->
-                <form action="{% url 'user-dashboard' %}" method="post">
-                    {% csrf_token %}
-                    <input type="hidden" name="date" value="{{ report.date }}">
-                    <!-- {{ form.as_p }} -->
+            {% if report.is_filled %}
+                <!-- Кнопка редактирования -->
+                <a href="{% url 'report_create' %}?date={{ report.date }}" class="fill-in-report">
+                    Редактировать отчет
+                </a>
+                {% else %}
+                    <!-- Кнопка для заполнения нового отчета -->
                     <a href="{% url 'report_create' %}?date={{ report.date }}" class="fill-in-report">
                         Заполнить отчет
-                        <span>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                <path d="M2.31128 15.1984C2.34932 14.8561 2.36833 14.685 2.42012 14.525C2.46606 14.3831 2.53098 14.2481 2.6131 14.1235C2.70566 13.9832 2.82742 13.8614 3.07094 13.6179L14.0031 2.68577C14.9174 1.77141 16.3999 1.77141 17.3143 2.68577C18.2286 3.60013 18.2286 5.0826 17.3142 5.99696L6.38213 16.9291C6.1386 17.1726 6.01684 17.2943 5.87648 17.3869C5.75194 17.469 5.61688 17.5339 5.47496 17.5799C5.315 17.6317 5.14385 17.6507 4.80157 17.6887L2 18L2.31128 15.1984Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </span>
                     </a>
-                </form>
-            {% else %}
-                <button class="btn btn-secondary" disabled>Отчет заполнен</button>
             {% endif %}
         </div>
     </div>
 </div>
-{% endif %}
 {% empty %}
     <p>Все отчеты заполнены!</p>
 {% endfor %}
