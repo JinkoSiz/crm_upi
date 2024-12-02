@@ -44,11 +44,13 @@
                         </thead>
                         
                         <tbody>
+                            {% for timelog in timelogs_data %}
                             <tr>
+                                <!-- Объект -->
                                 <td style="width: 150px;">
-                                    <input type="hidden" name="project" class="hidden-input">
+                                    <input type="hidden" name="project" class="hidden-input" value="{{ timelog.project.id }}">
                                     <div class="select" data-cid="simple-select">
-                                        <span class="select__current" data-value="">Объект</span>
+                                        <span class="select__current" data-value="{{ timelog.project.id }}">{{ timelog.project.title }}</span>
                                         <div class="select__body">
                                             {% for project in projects %}
                                             <div class="select__item" data-value="{{ project.id }}">{{ project.title }}</div>
@@ -56,10 +58,12 @@
                                         </div>
                                     </div>
                                 </td>
+
+                                <!-- Стадия -->
                                 <td style="width: 100px;">
-                                    <input type="hidden" name="stage" class="hidden-input">
+                                    <input type="hidden" name="stage" class="hidden-input" value="{{ timelog.stage }}">
                                     <div class="select" data-cid="simple-select">
-                                        <span class="select__current" data-value="">Стадия</span>
+                                        <span class="select__current" data-value="{{ timelog.stage }}">{{ timelog.get_stage_display }}</span>
                                         <div class="select__body">
                                             {% for stage_value, stage_display in stages %}
                                             <div class="select__item" data-value="{{ stage_value }}">{{ stage_display }}</div>
@@ -67,10 +71,12 @@
                                         </div>
                                     </div>
                                 </td>
+
+                                <!-- Раздел -->
                                 <td style="width: 100px;">
-                                    <input type="hidden" name="section" class="hidden-input">
+                                    <input type="hidden" name="section" class="hidden-input" value="{{ timelog.section.id }}">
                                     <div class="select" data-cid="simple-select">
-                                        <span class="select__current" data-value="">Раздел</span>
+                                        <span class="select__current" data-value="{{ timelog.section.id }}">{{ timelog.section.title }}</span>
                                         <div class="select__body">
                                             {% for section in sections %}
                                             <div class="select__item" data-value="{{ section.id }}">{{ section.title }}</div>
@@ -78,10 +84,12 @@
                                         </div>
                                     </div>
                                 </td>
+
+                                <!-- ЗИС -->
                                 <td style="width: 300px;">
-                                    <input type="hidden" name="building" class="hidden-input">
+                                    <input type="hidden" name="building" class="hidden-input" value="{{ timelog.building.id }}">
                                     <div class="select" data-cid="simple-select">
-                                        <span class="select__current" data-value="">ЗИС</span>
+                                        <span class="select__current" data-value="{{ timelog.building.id }}">{{ timelog.building.title }}</span>
                                         <div class="select__body">
                                             {% for building in buildings %}
                                             <div class="select__item" data-value="{{ building.id }}">{{ building.title }}</div>
@@ -89,10 +97,12 @@
                                         </div>
                                     </div>
                                 </td>
+
+                                <!-- Марка -->
                                 <td style="width: 100px;">
-                                    <input type="hidden" name="mark" class="hidden-input">
+                                    <input type="hidden" name="mark" class="hidden-input" value="{{ timelog.mark.id }}">
                                     <div class="select" data-cid="simple-select">
-                                        <span class="select__current" data-value="">Марка</span>
+                                        <span class="select__current" data-value="{{ timelog.mark.id }}">{{ timelog.mark.title }}</span>
                                         <div class="select__body">
                                             {% for mark in marks %}
                                             <div class="select__item" data-value="{{ mark.id }}">{{ mark.title }}</div>
@@ -100,12 +110,16 @@
                                         </div>
                                     </div>
                                 </td>
+
+                                <!-- Локальная задача -->
                                 <td style="width: 200px;">
-                                    <input type="text" name="task" class="form-control" placeholder="Локальная задача" style="width: 100%;">
+                                    <input type="text" name="task" class="form-control" value="{{ timelog.task.title }}" placeholder="Локальная задача" style="width: 100%;">
                                 </td>
+
+                                <!-- Время -->
                                 <td style="width: 173px;">
                                     <div class="flex-block">
-                                        <input type="number" name="time" min="1" class="form-control" placeholder="Время (в часах)">
+                                        <input type="number" name="time" class="form-control" value="{{ timelog.time }}" placeholder="Время (в часах)">
                                         <span class="delete-row">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="23" height="24" viewBox="0 0 23 24" fill="none">
                                                 <path d="M15.7604 6.16667V5.45833C15.7604 4.46657 15.7604 3.97069 15.5674 3.59189C15.3976 3.25869 15.1267 2.98779 14.7935 2.81801C14.4147 2.625 13.9188 2.625 12.9271 2.625H11.5104C10.5187 2.625 10.0228 2.625 9.64398 2.81801C9.31077 2.98779 9.03987 3.25869 8.87009 3.59189C8.67708 3.97069 8.67708 4.46657 8.67708 5.45833V6.16667M10.4479 11.0365V15.4635M13.9896 11.0365V15.4635M4.25 6.16667H20.1875M18.4167 6.16667V16.0833C18.4167 17.571 18.4167 18.3148 18.1272 18.883C17.8725 19.3828 17.4661 19.7892 16.9663 20.0438C16.3981 20.3333 15.6543 20.3333 14.1667 20.3333H10.2708C8.78319 20.3333 8.03937 20.3333 7.47117 20.0438C6.97137 19.7892 6.56501 19.3828 6.31035 18.883C6.02083 18.3148 6.02083 17.571 6.02083 16.0833V6.16667" stroke="#A6A6A6" stroke-width="1.77083" stroke-linecap="round" stroke-linejoin="round"/>
@@ -114,6 +128,7 @@
                                     </div>
                                 </td>
                             </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                     <button type="button" id="addRowBtn"><span>+</span> Добавить строку</button>
