@@ -1017,6 +1017,19 @@ def user_dashboard(request):
         for date in dates_range
     ]
 
+    # Фильтрация отчетов за последнюю неделю, которые были заполнены
+    one_week_ago = timezone.now().date() - timedelta(days=7)
+    filled_last_week = [
+        {"date": date, "is_filled": date in filled_dates}
+        for date in dates_range
+        if date >= one_week_ago and date in filled_dates
+    ]
+
+    # Получаем только незаполненные отчеты и отчеты, заполненные за последнюю неделю
+    reports_to_display = [
+                             report for report in reports_to_fill if not report["is_filled"]
+                         ] + filled_last_week
+
     if request.method == 'POST':
         # Обработка отправки таймлога
         date_to_fill = request.POST.get('date')
@@ -1032,7 +1045,7 @@ def user_dashboard(request):
 
     context = {
         'user': user,
-        'reports_to_fill': reports_to_fill,
+        'reports_to_display': reports_to_display,
     }
     return render(request, 'task_manager/user_dashboard.html', context)
 
@@ -1063,8 +1076,13 @@ def report_create(request):
     else:
         selected_date = timezone.now().date()
 
+    # Если отчет редактируется, получаем уже существующие записи
+    timelogs_data = []
+    if request.method == 'GET' and requested_date:
+        # Попробуем найти существующие таймлоги для данной даты
+        timelogs_data = Timelog.objects.filter(user=request.user, date=selected_date)
+
     if request.method == 'POST':
-        timelogs_data = []
         projects = request.POST.getlist('project')
         stages = request.POST.getlist('stage')
         sections = request.POST.getlist('section')
@@ -1074,8 +1092,12 @@ def report_create(request):
         times = request.POST.getlist('time')
         post_date = request.POST.get('date')
 
+        # 1. Удаляем все старые таймлоги для данной даты
+        Timelog.objects.filter(user=request.user, date=post_date).delete()
+
+        # 2. Собираем данные для новых таймлогов
+        timelogs_data = []
         for i in range(len(projects)):
-            # Проверяем, существует ли задача, и создаем, если нужно
             task_title = tasks[i].strip()
             task, _ = TaskType.objects.get_or_create(title=task_title)
 
@@ -1094,7 +1116,7 @@ def report_create(request):
             )
             timelogs_data.append(timelog)
 
-        # Сохраняем все таймлоги одним запросом
+        # 3. Сохраняем все новые таймлоги одним запросом
         Timelog.objects.bulk_create(timelogs_data)
 
         # Очищаем кэш, чтобы подтянуть актуальные данные при следующем запросе
@@ -1125,6 +1147,7 @@ def report_create(request):
         'buildings': Building.objects.all(),
         'marks': marks,
         'tasks': tasks,
+        'timelogs_data': timelogs_data,
     }
 
     return render(request, 'task_manager/report_create.html', context)
