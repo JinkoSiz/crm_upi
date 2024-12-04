@@ -1064,6 +1064,20 @@ def get_buildings(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
+def get_sections(request):
+    project_id = request.GET.get('project_id')  # Получаем project_id из запроса
+    if not project_id:
+        return JsonResponse({'error': 'Missing project_id'}, status=400)
+
+    try:
+        # Используем ProjectSection для связи между проектом и разделами
+        sections = ProjectSection.objects.filter(project_id=project_id).select_related('section')
+        sections_data = [{'id': ps.section.id, 'title': ps.section.title} for ps in sections]
+        return JsonResponse({'sections': sections_data})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
 @login_required
 def report_create(request):
     # Получаем дату из запроса или используем текущую
