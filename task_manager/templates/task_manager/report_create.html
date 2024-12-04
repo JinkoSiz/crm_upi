@@ -47,7 +47,7 @@
                             {% for timelog in timelogs_data %}
                             <tr>
                                 <!-- Объект -->
-                                <td style="width: 150px;">
+                                <td style="max-width: 150px;">
                                     <input type="hidden" name="project" class="hidden-input" value="{{ timelog.project.id }}">
                                     <div class="select" data-cid="simple-select">
                                         <span class="select__current" data-value="{{ timelog.project.id }}">{{ timelog.project.title }}</span>
@@ -136,6 +136,7 @@
             </div>
         </div>
         <div class="bottom-info">
+            <div class="hidden-block"></div>
             <button type="submit" class="btn" id="sendReport">Отправить отчет</button>
             <div class="input-block">
                 <label for="total-counter">Итого за день:</label>
@@ -300,7 +301,7 @@
         const line = document.createElement('tr');
         line.innerHTML = `
             <tr>
-                <td style="width: 150px;">
+                <td style="max-width: 150px;">
                     <input type="hidden" name="project" class="hidden-input">
                     <div class="select" data-cid="simple-select">
                         <span class="select__current" data-value="">Объект</span>
