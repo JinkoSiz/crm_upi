@@ -192,6 +192,7 @@
     function addEventListenersForRow(row) {
         const projectSelect = row.querySelector('input[name="project"] + .select');
         const buildingSelect = row.querySelector('input[name="building"] + .select');
+        const sectionSelect = row.querySelector('input[name="section"] + .select'); // Добавляем выбор раздела
 
         if (projectSelect) {
             projectSelect.addEventListener('click', async (e) => {
@@ -201,23 +202,38 @@
                     try {
                         // Уведомление о загрузке данных
                         buildingSelect.querySelector('.select__body').innerHTML = '<div>Загрузка...</div>';
+                        sectionSelect.querySelector('.select__body').innerHTML = '<div>Загрузка...</div>'; // Загрузка разделов
 
-                        // Запрос данных
-                        const response = await fetch(`/get-buildings/?project_id=${projectId}`);
-                        if (!response.ok) {
+                        // Запрос данных для зданий
+                        const buildingResponse = await fetch(`/get-buildings/?project_id=${projectId}`);
+                        if (!buildingResponse.ok) {
                             throw new Error('Ошибка загрузки зданий');
                         }
+                        const buildingData = await buildingResponse.json();
 
-                        const data = await response.json();
+                        // Запрос данных для разделов
+                        const sectionResponse = await fetch(`/get-sections/?project_id=${projectId}`);
+                        if (!sectionResponse.ok) {
+                            throw new Error('Ошибка загрузки разделов');
+                        }
+                        const sectionData = await sectionResponse.json();
 
-                        // Очистка и обновление списка зданий
-                        const buildingOptions = data.buildings.map(building => {
+                        // Обновление списка зданий
+                        const buildingOptions = buildingData.buildings.map(building => {
                             return `<div class="select__item" data-value="${building.id}">${building.title}</div>`;
                         }).join('');
                         buildingSelect.querySelector('.select__body').innerHTML = buildingOptions;
+
+                        // Обновление списка разделов
+                        const sectionOptions = sectionData.sections.map(section => {
+                            return `<div class="select__item" data-value="${section.id}">${section.title}</div>`;
+                        }).join('');
+                        sectionSelect.querySelector('.select__body').innerHTML = sectionOptions;
+
                     } catch (error) {
-                        console.error('Ошибка загрузки зданий:', error);
+                        console.error('Ошибка загрузки данных:', error);
                         buildingSelect.querySelector('.select__body').innerHTML = '<div>Ошибка загрузки</div>';
+                        sectionSelect.querySelector('.select__body').innerHTML = '<div>Ошибка загрузки</div>';
                     }
                 }
             });
@@ -312,9 +328,7 @@
                     <div class="select" data-cid="simple-select">
                         <span class="select__current" data-value="">Раздел</span>
                         <div class="select__body">
-                            {% for section in sections %}
                             <div class="select__item" data-value="{{ section.id }}">{{ section.title }}</div>
-                            {% endfor %}
                         </div>
                     </div>
                 </td>
