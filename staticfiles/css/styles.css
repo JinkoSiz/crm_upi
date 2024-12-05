@@ -569,7 +569,6 @@ button.sorter span {
 .table-wrapper {
     border: 1px solid var(--Text_Gray_20);
     border-radius: 10px;
-    overflow: hidden;
 }
 
 .table-wrapper.personal {
@@ -1153,7 +1152,8 @@ button.pagination-button {
 }
 
 #projectModal .form-check-label,
-#projectModalNew .form-check-label {
+#projectModalNew .form-check-label,
+.form-check-label {
     font-size: 14px;
     font-weight: 400;
     line-height: 18px;
@@ -1161,7 +1161,8 @@ button.pagination-button {
 }
 
 #projectModal .form-check .form-check-input,
-#projectModalNew .form-check .form-check-input{
+#projectModalNew .form-check .form-check-input,
+.form-check .form-check-input {
     margin-top: 0;
     margin-left: -30px;
     -webkit-appearance: none;
@@ -1171,7 +1172,8 @@ button.pagination-button {
 }
 
 #projectModal .form-check .form-check-input::after,
-#projectModalNew .form-check .form-check-input::after {
+#projectModalNew .form-check .form-check-input::after,
+.form-check .form-check-input::after {
     content: '';
     display: block;
     position: absolute;
@@ -1185,7 +1187,8 @@ button.pagination-button {
 }
 
 #projectModal .form-check .form-check-input::before,
-#projectModalNew .form-check .form-check-input::before {
+#projectModalNew .form-check .form-check-input::before,
+.form-check .form-check-input::before {
     content: 'L';
     color: var(--Primary_blue);
     font-size: 17px;
@@ -1203,12 +1206,14 @@ button.pagination-button {
 }
 
 #projectModal .form-check .form-check-input:checked::after,
-#projectModalNew .form-check .form-check-input:checked::after {
+#projectModalNew .form-check .form-check-input:checked::after,
+.form-check .form-check-input:checked::after {
     border: 1px solid var(--Primary_blue);
 }
 
 #projectModal .form-check .form-check-input:checked::before,
-#projectModalNew .form-check .form-check-input:checked::before {
+#projectModalNew .form-check .form-check-input:checked::before,
+.form-check .form-check-input:checked::before {
     opacity: 1;
 }
 
@@ -1287,10 +1292,11 @@ p.main-info {
     line-height: 18px;
     text-align: left;
     color: var(--Text_Gray_100);
+    margin-bottom: 60px;
 }
 
 .card {
-    margin-top: 60px;
+    margin-top: 20px;
     padding: 20px 30px;
     border-radius: 10px;
     border: 1px solid var(--Text_Gray_20);
@@ -1671,7 +1677,7 @@ table#usersTable thead {
 
 .select[data-cid=simple-select] {
     margin-right: 0;
-    padding: 11px 10px;
+    padding: 11px 25px 11px 10px;
     width: 100%;
 }
 
@@ -1696,6 +1702,9 @@ table#usersTable thead {
     width: 100%;
     height: 100%;
     display: block;
+    overflow: hidden;
+    text-wrap: nowrap;
+    text-overflow: ellipsis;
 }
 
 .select__body {
@@ -1709,6 +1718,11 @@ table#usersTable thead {
     z-index: 5;
     background-color: var(--Text_Gray_10);
     width: 100%;
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 10px 0;
+    scrollbar-width: 5px;
+    scrollbar-color: var(--Text_Gray_40);
 }
 
 .select__item {
@@ -1723,6 +1737,9 @@ table#usersTable thead {
     padding: 10px;
     cursor: pointer;
     text-align: center;
+    text-wrap: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .select__item:hover {
@@ -1853,4 +1870,170 @@ p.admin_info a:hover {
     display: block;
     margin: 0 auto;
     width: 100%;
+}
+
+.fiter-modal-search {
+    width: 205px;
+    max-height: 280px;
+    height: auto;
+    max-height: 350px;
+    padding: 10px;
+    border-radius: 10px;
+    opacity: 0;
+    background-color: var(--Text_Gray_10);
+    box-shadow: 0px 0px 8px 0px #00000026;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    display: block;
+    z-index: -10;
+    transition: .2s all ease-in-out;
+}
+
+.fiter-modal-search.active {
+    z-index: 20;
+    opacity: 1;
+    top: 38px;
+    transition: .2s all ease-in-out;
+}
+
+.fiter-modal-search .search-block {
+    display: block;   
+}
+.fiter-modal-search .search-block #search {
+    padding-left: 38px;
+    width: 100%;
+}
+
+
+.fiter-modal-search .search-block span {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+}
+
+.fiter-modal-search .search-list,
+.fiter-modal-search .finde-items {
+    margin: 0;
+    padding: 0;
+}
+
+
+.fiter-modal-search .search-list,
+.fiter-modal-search .finde-items {
+    display: none;
+    overflow-y: auto;
+    max-height: 200px;
+    height: auto;
+}
+
+.fiter-modal-search .search-list.active,
+.fiter-modal-search .finde-items.active {
+    display: block;
+}
+
+.fiter-modal-search .search-list li,
+.fiter-modal-search .finde-items li {
+    padding: 5px 10px;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 18px;
+    text-align: left;
+    color: var(--Text_Gray_100);
+    margin-top: 10px;
+    align-items: center;
+    justify-content: space-between;
+    transition: .2s all ease;
+    display: flex;
+}
+
+.fiter-modal-search .search-list {
+    margin-top: 10px;
+}
+
+.fiter-modal-search .search-list li {
+    width: 77%;
+}
+
+.fiter-modal-search .search-list li:hover {
+    cursor: pointer;
+    background-color: var(--Secondary);
+    transition: .2s all ease;
+}
+
+.fiter-modal-search .search-list li.active {
+    background-color: var(--Secondary);
+}
+
+.fiter-modal-search .search-list span {
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 18px;
+    width: auto;
+    height: auto;
+    margin: 10px 0;
+    padding: 0;
+    cursor: pointer;
+    color: var(--Text_Gray_40);
+    transition: .2s all;
+    display: block;
+    padding: 0 10px;
+    text-align: left;
+}
+
+.fiter-modal-search .search-list span:hover {
+    transition: .2s all;
+    color: var(--Text_Gray_100);
+}
+
+.fiter-modal-search .finde-items li.placeholder {
+    display: block;
+    text-align: center;
+    color: var(--Text_Gray_40);
+    font-size: 16px;
+    line-height: 18px;
+}
+
+.fiter-modal-search .finde-items li span {
+    font-size: 20px;
+    transform: rotate(45deg);
+    cursor: pointer;
+    color: var(--Text_Gray_100);
+    opacity: 0.5;
+    transition: .2s all;
+}
+
+.fiter-modal-search .finde-items li span:hover {
+    opacity: 1;
+    transition: .2s all;
+}
+
+.table-wrapper.only-bottom.scroller .table button.sorter[data-cid=project] .fiter-modal-search{
+    left: 86px;
+}
+
+.hidden-block {
+    width: 30%;
+}
+
+button.apply-filters {
+    display: block;
+    align-items: center;
+    min-height: 0px;
+    height: auto;
+    transition: .2s all ease-in-out;
+    text-decoration: none;
+    width: 100%;
+    margin-top: 10px;
+}
+
+button.apply-filters:disabled {
+    cursor: no-drop;
+    opacity: .5;
 }
