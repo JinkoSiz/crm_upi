@@ -244,6 +244,7 @@
             {% endfor %}
         </ul>
         <ul class="finde-items active"></ul>
+        <button class="apply-filters">Применить</button>
     </div>
     <!-- Отдел -->
     <div class="fiter-modal-search" data-cid="department">
@@ -264,6 +265,7 @@
             {% endfor %}
         </ul>
         <ul class="finde-items active"></ul>
+        <button class="apply-filters">Применить</button>
     </div>
     <!-- Должность -->
     <div class="fiter-modal-search" data-cid="role">
@@ -284,6 +286,7 @@
             {% endfor %}
         </ul>
         <ul class="finde-items active"></ul>
+        <button class="apply-filters">Применить</button>
     </div>
     <!-- Статус -->
     <div class="fiter-modal-search" data-cid="status">
@@ -307,6 +310,7 @@
             <li>Архив</li>
         </ul>
         <ul class="finde-items active"></ul>
+        <button class="apply-filters">Применить</button>
     </div>
     <!-- Статус USER-->
     <div class="fiter-modal-search" data-cid="status_user">
@@ -328,6 +332,7 @@
             <li>Уволен</li>
         </ul>
         <ul class="finde-items active"></ul>
+        <button class="apply-filters">Применить</button>
     </div>
     <!-- Роль -->
     <div class="fiter-modal-search" data-cid="is_admin">
@@ -347,6 +352,7 @@
             <li>User</li>
         </ul>
         <ul class="finde-items active"></ul>
+        <button class="apply-filters">Применить</button>
     </div>
     <!-- Объект -->
     <div class="fiter-modal-search" data-cid="project">
@@ -367,6 +373,7 @@
             {% endfor %}
         </ul>
         <ul class="finde-items active"></ul>
+        <button class="apply-filters">Применить</button>
     </div>
     <!-- Стадия -->
     <div class="fiter-modal-search" data-cid="stage">
@@ -387,6 +394,7 @@
             <li>PD</li>
         </ul>
         <ul class="finde-items active"></ul>
+        <button class="apply-filters">Применить</button>
     </div>
     <!-- Раздел -->
     <div class="fiter-modal-search" data-cid="section">
@@ -407,6 +415,7 @@
             {% endfor %}
         </ul>
         <ul class="finde-items active"></ul>
+        <button class="apply-filters">Применить</button>
     </div>
     <!-- ЗИС -->
     <div class="fiter-modal-search" data-cid="zis">
@@ -427,6 +436,7 @@
             {% endfor %}
         </ul>
         <ul class="finde-items active"></ul>
+        <button class="apply-filters">Применить</button>
     </div>
     <!-- Марка -->
     <div class="fiter-modal-search" data-cid="mark">
@@ -447,6 +457,7 @@
             {% endfor %}
         </ul>
         <ul class="finde-items active"></ul>
+        <button class="apply-filters">Применить</button>
     </div>
     <!-- Задача -->
     <div class="fiter-modal-search" data-cid="task">
@@ -467,6 +478,7 @@
             {% endfor %}
         </ul>
         <ul class="finde-items active"></ul>
+        <button class="apply-filters">Применить</button>
     </div>
 </div>
 </body>
@@ -515,8 +527,6 @@
         }
 
         if(isAdmin === 'True') {
-
-            console.log(isAdmin);
 
             const div = document.createElement('div');
             
@@ -850,7 +860,7 @@
 
         //ОТСЮДА КОРМИ
 
-        const filterBtns = document.querySelectorAll('button.sorter'); 
+        const filterBtns = document.querySelectorAll('button.sorter');
         const filterModals = document.querySelectorAll('.fiter-modal-search');
 
         autoAppendModal();
@@ -913,12 +923,14 @@
             searchInput.addEventListener('click', () => {
                 searchList.classList.add('active');
                 findeItems.classList.remove('active');
+                checkerApply();
             });
 
             backToList.addEventListener('click', () => {
                 searchList.classList.remove('active');
                 findeItems.classList.add('active');
-            })
+                checkerApply();
+            });
 
             searchInput.addEventListener('input', () => {
                 const query = searchInput.value.toLowerCase().trim();
@@ -931,6 +943,7 @@
                         item.style.display = 'none';
                     }
                 });
+                checkerApply();
             });
 
             searchList.addEventListener('click', (event) => {
@@ -950,8 +963,6 @@
                         listItem.classList.add('active');
 
                         searchHiddenInput.value = JSON.stringify(selectedItems);
-
-                        sendToBackend(dataCid, selectedItems);
                     } else {
                         selectedItems.splice(selectedItems.indexOf(selectedValue), 1);
                         listItem.classList.remove('active');
@@ -964,11 +975,10 @@
                         }
 
                         searchHiddenInput.value = JSON.stringify(selectedItems);
-
-                        sendToBackend(dataCid, selectedItems);
                     }
                     updatePlaceholder(findeItems, selectedItems);
                 }
+                checkerApply();
             });
 
             findeItems.addEventListener('click', (event) => {
@@ -989,47 +999,40 @@
                     findeItems.removeChild(parentLi);
 
                     searchHiddenInput.value = JSON.stringify(selectedItems);
-
-                    sendToBackend(dataCid, selectedItems);
                 }
                 updatePlaceholder(findeItems, selectedItems);
+                checkerApply();
             });
 
-            updatePlaceholder(findeItems, selectedItems);
+            function checkerApply() {
+                const applyButton = block.querySelector('.apply-filters');
+                if(selectedItems.length <= 0) {
+                    applyButton.disabled = true;
+                } else {
+                    applyButton.disabled = false;
+                    applyButton.addEventListener('click', () => {
+                        sendToBackend(dataCid, selectedItems);
+                    });
+                    updatePlaceholder(findeItems, selectedItems);
+                }
+            }
+
+            
+            checkerApply();
+
+            // const applyButton = block.querySelector('.apply-filters');
+            // applyButton.addEventListener('click', () => {
+            //     sendToBackend(dataCid, selectedItems);
+            // });
+            // updatePlaceholder(findeItems, selectedItems);
         });
 
         function sendToBackend(cid, data) {
-            fetch('/your-backend-endpoint/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCSRFToken()
-                },
-                body: JSON.stringify({ cid, selected_items: data })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    console.log(`Response for ${cid}:`, data);
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
             const form = new URLSearchParams(window.location.search);
 
             form.set(cid, data.join(','));
 
             window.location.href = `${window.location.pathname}?${form.toString()}`;
-        }
-
-        function getCSRFToken() {
-            const cookies = document.cookie.split(';');
-            for (let cookie of cookies) {
-                cookie = cookie.trim();
-                if (cookie.startsWith('csrftoken=')) {
-                    return cookie.split('=')[1];
-                }
-            }
-            return '';
         }
 
     });

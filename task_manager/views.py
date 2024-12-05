@@ -37,6 +37,7 @@ def department(request):
     selected_departments = request.GET.getlist('department')
 
     if selected_departments:
+        selected_departments = selected_departments[0].split(',')
         departmentObj = departmentObj.filter(title__in=selected_departments)
 
     form = DepartmentForm()
@@ -97,6 +98,7 @@ def role(request):
     selected_roles = request.GET.getlist('role')
 
     if selected_roles:
+        selected_roles = selected_roles[0].split(',')
         roleObj = roleObj.filter(title__in=selected_roles)
 
     form = RoleForm()
@@ -179,9 +181,11 @@ def user(request):
 
     # Применяем фильтры, если они указаны
     if selected_status_user:
+        selected_status_user = selected_status_user[0].split(',')
         mapped_statuses = [status_mapping.get(status) for status in selected_status_user if status in status_mapping]
         users = users.filter(status__in=mapped_statuses)
     if selected_departments:
+        selected_departments = selected_departments[0].split(',')
         users = users.filter(department__title__in=selected_departments)
     if selected_status:
         if selected_status.lower() == 'admin':  # Преобразуем в boolean
@@ -189,16 +193,14 @@ def user(request):
         elif selected_status.lower() == 'user':
             users = users.filter(is_admin=False)
     if selected_roles:
+        selected_roles = selected_roles[0].split(',')
         users = users.filter(role__title__in=selected_roles)
     if selected_users:
         user_filters = Q()
-        for full_name in selected_users:
-            name_parts = full_name.split()
-            if len(name_parts) == 2:  # Учитываем имя и фамилию
-                first_name, last_name = name_parts
-                user_filters |= Q(first_name__iexact=first_name, last_name__iexact=last_name)
-            elif len(name_parts) == 1:  # Если только имя или фамилия
-                user_filters |= Q(first_name__iexact=name_parts[0]) | Q(last_name__iexact=name_parts[0])
+        user_list = selected_users[0].split(',')
+        for full_name in user_list:
+            first_name, last_name = full_name.strip().split(' ', 1)
+            user_filters |= Q(first_name__iexact=first_name, last_name__iexact=last_name)
         users = users.filter(user_filters)
 
     form = CustomUserCreationForm()
@@ -396,14 +398,17 @@ def project(request):
     filter_conditions = Q()
 
     if selected_projects:
+        selected_projects = selected_projects[0].split(',')
         filter_conditions &= Q(title__in=selected_projects)
     if selected_sections:
+        selected_sections = selected_sections[0].split(',')
         filter_conditions &= Q(project_sections__section__title__in=selected_sections)
     if selected_statuses:
-        # Получаем UUIDs для выбранных статусов
+        selected_statuses = selected_statuses[0].split(',')
         status_ids = ProjectStatus.objects.filter(title__in=selected_statuses).values_list('id', flat=True)
         filter_conditions &= Q(status_id__in=status_ids)
     if selected_buildings:
+        selected_buildings = selected_buildings[0].split(',')
         filter_conditions &= Q(project_buildings__building__title__in=selected_buildings)
 
     # Применяем фильтры
@@ -657,6 +662,7 @@ def section(request):
     selected_sections = request.GET.getlist('section')
 
     if selected_sections:
+        selected_sections = selected_sections[0].split(',')
         sections = sections.filter(title__in=selected_sections)
 
     form = SectionForm()
@@ -735,6 +741,7 @@ def mark(request):
     selected_marks = request.GET.getlist('mark')
 
     if selected_marks:
+        selected_marks = selected_marks[0].split(',')
         marks = marks.filter(title__in=selected_marks)
 
     form = MarkForm()
@@ -907,24 +914,32 @@ def timelog_list(request):
 
     # Применяем фильтры, если они указаны
     if selected_projects:
+        selected_projects = selected_projects[0].split(',')
         timelogs = timelogs.filter(project__title__in=selected_projects)
     if selected_sections:
+        selected_sections = selected_sections[0].split(',')
         timelogs = timelogs.filter(section__title__in=selected_sections)
     if selected_departments:
+        selected_departments = selected_departments[0].split(',')
         timelogs = timelogs.filter(department__title__in=selected_departments)
     if selected_users:
         user_filters = Q()
-        for full_name in selected_users:
-            first_name, last_name = full_name.split()
+        user_list = selected_users[0].split(',')
+        for full_name in user_list:
+            first_name, last_name = full_name.strip().split(' ', 1)
             user_filters |= Q(user__first_name=first_name, user__last_name=last_name)
         timelogs = timelogs.filter(user_filters)
     if selected_stages:
+        selected_stages = selected_stages[0].split(',')
         timelogs = timelogs.filter(stage__in=selected_stages)
     if selected_buildings:
+        selected_buildings = selected_buildings[0].split(',')
         timelogs = timelogs.filter(building__title__in=selected_buildings)
     if selected_marks:
+        selected_marks = selected_marks[0].split(',')
         timelogs = timelogs.filter(mark__title__in=selected_marks)
     if selected_tasks:
+        selected_tasks = selected_tasks[0].split(',')
         timelogs = timelogs.filter(task__title__in=selected_tasks)
 
     # Фильтрация по диапазону дат
@@ -1195,22 +1210,29 @@ def reports_view(request):
 
     # Применяем фильтры, если они указаны
     if selected_projects:
+        selected_projects = selected_projects[0].split(',')
         timelogs = timelogs.filter(project__title__in=selected_projects)
     if selected_departments:
+        selected_departments = selected_departments[0].split(',')
         timelogs = timelogs.filter(department__title__in=selected_departments)
     if selected_users:
         user_filters = Q()
-        for full_name in selected_users:
-            first_name, last_name = full_name.split()
+        user_list = selected_users[0].split(',')
+        for full_name in user_list:
+            first_name, last_name = full_name.strip().split(' ', 1)
             user_filters |= Q(user__first_name=first_name, user__last_name=last_name)
         timelogs = timelogs.filter(user_filters)
     if selected_stages:
+        selected_stages = selected_stages[0].split(',')
         timelogs = timelogs.filter(stage__in=selected_stages)
     if selected_buildings:
+        selected_buildings = selected_buildings[0].split(',')
         timelogs = timelogs.filter(building__title__in=selected_buildings)
     if selected_marks:
+        selected_marks = selected_marks[0].split(',')
         timelogs = timelogs.filter(mark__title__in=selected_marks)
     if selected_tasks:
+        selected_tasks = selected_tasks[0].split(',')
         timelogs = timelogs.filter(task__title__in=selected_tasks)
 
     # Группировка данных по проектам
@@ -1282,22 +1304,29 @@ def reports_employees(request):
 
     # Применяем фильтры, если они указаны
     if selected_projects:
+        selected_projects = selected_projects[0].split(',')
         timelogs = timelogs.filter(project__title__in=selected_projects)
     if selected_departments:
+        selected_departments = selected_departments[0].split(',')
         timelogs = timelogs.filter(department__title__in=selected_departments)
     if selected_users:
         user_filters = Q()
-        for full_name in selected_users:
-            first_name, last_name = full_name.split()
+        user_list = selected_users[0].split(',')
+        for full_name in user_list:
+            first_name, last_name = full_name.strip().split(' ', 1)
             user_filters |= Q(user__first_name=first_name, user__last_name=last_name)
         timelogs = timelogs.filter(user_filters)
     if selected_stages:
+        selected_stages = selected_stages[0].split(',')
         timelogs = timelogs.filter(stage__in=selected_stages)
     if selected_buildings:
+        selected_buildings = selected_buildings[0].split(',')
         timelogs = timelogs.filter(building__title__in=selected_buildings)
     if selected_marks:
+        selected_marks = selected_marks[0].split(',')
         timelogs = timelogs.filter(mark__title__in=selected_marks)
     if selected_tasks:
+        selected_tasks = selected_tasks[0].split(',')
         timelogs = timelogs.filter(task__title__in=selected_tasks)
 
     # Группировка данных по проектам
@@ -1380,16 +1409,20 @@ def final_report(request):
 
     # Применяем фильтры, если они указаны
     if selected_projects:
+        selected_projects = selected_projects[0].split(',')
         timelogs = timelogs.filter(project__title__in=selected_projects)
     if selected_users:
         user_filters = Q()
-        for full_name in selected_users:
-            first_name, last_name = full_name.split()
+        user_list = selected_users[0].split(',')
+        for full_name in user_list:
+            first_name, last_name = full_name.strip().split(' ', 1)
             user_filters |= Q(user__first_name=first_name, user__last_name=last_name)
         timelogs = timelogs.filter(user_filters)
     if selected_buildings:
+        selected_buildings = selected_buildings[0].split(',')
         timelogs = timelogs.filter(building__title__in=selected_buildings)
     if selected_marks:
+        selected_marks = selected_marks[0].split(',')
         timelogs = timelogs.filter(mark__title__in=selected_marks)
 
     # Используем select_related для оптимизации запросов
@@ -1489,22 +1522,20 @@ def export_to_excel(request):
 
     # Применяем фильтры, если они указаны
     if selected_projects:
+        selected_projects = selected_projects[0].split(',')
         timelogs = timelogs.filter(project__title__in=selected_projects)
     if selected_users:
         user_filters = Q()
-        for full_name in selected_users:
-            # Проверка на пустую строку и попытка разделить имя и фамилию
-            if full_name.strip():  # Если строка не пуста
-                try:
-                    first_name, last_name = full_name.split()
-                    user_filters |= Q(user__first_name=first_name, user__last_name=last_name)
-                except ValueError:
-                    # В случае, если имя не разделяется на два слова, просто пропускаем
-                    continue
+        user_list = selected_users[0].split(',')
+        for full_name in user_list:
+            first_name, last_name = full_name.strip().split(' ', 1)
+            user_filters |= Q(user__first_name=first_name, user__last_name=last_name)
         timelogs = timelogs.filter(user_filters)
     if selected_buildings:
+        selected_buildings = selected_buildings[0].split(',')
         timelogs = timelogs.filter(building__title__in=selected_buildings)
     if selected_marks:
+        selected_marks = selected_marks[0].split(',')
         timelogs = timelogs.filter(mark__title__in=selected_marks)
 
     # Создаем переменные для хранения часов по месяцам и дням
