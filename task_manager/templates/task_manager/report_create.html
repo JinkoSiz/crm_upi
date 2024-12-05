@@ -145,6 +145,67 @@
         </div>
     </form>
 <script>
+    // Функция для загрузки зданий и разделов для каждой строки
+    async function loadBuildingsAndSectionsForRow(row) {
+        const projectSelect = row.querySelector('input[name="project"] + .select');
+        const buildingSelect = row.querySelector('input[name="building"] + .select');
+        const sectionSelect = row.querySelector('input[name="section"] + .select');
+
+        const projectId = projectSelect.querySelector('.select__current').dataset.value;
+
+        if (projectId) {
+            try {
+                // Уведомление о загрузке данных
+                buildingSelect.querySelector('.select__body').innerHTML = '<div>Загрузка...</div>';
+                sectionSelect.querySelector('.select__body').innerHTML = '<div>Загрузка...</div>'; // Загрузка разделов
+
+                // Запрос данных для зданий
+                const buildingResponse = await fetch(`/get-buildings/?project_id=${projectId}`);
+                if (!buildingResponse.ok) {
+                    throw new Error('Ошибка загрузки зданий');
+                }
+                const buildingData = await buildingResponse.json();
+
+                // Запрос данных для разделов
+                const sectionResponse = await fetch(`/get-sections/?project_id=${projectId}`);
+                if (!sectionResponse.ok) {
+                    throw new Error('Ошибка загрузки разделов');
+                }
+                const sectionData = await sectionResponse.json();
+
+                // Обновление списка зданий
+                const buildingOptions = buildingData.buildings.map(building => {
+                    return `<div class="select__item" data-value="${building.id}">${building.title}</div>`;
+                }).join('');
+                buildingSelect.querySelector('.select__body').innerHTML = buildingOptions;
+
+                // Обновление списка разделов
+                const sectionOptions = sectionData.sections.map(section => {
+                    return `<div class="select__item" data-value="${section.id}">${section.title}</div>`;
+                }).join('');
+                sectionSelect.querySelector('.select__body').innerHTML = sectionOptions;
+
+            } catch (error) {
+                console.error('Ошибка загрузки данных:', error);
+                buildingSelect.querySelector('.select__body').innerHTML = '<div>Ошибка загрузки</div>';
+                sectionSelect.querySelector('.select__body').innerHTML = '<div>Ошибка загрузки</div>';
+            }
+        }
+    }
+
+    // Функция для обработки редактирования всех строк
+    function loadBuildingsAndSectionsForAllRows() {
+        const rows = document.querySelectorAll('.table tbody tr');
+        rows.forEach(row => {
+            loadBuildingsAndSectionsForRow(row); // Загружаем данные для каждой строки
+        });
+    }
+
+    // Когда страница полностью загрузится (или данные отчета загружены для редактирования)
+    document.addEventListener('DOMContentLoaded', () => {
+        loadBuildingsAndSectionsForAllRows(); // Загружаем здания и разделы для всех строк
+    });
+
     document.addEventListener("DOMContentLoaded", function() {
         const projectSelect = document.getElementById('id_project');
         const buildingSelect = document.getElementById('id_building');
