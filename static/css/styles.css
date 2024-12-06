@@ -1875,6 +1875,8 @@ p.admin_info a:hover {
 .fiter-modal-search {
     width: 205px;
     max-height: 280px;
+    height: auto;
+    max-height: 350px;
     padding: 10px;
     border-radius: 10px;
     opacity: 0;
@@ -1951,6 +1953,10 @@ p.admin_info a:hover {
     display: flex;
 }
 
+.fiter-modal-search .search-list {
+    margin-top: 10px;
+}
+
 .fiter-modal-search .search-list li {
     width: 77%;
 }
@@ -2014,4 +2020,20 @@ p.admin_info a:hover {
 
 .hidden-block {
     width: 30%;
+}
+
+button.apply-filters {
+    display: block;
+    align-items: center;
+    min-height: 0px;
+    height: auto;
+    transition: .2s all ease-in-out;
+    text-decoration: none;
+    width: 100%;
+    margin-top: 10px;
+}
+
+button.apply-filters:disabled {
+    cursor: no-drop;
+    opacity: .5;
 }
