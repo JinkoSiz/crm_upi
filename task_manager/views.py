@@ -8,7 +8,7 @@ from openpyxl.utils import get_column_letter
 from openpyxl import Workbook
 from django.core.cache import cache
 from django.db import IntegrityError
-from django.db.models.functions import Concat
+from django.db.models.functions import Concat, TruncDate
 from django.db.models import F, Value
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login, logout, get_user_model
@@ -1019,23 +1019,26 @@ def user_dashboard(request):
     end_date = now().astimezone(moscow_tz).date()
     dates_range = [start_date + timedelta(days=i) for i in range((end_date - start_date).days + 1)]
 
-    # Получаем уже заполненные таймлоги пользователя и преобразуем в список дат
-    filled_timelogs = Timelog.objects.filter(user=user).values_list('date', flat=True)
-    filled_dates = {
-        log_date.astimezone(moscow_tz).date() if isinstance(log_date, datetime) else log_date
-        for log_date in filled_timelogs
-    }
+    # Получаем уже заполненные таймлоги пользователя и суммируем время по датам
+    filled_timelogs = Timelog.objects.filter(user=user) \
+        .annotate(date_only=TruncDate('date')) \
+        .values('date_only') \
+        .annotate(total_time=Sum('time')) \
+        .values('date_only', 'total_time')
+
+    # Преобразуем в словарь: {дата: суммарное время}
+    filled_dates = {log['date_only']: log['total_time'] for log in filled_timelogs}
 
     # Формируем список отчетов
     reports_to_fill = [
-        {"date": date, "is_filled": date in filled_dates}
+        {"date": date, "is_filled": date in filled_dates, "total_time": filled_dates.get(date, 0)}
         for date in dates_range
     ]
 
     # Фильтрация отчетов за последнюю неделю, которые были заполнены
     one_week_ago = timezone.now().date() - timedelta(days=7)
     filled_last_week = [
-        {"date": date, "is_filled": date in filled_dates}
+        {"date": date, "is_filled": date in filled_dates, "total_time": filled_dates.get(date, 0)}
         for date in dates_range
         if date >= one_week_ago and date in filled_dates
     ]
