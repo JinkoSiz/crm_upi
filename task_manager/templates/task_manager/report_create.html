@@ -145,6 +145,7 @@
         </div>
     </form>
 <script>
+    
     // Функция для загрузки зданий и разделов для каждой строки
     async function loadBuildingsAndSectionsForRow(row) {
         const projectSelect = row.querySelector('input[name="project"] + .select');
@@ -496,6 +497,162 @@
         }
     });
 
+   // Уникальный ключ для localStorage
+    const localStorageKey = `formData_${window.location.pathname}`;
+
+    // Функция для сохранения данных формы в localStorage
+    function saveFormData() {
+        const formData = [];
+
+        document.querySelectorAll('.table tbody tr').forEach(row => {
+            const rowData = {
+                project: row.querySelector('input[name="project"]').value || '',
+                stage: row.querySelector('input[name="stage"]').value || '',
+                section: row.querySelector('input[name="section"]').value || '',
+                building: row.querySelector('input[name="building"]').value || '',
+                mark: row.querySelector('input[name="mark"]').value || '',
+                task: row.querySelector('input[name="task"]').value || '',
+                time: row.querySelector('input[name="time"]').value || ''
+            };
+            formData.push(rowData);
+        });
+
+        localStorage.setItem(localStorageKey, JSON.stringify(formData));
+        console.log('Данные сохранены в localStorage:', formData);
+    }
+
+    // Асинхронная функция для получения данных для выпадающих списков (например, с сервера)
+    async function fetchDataForSelects() {
+        const projects = await fetch('/api/projects').then(response => response.json());
+        const stages = await fetch('/api/stages').then(response => response.json());
+        const sections = await fetch('/api/sections').then(response => response.json());
+        const buildings = await fetch('/api/buildings').then(response => response.json());
+
+        return { projects, stages, sections, buildings };
+    }
+
+    // Функция для загрузки данных из localStorage и применения их к выпадающим спискам
+    async function loadFormData() {
+        const savedData = localStorage.getItem(localStorageKey);
+        if (!savedData) return;
+
+        const formData = JSON.parse(savedData);
+
+        // Загружаем данные для списков
+        const { projects, stages, sections, buildings } = await fetchDataForSelects();
+
+        // Удаляем текущие строки таблицы
+        document.querySelector('.table tbody').innerHTML = '';
+
+        // Восстанавливаем строки из localStorage
+        formData.forEach(rowData => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>
+                    <input type="hidden" name="project" class="hidden-input" value="${rowData.project}">
+                    <div class="select" data-cid="simple-select">
+                        <span class="select__current" data-value="${rowData.project}">Объект</span>
+                        <div class="select__body"></div>
+                    </div>
+                </td>
+                <td>
+                    <input type="hidden" name="stage" class="hidden-input" value="${rowData.stage}">
+                    <div class="select" data-cid="simple-select">
+                        <span class="select__current" data-value="${rowData.stage}">Стадия</span>
+                        <div class="select__body"></div>
+                    </div>
+                </td>
+                <td>
+                    <input type="hidden" name="section" class="hidden-input" value="${rowData.section}">
+                    <div class="select" data-cid="simple-select">
+                        <span class="select__current" data-value="${rowData.section}">Раздел</span>
+                        <div class="select__body"></div>
+                    </div>
+                </td>
+                <td>
+                    <input type="hidden" name="building" class="hidden-input" value="${rowData.building}">
+                    <div class="select" data-cid="simple-select">
+                        <span class="select__current" data-value="${rowData.building}">ЗИС</span>
+                        <div class="select__body"></div>
+                    </div>
+                </td>
+                <td>
+                    <input type="hidden" name="mark" class="hidden-input" value="${rowData.mark}">
+                    <div class="select" data-cid="simple-select">
+                        <span class="select__current" data-value="${rowData.mark}">Марка</span>
+                        <div class="select__body"></div>
+                    </div>
+                </td>
+                <td>
+                    <input type="text" name="task" class="form-control" placeholder="Локальная задача" value="${rowData.task}">
+                </td>
+                <td>
+                    <div class="flex-block">
+                        <input type="number" name="time" class="form-control" placeholder="Время (в часах)" value="${rowData.time}">
+                        <span class="delete-row">Удалить</span>
+                    </div>
+                </td>
+            `;
+            document.querySelector('.table tbody').appendChild(row);
+
+            // После добавления строки, инициализируем выпадающие списки
+            initializeSelects(row, { projects, stages, sections, buildings });
+            addEventListenersForRow(row);
+        });
+
+        console.log('Данные загружены из localStorage:', formData);
+    }
+
+    // Инициализация выпадающих списков с подстановкой имени по id
+    function initializeSelects(row, { projects, stages, sections, buildings }) {
+        row.querySelectorAll('.select').forEach(select => {
+            const currentValue = select.querySelector('.select__current').getAttribute('data-value');
+
+            let name = '';
+            switch (select.querySelector('input[name]').name) {
+                case 'project':
+                    name = projects.find(project => project.id === currentValue)?.name || 'Объект';
+                    break;
+                case 'stage':
+                    name = stages.find(stage => stage.id === currentValue)?.name || 'Стадия';
+                    break;
+                case 'section':
+                    name = sections.find(section => section.id === currentValue)?.name || 'Раздел';
+                    break;
+                case 'building':
+                    name = buildings.find(building => building.id === currentValue)?.name || 'ЗИС';
+                    break;
+                case 'mark':
+                    name = currentValue; // Предположим, что это ID марки, имя можно задать вручную
+                    break;
+            }
+
+            const span = select.querySelector('.select__current');
+            span.textContent = name; // Подставляем имя вместо id
+        });
+    }
+
+    // Очистка данных в localStorage при отправке отчета
+    document.querySelector('#sendReport').addEventListener('click', () => {
+        localStorage.removeItem(localStorageKey);
+        console.log('Данные из localStorage очищены.');
+    });
+
+    // Загрузка данных при загрузке страницы
+    document.addEventListener('DOMContentLoaded', async () => {
+        await loadFormData(); // Загружаем данные только после завершения инициализации
+    });
+
+    // Сохранение данных при изменении
+    document.addEventListener('input', saveFormData);
+
+    // Удаление строки и обновление localStorage
+    document.addEventListener('click', e => {
+        if (e.target.classList.contains('delete-row')) {
+            e.target.closest('tr').remove();
+            saveFormData();
+        }
+    });
 
 </script>
 {% endblock %}
