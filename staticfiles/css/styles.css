@@ -57,7 +57,7 @@ input[type=text] {
     font-weight: 400;
     line-height: 18px;
     border-radius: 5px;
-    border: 1px solid var(--Text_Gray_20);
+    border: 1px solid var(--Text_Gray_40);
     font-family: "Roboto", sans-serif;
 }
 
@@ -1495,7 +1495,7 @@ h1.super-title {
     font-weight: 400;
     line-height: 18px;
     padding: 11px 10px;
-    border: 1px solid var(--Text_Gray_20);
+    border: 1px solid var(--Text_Gray_40);
 }
 
 .flex-block span {
@@ -1669,7 +1669,7 @@ table#usersTable thead {
     width: 185px;
     height: 40px;
     border-radius: 5px;
-    border: 1px solid var(--Text_Gray_20);
+    border: 1px solid var(--Text_Gray_40);
     padding: 10px;
     outline: 0px solid var(--Primary_blue);
     cursor: pointer;
@@ -2113,4 +2113,56 @@ button.apply-filters:disabled {
     border: 1px solid var(--Text_Gray_20);
     box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.05);
     margin-bottom: 20px;
+}
+
+.custom-table {
+
+}
+
+.custom-table-header {
+    display: flex;
+    border: none;
+    background: var(--Secondary);
+    border-radius: 10px 10px 0 0;
+}
+
+.custom-table-header .header-item {
+    padding: 21px 9px;
+}
+
+.custom-table-header .header-item:first-child {
+    padding: 21px 9px 21px 30px;
+}
+.custom-table-header .header-item:last-child {
+    padding: 21px 30px 21px 9px;
+}
+
+.custom-table-header .header-item p {
+    color: var(--Text_Gray_100);
+    font-feature-settings: 'liga' off, 'clig' off;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 18px;
+}
+
+.custom-table-body {
+    background-color: var(--Text_Gray_10);
+}
+
+.custom-table-body .body-item {
+    display: flex;
+    width: 100%;
+}
+
+.custom-table-body .body-item .row-item {
+    padding: 21px 9px;
+    border-bottom: 1px solid var(--Text_Gray_20);
+}
+
+.custom-table-body .body-item .row-item:first-child {
+    padding: 21px 9px 21px 30px;
+}
+.custom-table-body .body-item .row-item:last-child {
+    padding: 21px 30px 21px 9px;
 }
