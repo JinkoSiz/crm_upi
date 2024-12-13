@@ -46,7 +46,7 @@
                                     <input type="hidden" name="project" class="hidden-input" value="{{ timelog.project.id }}">
                                     <div class="select" data-cid="simple-select" style="width: 150px;">
                                         <span class="select__current" data-value="{{ timelog.project.id }}">{{ timelog.project.title }}</span>
-                                        <div class="select__body">
+                                        <div class="select__body over">
                                             {% for project in projects %}
                                             <div class="select__item" data-value="{{ project.id }}">{{ project.title }}</div>
                                             {% endfor %}
@@ -363,7 +363,7 @@
                 <input type="hidden" name="project" class="hidden-input">
                 <div style="width: 150px;" class="select" data-cid="simple-select">
                     <span class="select__current" data-value="">Объект</span>
-                    <div class="select__body">
+                    <div class="select__body over">
                         {% for project in projects %}
                         <div class="select__item" data-value="{{ project.id }}">{{ project.title }}</div>
                         {% endfor %}
