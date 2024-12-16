@@ -1725,6 +1725,11 @@ table#usersTable thead {
     scrollbar-color: var(--Text_Gray_40);
 }
 
+.select__body.over {
+    width: calc(100% + 100px);
+    left: -35%;
+}
+
 .select__item {
     font-size: 14px;
     font-weight: 400;
