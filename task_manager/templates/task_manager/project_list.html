@@ -215,6 +215,12 @@ Projects List
                         $('#buildingList').append(
                             `
                                 <li class="list-group-item" id="building-${building.building__pk}">${title}
+                                    <input type="text" value="${title}" readOnnly/>
+                                    <button class="edit-zis-btn" data-id="${building.building__pk}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                            <path d="M2.31128 15.1984C2.34932 14.8561 2.36833 14.685 2.42012 14.525C2.46606 14.3831 2.53098 14.2481 2.6131 14.1235C2.70566 13.9832 2.82742 13.8614 3.07094 13.6179L14.0031 2.68577C14.9174 1.77141 16.3999 1.77141 17.3143 2.68577C18.2286 3.60013 18.2286 5.0826 17.3142 5.99696L6.38213 16.9291C6.1386 17.1726 6.01684 17.2943 5.87648 17.3869C5.75194 17.469 5.61688 17.5339 5.47496 17.5799C5.315 17.6317 5.14385 17.6507 4.80157 17.6887L2 18L2.31128 15.1984Z" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                    </button>
                                     <button class="delet-zis-btn" data-id="${building.building__pk}">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" viewBox="0 0 23 23" fill="none">
                                             <path d="M15.7604 5.41667V4.70833C15.7604 3.71657 15.7604 3.22069 15.5674 2.84189C15.3976 2.50869 15.1267 2.23779 14.7935 2.06801C14.4147 1.875 13.9188 1.875 12.9271 1.875H11.5104C10.5187 1.875 10.0228 1.875 9.64398 2.06801C9.31077 2.23779 9.03987 2.50869 8.87009 2.84189C8.67708 3.22069 8.67708 3.71657 8.67708 4.70833V5.41667M10.4479 10.2865V14.7135M13.9896 10.2865V14.7135M4.25 5.41667H20.1875M18.4167 5.41667V15.3333C18.4167 16.821 18.4167 17.5648 18.1272 18.133C17.8725 18.6328 17.4661 19.0392 16.9663 19.2938C16.3981 19.5833 15.6543 19.5833 14.1667 19.5833H10.2708C8.78319 19.5833 8.03937 19.5833 7.47117 19.2938C6.97137 19.0392 6.56501 18.6328 6.31035 18.133C6.02083 17.5648 6.02083 16.821 6.02083 15.3333V5.41667" stroke="#A6A6A6" stroke-width="1.77083" stroke-linecap="round" stroke-linejoin="round"/>
@@ -229,6 +235,19 @@ Projects List
                     data.sections.forEach(function (section) {
                          $(`#sectionsContent input[type="checkbox"][value="${section.section__pk}"]`).prop('checked', true);
                     });
+
+                    const allInputs = document.querySelectorAll('.list-group-item');
+
+                    // console.log(allInputs);
+                    
+                    allInputs.forEach(input => {
+                        input.querySelector('.edit-zis-btn').addEventListener('click', (e) => {
+                            e.preventDefault();
+                            console.log(input);
+                            input.readOnly = false;
+                        });
+                    })
+
                 }
             });
         } else {

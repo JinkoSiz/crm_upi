@@ -1122,7 +1122,7 @@ button.pagination-button {
     border-radius: 5px;
     border: 1px solid var(--Text_Gray_40);
     height: 40px;
-    padding: 10px;
+    padding: 10px 70px 10px 10px;
     color: var(--Text_Gray_100);
     font-feature-settings: 'liga' off, 'clig' off;
     font-size: 14px;
@@ -1132,7 +1132,18 @@ button.pagination-button {
     margin-bottom: 25px;
 }
 
-#zisContent .list-group .list-group-item .delet-zis-btn {
+#zisContent .list-group .list-group-item input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 82%;
+    border: none;
+    height: 100%;
+    margin: 0;
+}
+
+#zisContent .list-group .list-group-item .delet-zis-btn,
+#zisContent .list-group .list-group-item .edit-zis-btn {
     width: 22px;
     min-height: 22px;
     position: absolute;
@@ -1141,6 +1152,10 @@ button.pagination-button {
     transform: translateY(-50%);
     background: transparent;
     padding: 0;
+}
+
+#zisContent .list-group .list-group-item .edit-zis-btn {
+    right: 40px;
 }
 
 #projectModal .form-check,

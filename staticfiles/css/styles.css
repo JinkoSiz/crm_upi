@@ -1132,7 +1132,8 @@ button.pagination-button {
     margin-bottom: 25px;
 }
 
-#zisContent .list-group .list-group-item .delet-zis-btn {
+#zisContent .list-group .list-group-item .delet-zis-btn,
+#zisContent .list-group .list-group-item .edit-zis-btn {
     width: 22px;
     min-height: 22px;
     position: absolute;
@@ -1141,6 +1142,10 @@ button.pagination-button {
     transform: translateY(-50%);
     background: transparent;
     padding: 0;
+}
+
+#zisContent .list-group .list-group-item .edit-zis-btn {
+    right: 40px;
 }
 
 #projectModal .form-check,
