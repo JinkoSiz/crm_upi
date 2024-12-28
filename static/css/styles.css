@@ -1142,6 +1142,13 @@ button.pagination-button {
     margin: 0;
 }
 
+#zisContent .list-group .list-group-item input:active,
+#zisContent .list-group .list-group-item input:focus-visible,
+#zisContent .list-group .list-group-item input:focus {
+    border: none !important;
+    outline: none !important;
+}
+
 #zisContent .list-group .list-group-item .delet-zis-btn,
 #zisContent .list-group .list-group-item .edit-zis-btn {
     width: 22px;
