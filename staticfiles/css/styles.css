@@ -1122,7 +1122,7 @@ button.pagination-button {
     border-radius: 5px;
     border: 1px solid var(--Text_Gray_40);
     height: 40px;
-    padding: 10px;
+    padding: 10px 70px 10px 10px;
     color: var(--Text_Gray_100);
     font-feature-settings: 'liga' off, 'clig' off;
     font-size: 14px;
@@ -1132,7 +1132,32 @@ button.pagination-button {
     margin-bottom: 25px;
 }
 
-#zisContent .list-group .list-group-item .delet-zis-btn {
+#zisContent .list-group .list-group-item.active {
+    outline: 1px solid var(--Primary_blue) !important;
+    border: 1px solid var(--Primary_blue) !important;
+    box-shadow: none !important;
+    background-color: transparent !important;
+}
+
+#zisContent .list-group .list-group-item input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 82%;
+    border: none;
+    height: 100%;
+    margin: 0;
+}
+
+#zisContent .list-group .list-group-item input:active,
+#zisContent .list-group .list-group-item input:focus-visible,
+#zisContent .list-group .list-group-item input:focus {
+    border: none !important;
+    outline: none !important;
+}
+
+#zisContent .list-group .list-group-item .delet-zis-btn,
+#zisContent .list-group .list-group-item .edit-zis-btn {
     width: 22px;
     min-height: 22px;
     position: absolute;
@@ -1141,6 +1166,11 @@ button.pagination-button {
     transform: translateY(-50%);
     background: transparent;
     padding: 0;
+}
+
+#zisContent .list-group .list-group-item .edit-zis-btn {
+    right: 40px;
+    color: var(--Text_Gray_40)
 }
 
 #projectModal .form-check,
@@ -1723,6 +1753,11 @@ table#usersTable thead {
     padding: 10px 0;
     scrollbar-width: 5px;
     scrollbar-color: var(--Text_Gray_40);
+}
+
+.select__body.over {
+    width: calc(100% + 100px);
+    left: -35%;
 }
 
 .select__item {

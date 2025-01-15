@@ -204,6 +204,8 @@
         {% endfor %}
     ];
 
+    logs.sort((a, b) =>  new Date(b.date) - new Date(a.date));
+
     let currentPage = 1;
     const rowsPerPage = 5;
 
@@ -212,21 +214,64 @@
         tableBody.innerHTML = '';
 
         logsToShow.forEach(logs => {
-            const row = `
-                <tr>
-                    <td>${logs.name}</td>
-                    <td>${logs.department}</td>
-                    <td>${logs.date}</td>
-                    <td>${logs.project}</td>
-                    <td>${logs.stage}</td>
-                    <td>${logs.section}</td>
-                    <td>${logs.building}</td>
-                    <td>${logs.mark}</td>
-                    <td>${logs.task}</td>
-                    <td>${logs.time} часов</td>
-                </tr>
-            `;
-            tableBody.innerHTML += row;
+            // switch (logs.stage){
+            //     case 'RD':
+            //         logs.stage = 'РД';
+            //     case 'OTR':
+            //         logs.stage = 'ОТР';
+            //     case 'PD':
+            //         logs.stage = 'ПД';
+            // }
+
+            if(logs.stage === 'RD') {
+                const row = `
+                    <tr>
+                        <td>${logs.name}</td>
+                        <td>${logs.department}</td>
+                        <td>${logs.date}</td>
+                        <td>${logs.project}</td>
+                        <td>РД</td> 
+                        <td>${logs.section}</td>
+                        <td>${logs.building}</td>
+                        <td>${logs.mark}</td>
+                        <td>${logs.task}</td>
+                        <td>${logs.time} часов</td>
+                    </tr>
+                `;
+                tableBody.innerHTML += row;
+            } else if (logs.stage === 'OTR') {
+                const row = `
+                    <tr>
+                        <td>${logs.name}</td>
+                        <td>${logs.department}</td>
+                        <td>${logs.date}</td>
+                        <td>${logs.project}</td>
+                        <td>ОТР</td> 
+                        <td>${logs.section}</td>
+                        <td>${logs.building}</td>
+                        <td>${logs.mark}</td>
+                        <td>${logs.task}</td>
+                        <td>${logs.time} часов</td>
+                    </tr>
+                `;
+                tableBody.innerHTML += row;
+            } else if (logs.stage === 'PD') {
+                const row = `
+                    <tr>
+                        <td>${logs.name}</td>
+                        <td>${logs.department}</td>
+                        <td>${logs.date}</td>
+                        <td>${logs.project}</td>
+                        <td>ПД</td> 
+                        <td>${logs.section}</td>
+                        <td>${logs.building}</td>
+                        <td>${logs.mark}</td>
+                        <td>${logs.task}</td>
+                        <td>${logs.time} часов</td>
+                    </tr>
+                `;
+                tableBody.innerHTML += row;
+            }
         });
     }
 
