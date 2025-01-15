@@ -449,7 +449,7 @@
                     totalConter.value = counter + ' ' + getHourLabel(counter);
                 }
             })
-            if (item.value !== '' && parseInt(item.value) > 0) {
+            if (item.value !== '' && parseInt(item.value) >= 0) {
                 counter += parseInt(item.value);
                 console.log(typeof(parseInt(item.value)));
                 totalConter.value = counter + ' ' + getHourLabel(counter);

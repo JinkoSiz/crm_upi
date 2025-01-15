@@ -1132,6 +1132,13 @@ button.pagination-button {
     margin-bottom: 25px;
 }
 
+#zisContent .list-group .list-group-item.active {
+    outline: 1px solid var(--Primary_blue) !important;
+    border: 1px solid var(--Primary_blue) !important;
+    box-shadow: none !important;
+    background-color: transparent !important;
+}
+
 #zisContent .list-group .list-group-item input {
     position: absolute;
     top: 0;
@@ -1163,6 +1170,7 @@ button.pagination-button {
 
 #zisContent .list-group .list-group-item .edit-zis-btn {
     right: 40px;
+    color: var(--Text_Gray_40)
 }
 
 #projectModal .form-check,
