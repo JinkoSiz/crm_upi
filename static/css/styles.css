@@ -1907,9 +1907,8 @@ p.admin_info a:hover {
 
 .fiter-modal-search {
     width: 205px;
-    max-height: 280px;
     height: auto;
-    max-height: 350px;
+    max-height: 450px;
     padding: 10px;
     border-radius: 10px;
     opacity: 0;
@@ -2065,6 +2064,22 @@ button.apply-filters {
     width: 100%;
     margin-top: 10px;
 }
+
+button.reset-filters {
+    display: block;
+    align-items: center;
+    min-height: 0px;
+    height: auto;
+    transition: .2s all ease-in-out;
+    text-decoration: none;
+    width: 100%;
+    margin-top: 10px;
+    background-color: transparent;
+    border: 2px solid var(--Primary_blue);
+    color: var(--Primary_blue);
+}
+
+button.reset-filters
 
 button.apply-filters:disabled {
     cursor: no-drop;

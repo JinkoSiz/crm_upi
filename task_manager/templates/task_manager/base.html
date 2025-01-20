@@ -247,6 +247,7 @@
         </ul>
         <ul class="finde-items active"></ul>
         <button class="apply-filters">Применить</button>
+        <button class="reset-filters" type="reset">Сбросить</button>
     </div>
     <!-- Отдел -->
     <div class="fiter-modal-search" data-cid="department">
@@ -268,6 +269,7 @@
         </ul>
         <ul class="finde-items active"></ul>
         <button class="apply-filters">Применить</button>
+        <button class="reset-filters" type="reset">Сбросить</button>
     </div>
     <!-- Должность -->
     <div class="fiter-modal-search" data-cid="role">
@@ -289,6 +291,7 @@
         </ul>
         <ul class="finde-items active"></ul>
         <button class="apply-filters">Применить</button>
+        <button class="reset-filters" type="reset">Сбросить</button>
     </div>
     <!-- Статус -->
     <div class="fiter-modal-search" data-cid="status">
@@ -313,6 +316,7 @@
         </ul>
         <ul class="finde-items active"></ul>
         <button class="apply-filters">Применить</button>
+        <button class="reset-filters" type="reset">Сбросить</button>
     </div>
     <!-- Статус USER-->
     <div class="fiter-modal-search" data-cid="status_user">
@@ -335,6 +339,7 @@
         </ul>
         <ul class="finde-items active"></ul>
         <button class="apply-filters">Применить</button>
+        <button class="reset-filters" type="reset">Сбросить</button>
     </div>
     <!-- Роль -->
     <div class="fiter-modal-search" data-cid="is_admin">
@@ -355,6 +360,7 @@
         </ul>
         <ul class="finde-items active"></ul>
         <button class="apply-filters">Применить</button>
+        <button class="reset-filters" type="reset">Сбросить</button>
     </div>
     <!-- Объект -->
     <div class="fiter-modal-search" data-cid="project">
@@ -376,6 +382,7 @@
         </ul>
         <ul class="finde-items active"></ul>
         <button class="apply-filters">Применить</button>
+        <button class="reset-filters" type="reset">Сбросить</button>
     </div>
     <!-- Стадия -->
     <div class="fiter-modal-search" data-cid="stage">
@@ -397,6 +404,7 @@
         </ul>
         <ul class="finde-items active"></ul>
         <button class="apply-filters">Применить</button>
+        <button class="reset-filters" type="reset">Сбросить</button>
     </div>
     <!-- Раздел -->
     <div class="fiter-modal-search" data-cid="section">
@@ -418,6 +426,7 @@
         </ul>
         <ul class="finde-items active"></ul>
         <button class="apply-filters">Применить</button>
+        <button class="reset-filters" type="reset">Сбросить</button>
     </div>
     <!-- ЗИС -->
     <div class="fiter-modal-search" data-cid="zis">
@@ -439,6 +448,7 @@
         </ul>
         <ul class="finde-items active"></ul>
         <button class="apply-filters">Применить</button>
+        <button class="reset-filters" type="reset">Сбросить</button>
     </div>
     <!-- Марка -->
     <div class="fiter-modal-search" data-cid="mark">
@@ -460,6 +470,7 @@
         </ul>
         <ul class="finde-items active"></ul>
         <button class="apply-filters">Применить</button>
+        <button class="reset-filters" type="reset">Сбросить</button>
     </div>
     <!-- Задача -->
     <div class="fiter-modal-search" data-cid="task">
@@ -481,6 +492,7 @@
         </ul>
         <ul class="finde-items active"></ul>
         <button class="apply-filters">Применить</button>
+        <button class="reset-filters" type="reset">Сбросить</button>
     </div>
 </div>
 </body>
@@ -866,6 +878,17 @@
 
         const filterBtns = document.querySelectorAll('button.sorter');
         const filterModals = document.querySelectorAll('.fiter-modal-search');
+        const resetFilters = document.querySelectorAll('.reset-filters');
+
+        resetFilters.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Формируем URL без параметров
+                const newUrl = window.location.origin + window.location.pathname;
+
+                // Перенаправляем пользователя на новый URL
+                window.location.href = newUrl;
+            });
+        })
 
         autoAppendModal();
 
@@ -923,6 +946,7 @@
             const backToList = block.querySelector('.search-list span');
             const dataCid = block.dataset.cid;
             const selectedItems = [];
+            
 
             searchInput.addEventListener('click', () => {
                 searchList.classList.add('active');
@@ -952,39 +976,50 @@
 
             searchList.addEventListener('click', (event) => {
                 if (event.target.tagName === 'LI') {
-                    const selectedValue = event.target.textContent.trim();
+                    const selectedValue = event.target.textContent.trim(); // Получаем выбранный текст
 
+                    // Проверка, находится ли элемент уже в массиве
                     const isAlreadySelected = selectedItems.includes(selectedValue);
+
                     const listItem = event.target;
 
                     if (!isAlreadySelected) {
                         
-                            if(selectedValue === 'РД') selectedItems.push('RD');
-                            else if (selectedValue === 'ОТР') selectedItems.push('OTR');
-                            else if (selectedValue === 'ПД') selectedItems.push('PD');
-                        
+                        // Преобразуем выбранный текст в соответствующие сокращения
+                        if (selectedValue === 'РД') selectedItems.push('RD');
+                        else if (selectedValue === 'ОТР') selectedItems.push('OTR');
+                        else if (selectedValue === 'ПД') selectedItems.push('PD');
+                        else selectedItems.push(selectedValue); // Для других значений
+
+                        // Создаем новый элемент списка
                         const newItem = document.createElement('li');
                         newItem.innerHTML = `${selectedValue} <span>+</span>`;
                         findeItems.appendChild(newItem);
 
+                        // Добавляем класс для выделения элемента
                         listItem.classList.add('active');
-
-                        searchHiddenInput.value = JSON.stringify(selectedItems);
                     } else {
+                        // Если элемент уже в массиве, удаляем его
                         selectedItems.splice(selectedItems.indexOf(selectedValue), 1);
                         listItem.classList.remove('active');
 
+                        // Ищем и удаляем элемент в DOM
                         const itemToRemove = Array.from(findeItems.children).find(
                             child => child.textContent.trim().startsWith(selectedValue)
                         );
                         if (itemToRemove) {
                             findeItems.removeChild(itemToRemove);
                         }
-
-                        searchHiddenInput.value = JSON.stringify(selectedItems);
                     }
+
+                    // Обновляем скрытый инпут с сериализованным массивом
+                    searchHiddenInput.value = JSON.stringify(selectedItems);
+
+                    // Обновляем placeholder с текущими выбранными значениями
                     updatePlaceholder(findeItems, selectedItems);
                 }
+
+                // Применение внешней логики
                 checkerApply();
             });
 
@@ -1022,6 +1057,8 @@
                     });
                     updatePlaceholder(findeItems, selectedItems);
                 }
+                
+                
             }
 
             
