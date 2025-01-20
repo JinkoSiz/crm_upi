@@ -192,6 +192,16 @@ class TaskTypeForm(forms.ModelForm):
     class Meta:
         model = TaskType
         fields = ['title']
+        labels = {
+            'title': 'Название',
+        }
+        widgets = {
+            'title': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Название задачи',
+                'required': True
+            }),
+        }
 
 
 # Форма для модели TimeLog

@@ -21,7 +21,7 @@
                                 <path d="M14.166 14.25C14.8564 14.25 15.416 13.6904 15.416 13C15.416 12.3096 14.8564 11.75 14.166 11.75C13.4757 11.75 12.916 12.3096 12.916 13C12.916 13.6904 13.4757 14.25 14.166 14.25Z" fill="#16AEDC"/>
                             </svg>
                         </span>
-                        <p>{{ report.date|date:"D d.m.Y" }}</p>
+                        <p id="date">{{ report.date|date:"D d.m.Y" }}</p>
                     </h5>
                     <p class="card-text">
                         Статус:
@@ -31,6 +31,9 @@
                             Не заполнено
                         {% endif %}
                     </p>
+                    {% if report.total_time != 0%}
+                        <p id="timeCounter">Суммарное число за день: <span>{{ report.total_time }}</span>ч</p>
+                    {% endif %}
                     {% if report.is_filled %}
                         <!-- Кнопка редактирования -->
                         <a href="{% url 'report_create' %}?date={{ report.date }}" class="fill-in-report">
@@ -38,9 +41,9 @@
                         </a>
                         {% else %}
                             <!-- Кнопка для заполнения нового отчета -->
-                            <a href="{% url 'report_create' %}?date={{ report.date }}" class="fill-in-report">
-                                Заполнить отчет
-                            </a>
+                        <a href="{% url 'report_create' %}?date={{ report.date }}" class="fill-in-report">
+                            Заполнить отчет
+                        </a>
                     {% endif %}
                 </div>
             </div>
@@ -49,6 +52,8 @@
         <p>Все отчеты заполнены!</p>
     {% endfor %}
 </div>
+
+<div id="currentDay"></div>
 
 <div id="reportsNew">
     <div class="reports-list-header">
@@ -79,17 +84,33 @@
 
         const reportsNew = document.querySelector('#reportsNew'),
               reportsEdit = document.querySelector('#reportsEdit'),
-              cards = document.querySelectorAll('.card');
+              cards = document.querySelectorAll('.card'),
+              currentDay = document.querySelector('#currentDay');
 
         cards.forEach(card => {
-            const content = card.querySelector('p.card-text');
-            console.log(content.textContent.replace(/\s+/g, ''));
+            const content = card.querySelector('p.card-text'),
+                  timeCounterStr = card.querySelector('#timeCounter'),
+                  timeCounterNumber = card.querySelector('#timeCounter span'),
+                  checkDate = card.querySelector('#date');
+            
+            if( timeCounterNumber != null && Number(timeCounterNumber.textContent) < 8 ) timeCounterStr.style.color = 'var(--Danger)';
+
+            const now = new Date();
+            const options = {
+                year: 'numeric',
+                month: 'numeric',
+                day: 'numeric',
+            };
+
+            const currentDate = now.toLocaleString("ru", options);
             
             if(content.textContent.replace(/\s+/g, '') == 'Статус:Незаполнено') {
                 reportsNew.querySelector('.reports-list').append(card);
             } else {
                 reportsEdit.querySelector('.reports-list').append(card);
             }
+
+            if(checkDate.textContent.slice(3) == currentDate) currentDay.append(card);
         })
 
         document.querySelectorAll('.reports-list-header').forEach(header => {

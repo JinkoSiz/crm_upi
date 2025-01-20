@@ -133,12 +133,14 @@
             <li class="data-list" data-cid="marks"><a href="{% url 'mark-list' %}">Марки</a></li>
             <li class="data-list" data-cid="departments"><a href="{% url 'department-list' %}">Отделы</a></li>
             <li class="data-list" data-cid="roles"><a href="{% url 'role-list' %}">Должности</a></li>
+            <li class="data-list" data-cid="tasks"><a href="{% url 'task-list' %}">Локальные задачи</a></li>
         </ul>
         <button data-cid="projects" type="button"  class="add-depart" data-toggle="modal" data-target="#projectModal">Добавить проект</button>
         <button data-cid="sections" type="button"  class="add-depart" data-toggle="modal" data-target="#addSectionModal">Добавить раздел</button>
         <button data-cid="marks" type="button"  class="add-depart" data-toggle="modal" data-target="#addMarkModal">Добавить марку</button>
         <button data-cid="departments" type="button"  class="add-depart" data-toggle="modal" data-target="#addDepartmentModal">Добавить отдел</button>
         <button data-cid="roles" type="button"  class="add-depart" data-toggle="modal" data-target="#addRoleModal">Добавить должность</button>
+        <button data-cid="tasks" type="button"  class="add-depart" data-toggle="modal" data-target="#addTaskModal">Добавить задачу</button>
 
         <span></span>
     </nav>
@@ -389,9 +391,9 @@
         
         <ul class="search-list">
             <span>Вернуться к списку</span>
-            <li>RD</li>
-            <li>OTR</li>
-            <li>PD</li>
+            <li>РД</li>
+            <li>ОТР</li>
+            <li>ПД</li>
         </ul>
         <ul class="finde-items active"></ul>
         <button class="apply-filters">Применить</button>
@@ -596,6 +598,7 @@
                 case 'marks':
                 case 'departments':
                 case 'roles':
+                case 'tasks':
                     setStatusForUpperList(mainList, 'projects');
                     dataMining(secondaryList, url);
                     dataMining(secondaryListBtns, url);
@@ -850,6 +853,7 @@
                 const hiddenInput = select.parentNode.querySelector('.hidden-input');
                 if (hiddenInput) {
                     hiddenInput.value = selectItem.getAttribute('data-value');
+                    saveTableData();// Сохранение данных строки в таблице
                 }
 
                 select.classList.remove('is-active');
@@ -954,8 +958,11 @@
                     const listItem = event.target;
 
                     if (!isAlreadySelected) {
-                        selectedItems.push(selectedValue);
-
+                        
+                            if(selectedValue === 'РД') selectedItems.push('RD');
+                            else if (selectedValue === 'ОТР') selectedItems.push('OTR');
+                            else if (selectedValue === 'ПД') selectedItems.push('PD');
+                        
                         const newItem = document.createElement('li');
                         newItem.innerHTML = `${selectedValue} <span>+</span>`;
                         findeItems.appendChild(newItem);

@@ -57,7 +57,7 @@ input[type=text] {
     font-weight: 400;
     line-height: 18px;
     border-radius: 5px;
-    border: 1px solid var(--Text_Gray_20);
+    border: 1px solid var(--Text_Gray_40);
     font-family: "Roboto", sans-serif;
 }
 
@@ -1122,7 +1122,7 @@ button.pagination-button {
     border-radius: 5px;
     border: 1px solid var(--Text_Gray_40);
     height: 40px;
-    padding: 10px;
+    padding: 10px 70px 10px 10px;
     color: var(--Text_Gray_100);
     font-feature-settings: 'liga' off, 'clig' off;
     font-size: 14px;
@@ -1132,7 +1132,32 @@ button.pagination-button {
     margin-bottom: 25px;
 }
 
-#zisContent .list-group .list-group-item .delet-zis-btn {
+#zisContent .list-group .list-group-item.active {
+    outline: 1px solid var(--Primary_blue) !important;
+    border: 1px solid var(--Primary_blue) !important;
+    box-shadow: none !important;
+    background-color: transparent !important;
+}
+
+#zisContent .list-group .list-group-item input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 82%;
+    border: none;
+    height: 100%;
+    margin: 0;
+}
+
+#zisContent .list-group .list-group-item input:active,
+#zisContent .list-group .list-group-item input:focus-visible,
+#zisContent .list-group .list-group-item input:focus {
+    border: none !important;
+    outline: none !important;
+}
+
+#zisContent .list-group .list-group-item .delet-zis-btn,
+#zisContent .list-group .list-group-item .edit-zis-btn {
     width: 22px;
     min-height: 22px;
     position: absolute;
@@ -1141,6 +1166,11 @@ button.pagination-button {
     transform: translateY(-50%);
     background: transparent;
     padding: 0;
+}
+
+#zisContent .list-group .list-group-item .edit-zis-btn {
+    right: 40px;
+    color: var(--Text_Gray_40)
 }
 
 #projectModal .form-check,
@@ -1296,11 +1326,11 @@ p.main-info {
 }
 
 .card {
-    margin-top: 20px;
+    margin: 0px;
     padding: 20px 30px;
-    border-radius: 10px;
-    border: 1px solid var(--Text_Gray_20);
-    box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.05);
+    border-radius: 0px;
+    border: none;
+    border-top: 1px solid var(--Text_Gray_20);
 }
 
 .card-body {
@@ -1495,7 +1525,7 @@ h1.super-title {
     font-weight: 400;
     line-height: 18px;
     padding: 11px 10px;
-    border: 1px solid var(--Text_Gray_20);
+    border: 1px solid var(--Text_Gray_40);
 }
 
 .flex-block span {
@@ -1662,14 +1692,12 @@ table#usersTable thead {
 /*  */
 
 .select {
-    background: url('https://s3.timeweb.com/7777fb51-34f4640c-d71e-4ace-b57e-e7997a1f4952/Vector.svg') no-repeat right;
-    background-position-x: 90%;
     margin-right: 30px;
     display: block;
     width: 185px;
     height: 40px;
     border-radius: 5px;
-    border: 1px solid var(--Text_Gray_20);
+    border: 1px solid var(--Text_Gray_40);
     padding: 10px;
     outline: 0px solid var(--Primary_blue);
     cursor: pointer;
@@ -1677,8 +1705,6 @@ table#usersTable thead {
 
 .select[data-cid=simple-select] {
     margin-right: 0;
-    padding: 11px 25px 11px 10px;
-    width: 100%;
 }
 
 .select.is-active {
@@ -1691,6 +1717,8 @@ table#usersTable thead {
 }
 
 .select__current {
+    background: url('https://s3.timeweb.com/7777fb51-34f4640c-d71e-4ace-b57e-e7997a1f4952/Vector.svg') no-repeat right;
+    background-position-x: right;
 	font-size: 18px;
 	line-height: 24px;
     color: var(--Text_Gray_100);
@@ -1723,6 +1751,11 @@ table#usersTable thead {
     padding: 10px 0;
     scrollbar-width: 5px;
     scrollbar-color: var(--Text_Gray_40);
+}
+
+.select__body.over {
+    width: calc(100% + 100px);
+    left: -35%;
 }
 
 .select__item {
@@ -2040,12 +2073,29 @@ button.apply-filters:disabled {
 
 #reportsNew,
 #reportsEdit {
-    margin-top: 20px;
-    padding: 20px 30px;
-    border-radius: 10px;
-    border: 1px solid var(--Text_Gray_20);
-    box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.05);
     background-color: var(--Text_Gray_10);
+    box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--Text_Gray_20);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+#reportsNew .reports-list,
+#reportsEdit .reports-list {
+    display: block;
+    max-height: 0;
+    transition: max-height .5s ease;
+}
+
+
+#reportsNew .reports-list.active,
+#reportsEdit .reports-list.active {
+    max-height: 20000px;
+    transition: max-height .5s ease;
+}
+
+#reportsEdit {
+    margin-top: 20px;
 }
 
 #reportsNew .reports-list-header,
@@ -2054,6 +2104,8 @@ button.apply-filters:disabled {
     align-items: center;
     justify-content: space-between;
     cursor: pointer;
+    padding: 30px;
+    background-color: var(--Text_Gray_10);
 }
 
 #reportsNew .reports-list-header h3,
@@ -2073,4 +2125,77 @@ button.apply-filters:disabled {
     display: flex;
     align-items: center;
     justify-content: center;
+    transform: rotate(0deg);
+    transition: .5s all;
+}
+
+#reportsNew .reports-list-header span.active,
+#reportsEdit .reports-list-header span.active {
+    transform: rotate(180deg);
+    transition: .5s all;
+}
+
+.all-cards {
+    display: none;
+}
+
+#currentDay .card {
+    width: 100%;
+    padding: 20px 30px;
+    border-radius: 10px;
+    border: 1px solid var(--Text_Gray_20);
+    box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+}
+
+.custom-table {
+
+}
+
+.custom-table-header {
+    display: flex;
+    border: none;
+    background: var(--Secondary);
+    border-radius: 10px 10px 0 0;
+}
+
+.custom-table-header .header-item {
+    padding: 21px 9px;
+}
+
+.custom-table-header .header-item:first-child {
+    padding: 21px 9px 21px 30px;
+}
+.custom-table-header .header-item:last-child {
+    padding: 21px 30px 21px 9px;
+}
+
+.custom-table-header .header-item p {
+    color: var(--Text_Gray_100);
+    font-feature-settings: 'liga' off, 'clig' off;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 18px;
+}
+
+.custom-table-body {
+    background-color: var(--Text_Gray_10);
+}
+
+.custom-table-body .body-item {
+    display: flex;
+    width: 100%;
+}
+
+.custom-table-body .body-item .row-item {
+    padding: 21px 9px;
+    border-bottom: 1px solid var(--Text_Gray_20);
+}
+
+.custom-table-body .body-item .row-item:first-child {
+    padding: 21px 9px 21px 30px;
+}
+.custom-table-body .body-item .row-item:last-child {
+    padding: 21px 30px 21px 9px;
 }
