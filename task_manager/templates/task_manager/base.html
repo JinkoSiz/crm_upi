@@ -853,6 +853,7 @@
                 const hiddenInput = select.parentNode.querySelector('.hidden-input');
                 if (hiddenInput) {
                     hiddenInput.value = selectItem.getAttribute('data-value');
+                    saveTableData();// Сохранение данных строки в таблице
                 }
 
                 select.classList.remove('is-active');

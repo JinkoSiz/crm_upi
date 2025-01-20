@@ -1692,8 +1692,6 @@ table#usersTable thead {
 /*  */
 
 .select {
-    background: url('https://s3.timeweb.com/7777fb51-34f4640c-d71e-4ace-b57e-e7997a1f4952/Vector.svg') no-repeat right;
-    background-position-x: 90%;
     margin-right: 30px;
     display: block;
     width: 185px;
@@ -1707,8 +1705,6 @@ table#usersTable thead {
 
 .select[data-cid=simple-select] {
     margin-right: 0;
-    padding: 11px 25px 11px 10px;
-    width: 100%;
 }
 
 .select.is-active {
@@ -1721,6 +1717,8 @@ table#usersTable thead {
 }
 
 .select__current {
+    background: url('https://s3.timeweb.com/7777fb51-34f4640c-d71e-4ace-b57e-e7997a1f4952/Vector.svg') no-repeat right;
+    background-position-x: right;
 	font-size: 18px;
 	line-height: 24px;
     color: var(--Text_Gray_100);

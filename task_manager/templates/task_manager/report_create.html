@@ -482,11 +482,13 @@
 
     inputsChecker();
 
+    // Удаление строки
     document.addEventListener('click', (e) => {
         if (e.target.closest('.delete-row')) {
             e.target.closest('.body-item').remove();
             calcInputsValues();
             inputsChecker();
+            saveTableData(); // Сохранить изменения после удаления
             const rowsCounter = document.querySelectorAll('.body-item');
             
             if(rowsCounter.length <= 0) {
@@ -496,161 +498,138 @@
     });
 
    // Уникальный ключ для localStorage
-    const localStorageKey = `formData_${window.location.pathname}`;
+    const localStorageKey = `tableData_${window.location.pathname}`;
 
-    // Функция для сохранения данных формы в localStorage
-    function saveFormData() {
-        const formData = [];
-
-        document.querySelectorAll('.table tbody tr').forEach(row => {
+    // Сохранение данных таблицы
+    function saveTableData() {
+        const rows = [];
+        document.querySelectorAll('.custom-table-body .body-item').forEach(row => {
             const rowData = {
-                project: row.querySelector('input[name="project"]').value || '',
-                stage: row.querySelector('input[name="stage"]').value || '',
-                section: row.querySelector('input[name="section"]').value || '',
-                building: row.querySelector('input[name="building"]').value || '',
-                mark: row.querySelector('input[name="mark"]').value || '',
-                task: row.querySelector('input[name="task"]').value || '',
-                time: row.querySelector('input[name="time"]').value || ''
+                project: row.querySelector('input[name="project"]').value,
+                projectText: row.querySelector('.select[data-cid="simple-select"] .select__current').innerText,
+                stage: row.querySelector('input[name="stage"]').value,
+                stageText: row.querySelector('.select[data-cid="simple-select"] .select__current[data-value="' + row.querySelector('input[name="stage"]').value + '"]').innerText,
+                section: row.querySelector('input[name="section"]').value,
+                sectionText: row.querySelector('.select[data-cid="simple-select"] .select__current[data-value="' + row.querySelector('input[name="section"]').value + '"]').innerText,
+                building: row.querySelector('input[name="building"]').value,
+                buildingText: row.querySelector('.select[data-cid="simple-select"] .select__current[data-value="' + row.querySelector('input[name="building"]').value + '"]').innerText,
+                mark: row.querySelector('input[name="mark"]').value,
+                markText: row.querySelector('.select[data-cid="simple-select"] .select__current[data-value="' + row.querySelector('input[name="mark"]').value + '"]').innerText,
+                task: row.querySelector('input[name="task"]').value,
+                time: row.querySelector('input[name="time"]').value,
             };
-            formData.push(rowData);
+            rows.push(rowData);
         });
-
-        localStorage.setItem(localStorageKey, JSON.stringify(formData));
-        console.log('Данные сохранены в localStorage:', formData);
+        localStorage.setItem(localStorageKey, JSON.stringify(rows));
+        console.log(localStorage);
     }
 
-    // Асинхронная функция для получения данных для выпадающих списков (например, с сервера)
-    async function fetchDataForSelects() {
-        const projects = await fetch('/api/projects').then(response => response.json());
-        const stages = await fetch('/api/stages').then(response => response.json());
-        const sections = await fetch('/api/sections').then(response => response.json());
-        const buildings = await fetch('/api/buildings').then(response => response.json());
+    // Восстановление данных таблицы
+    function restoreTableData() {
+        const savedData = JSON.parse(localStorage.getItem(localStorageKey)) || [];
+        const tableBody = document.querySelector('.custom-table-body');
+        tableBody.innerHTML = ''; // Очистить текущие строки
 
-        return { projects, stages, sections, buildings };
-    }
+        savedData.forEach(rowData => {
+            const row = document.createElement('div');
+            row.classList.add('body-item');
 
-    // Функция для загрузки данных из localStorage и применения их к выпадающим спискам
-    async function loadFormData() {
-        const savedData = localStorage.getItem(localStorageKey);
-        if (!savedData) return;
-
-        const formData = JSON.parse(savedData);
-
-        // Загружаем данные для списков
-        const { projects, stages, sections, buildings } = await fetchDataForSelects();
-
-        // Удаляем текущие строки таблицы
-        document.querySelector('.table tbody').innerHTML = '';
-
-        // Восстанавливаем строки из localStorage
-        formData.forEach(rowData => {
-            const row = document.createElement('tr');
             row.innerHTML = `
-                <td>
+                <div class="row-item">
                     <input type="hidden" name="project" class="hidden-input" value="${rowData.project}">
-                    <div class="select" data-cid="simple-select">
-                        <span class="select__current" data-value="${rowData.project}">Объект</span>
-                        <div class="select__body"></div>
+                    <div class="select" data-cid="simple-select" style="width: 220px;">
+                        <span class="select__current" data-value="${rowData.project}">${rowData.projectText}</span>
+                        <div class="select__body">
+                            {% for project in projects %}
+                            <div class="select__item" data-value="{{ project.id }}">{{ project.title }}</div>
+                            {% endfor %}
+                        </div>
                     </div>
-                </td>
-                <td>
+                </div>
+                <div class="row-item">
                     <input type="hidden" name="stage" class="hidden-input" value="${rowData.stage}">
-                    <div class="select" data-cid="simple-select">
-                        <span class="select__current" data-value="${rowData.stage}">Стадия</span>
-                        <div class="select__body"></div>
+                    <div class="select" data-cid="simple-select" style="width: 100px;">
+                        <span class="select__current" data-value="${rowData.stage}">${rowData.stageText}</span>
+                        <div class="select__body">
+                            {% for stage_value, stage_display in stages %}
+                            <div class="select__item" data-value="{{ stage_value }}">{{ stage_display }}</div>
+                            {% endfor %}
+                        </div>
                     </div>
-                </td>
-                <td>
+                </div>
+                <div class="row-item">
                     <input type="hidden" name="section" class="hidden-input" value="${rowData.section}">
-                    <div class="select" data-cid="simple-select">
-                        <span class="select__current" data-value="${rowData.section}">Раздел</span>
-                        <div class="select__body"></div>
+                    <div class="select" data-cid="simple-select" style="width: 100px;">
+                        <span class="select__current" data-value="${rowData.section}">${rowData.sectionText}</span>
+                        <div class="select__body">
+                            {% for section in sections %}
+                            <div class="select__item" data-value="{{ section.id }}">{{ section.title }}</div>
+                            {% endfor %}
+                        </div>
                     </div>
-                </td>
-                <td>
+                </div>
+                <div class="row-item">
                     <input type="hidden" name="building" class="hidden-input" value="${rowData.building}">
-                    <div class="select" data-cid="simple-select">
-                        <span class="select__current" data-value="${rowData.building}">ЗИС</span>
-                        <div class="select__body"></div>
+                    <div class="select" data-cid="simple-select" style="width: 300px;">
+                        <span class="select__current" data-value="${rowData.building}">${rowData.buildingText}</span>
+                        <div class="select__body">
+                            <div class="select__item" data-value="">Выберите проект</div>
+                        </div>
                     </div>
-                </td>
-                <td>
+                </div>
+                <div class="row-item">
                     <input type="hidden" name="mark" class="hidden-input" value="${rowData.mark}">
-                    <div class="select" data-cid="simple-select">
-                        <span class="select__current" data-value="${rowData.mark}">Марка</span>
-                        <div class="select__body"></div>
+                    <div class="select" data-cid="simple-select" style="width: 100px;">
+                        <span class="select__current" data-value="${rowData.mark}">${rowData.markText}</span>
+                        <div class="select__body">
+                            {% for mark in marks %}
+                            <div class="select__item" data-value="{{ mark.id }}">{{ mark.title }}</div>
+                            {% endfor %}
+                        </div>
                     </div>
-                </td>
-                <td>
-                    <input type="text" name="task" class="form-control" placeholder="Локальная задача" value="${rowData.task}">
-                </td>
-                <td>
-                    <div class="flex-block">
-                        <input type="number" name="time" class="form-control" placeholder="Время (в часах)" value="${rowData.time}">
-                        <span class="delete-row">Удалить</span>
+                </div>
+                <div class="row-item">
+                    <input type="text" name="task" class="form-control" value="${rowData.task}" placeholder="Локальная задача" style="width: 200px;">
+                </div>
+                <div class="row-item">
+                    <div class="flex-block" style="width: 103px;">
+                        <input type="number" name="time" class="form-control" value="${rowData.time}">
+                        <span class="delete-row">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="23" height="24" viewBox="0 0 23 24" fill="none">
+                                <path d="M15.7604 6.16667V5.45833C15.7604 4.46657 15.7604 3.97069 15.5674 3.59189C15.3976 3.25869 15.1267 2.98779 14.7935 2.81801C14.4147 2.625 13.9188 2.625 12.9271 2.625H11.5104C10.5187 2.625 10.0228 2.625 9.64398 2.81801C9.31077 2.98779 9.03987 3.25869 8.87009 3.59189C8.67708 3.97069 8.67708 4.46657 8.67708 5.45833V6.16667M10.4479 11.0365V15.4635M13.9896 11.0365V15.4635M4.25 6.16667H20.1875M18.4167 6.16667V16.0833C18.4167 17.571 18.4167 18.3148 18.1272 18.883C17.8725 19.3828 17.4661 19.7892 16.9663 20.0438C16.3981 20.3333 15.6543 20.3333 14.1667 20.3333H10.2708C8.78319 20.3333 8.03937 20.3333 7.47117 20.0438C6.97137 19.7892 6.56501 19.3828 6.31035 18.883C6.02083 18.3148 6.02083 17.571 6.02083 16.0833V6.16667" stroke="#A6A6A6" stroke-width="1.77083" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </span>
                     </div>
-                </td>
+                </div>
             `;
-            document.querySelector('.table tbody').appendChild(row);
 
-            // После добавления строки, инициализируем выпадающие списки
-            initializeSelects(row, { projects, stages, sections, buildings });
-            addEventListenersForRow(row);
-        });
-
-        console.log('Данные загружены из localStorage:', formData);
-    }
-
-    // Инициализация выпадающих списков с подстановкой имени по id
-    function initializeSelects(row, { projects, stages, sections, buildings }) {
-        row.querySelectorAll('.select').forEach(select => {
-            const currentValue = select.querySelector('.select__current').getAttribute('data-value');
-
-            let name = '';
-            switch (select.querySelector('input[name]').name) {
-                case 'project':
-                    name = projects.find(project => project.id === currentValue)?.name || 'Объект';
-                    break;
-                case 'stage':
-                    name = stages.find(stage => stage.id === currentValue)?.name || 'Стадия';
-                    break;
-                case 'section':
-                    name = sections.find(section => section.id === currentValue)?.name || 'Раздел';
-                    break;
-                case 'building':
-                    name = buildings.find(building => building.id === currentValue)?.name || 'ЗИС';
-                    break;
-                case 'mark':
-                    name = currentValue; // Предположим, что это ID марки, имя можно задать вручную
-                    break;
-            }
-
-            const span = select.querySelector('.select__current');
-            span.textContent = name; // Подставляем имя вместо id
+            tableBody.appendChild(row);
+            loadBuildingsAndSectionsForRow(row);
         });
     }
 
-    // Очистка данных в localStorage при отправке отчета
+    // Автоматическое сохранение при изменении данных
+    document.addEventListener('input', function(event) {
+        if (event.target.closest('.form-control') || event.target.closest('.hidden-input')) {
+            saveTableData();
+        }
+        inputsChecker();
+        calcInputsValues();
+    });
+
+    // Очистка данных в localStorage при отправке отчёта
     document.querySelector('#sendReport').addEventListener('click', () => {
         localStorage.removeItem(localStorageKey);
         console.log('Данные из localStorage очищены.');
     });
 
-    // Загрузка данных при загрузке страницы
-    document.addEventListener('DOMContentLoaded', async () => {
-        await loadFormData(); // Загружаем данные только после завершения инициализации
-    });
+    // Восстановление данных при загрузке страницы
+    document.addEventListener('DOMContentLoaded', () => {
+        restoreTableData();
+        inputsChecker();
+        calcInputsValues();
+    }) ;
 
-    // Сохранение данных при изменении
-    document.addEventListener('input', saveFormData);
-
-    // Удаление строки и обновление localStorage
-    document.addEventListener('click', e => {
-        if (e.target.classList.contains('delete-row')) {
-            e.target.closest('tr').remove();
-            saveFormData();
-        }
-    });
 
 </script>
 {% endblock %}
