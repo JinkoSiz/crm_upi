@@ -9,7 +9,7 @@ from openpyxl import Workbook
 from django.core.cache import cache
 from django.db import IntegrityError
 from django.db.models.functions import Concat, TruncDate
-from django.db.models import F, Value
+from django.db.models import F, Value, Count
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.http import HttpResponse, JsonResponse
@@ -31,7 +31,7 @@ def department(request):
     departmentObj = cache.get('department_list')
     if not departmentObj:
         # Если кэш пуст, загружаем данные из базы и кэшируем
-        departmentObj = Department.objects.all()
+        departmentObj = Department.objects.annotate(user_count=Count('users'))
         cache.set('department_list', departmentObj, timeout=60 * 15)  # Кэшируем на 15 минут
 
     selected_departments = request.GET.getlist('department')
@@ -76,9 +76,15 @@ def updateDepartment(request, pk):
 
 def deleteDepartment(request, pk):
     department = get_object_or_404(Department, pk=pk)
+
+    # Серверная проверка: есть ли пользователи, если да — не удаляем
+    if department.users.exists():
+        messages.error(request, 'Невозможно удалить отдел, так как к нему привязаны пользователи.')
+        return redirect('department-list')
+
     if request.method == 'POST':
         department.delete()
-        cache.delete('department_list')  # Удаляем кэш после удаления
+        cache.delete('department_list')
         return redirect('department-list')
 
     context = {'object': department}
@@ -92,7 +98,7 @@ def role(request):
     roleObj = cache.get('role_list')
 
     if not roleObj:
-        roleObj = Role.objects.all()
+        roleObj = Role.objects.annotate(user_count=Count('users'))
         cache.set('role_list', roleObj, 600)  # Кэшируем на 10 минут (600 секунд)
 
     selected_roles = request.GET.getlist('role')
@@ -143,6 +149,12 @@ def updateRole(request, pk):
 
 def deleteRole(request, pk):
     role = get_object_or_404(Role, pk=pk)
+
+    # Серверная проверка: есть ли пользователи, если да — не удаляем
+    if role.users.exists():
+        messages.error(request, 'Невозможно удалить роль, так как к ней привязаны пользователи.')
+        return redirect('role-list')
+
     if request.method == 'POST':
         role.delete()
 
@@ -371,8 +383,7 @@ def project(request):
     # Кэшируем проекты и связанные данные
     projects = cache.get_or_set(
         'projects_cache',
-        Project.objects.select_related('status').prefetch_related('project_buildings__building',
-                                                                  'project_sections__section'),
+        Project.objects.select_related('status').prefetch_related('project_buildings__building', 'project_sections__section').annotate(timelog_count=Count('timelogs')),
         timeout=60 * 15  # Кэш на 15 минут
     )
 
@@ -656,7 +667,7 @@ def building_delete(request, building_id):
 # Разделы
 @admin_required(login_url='login')
 def section(request):
-    sections = Section.objects.all()
+    sections = Section.objects.annotate(timelog_count=Count('timelogs', distinct=True), project_count=Count('project_sections', distinct=True))
     available_marks = Mark.objects.all()  # Получаем все доступные марки
 
     selected_sections = request.GET.getlist('section')
@@ -720,7 +731,10 @@ def updateSection(request, pk):
 
 def deleteSection(request, pk):
     section = get_object_or_404(Section, pk=pk)
-    if request.method == 'POST': 
+    if request.method == 'POST':
+        if section.project_sections.exists() or section.timelogs.exists():
+            return redirect('section-list')
+
         section.delete()
         cache.delete('sections_cache')
         return redirect('section-list')
@@ -735,7 +749,7 @@ def mark(request):
     marks = cache.get('mark_list')
     if not marks:
         # Если кэш пуст, загружаем данные из базы и кэшируем
-        marks = Mark.objects.all()
+        marks = Mark.objects.annotate(timelog_count=Count('timelogs', distinct=True), section_count=Count('section_marks', distinct=True))
         cache.set('mark_list', marks, timeout=60 * 15)  # Кэшируем на 15 минут
 
     selected_marks = request.GET.getlist('mark')
@@ -781,6 +795,9 @@ def updateMark(request, pk):
 def deleteMark(request, pk):
     mark = get_object_or_404(Mark, pk=pk)
     if request.method == 'POST':
+        if mark.section_marks.exists() or mark.timelogs.exists():
+            return redirect('mark-list')
+
         mark.delete()
         cache.delete('mark_list')  # Удаляем кэш после удаления
         return redirect('mark-list')
@@ -797,7 +814,7 @@ def task_list(request):
     tasks = cache.get(cache_key)
 
     if not tasks:
-        tasks = TaskType.objects.all()
+        tasks = TaskType.objects.annotate(timelog_count=Count('timelogs', distinct=True))
         cache.set(cache_key, tasks, timeout=60 * 15)  # Кэшируем на 15 минут
 
     form = TaskTypeForm()
@@ -837,6 +854,9 @@ def delete_task(request, pk):
     task = get_object_or_404(TaskType, pk=pk)
 
     if request.method == 'POST':
+        if task.timelogs.exists():
+            return redirect('task-list')
+
         task.delete()
         cache.delete('tasktype_list')  # Удаляем кэш после удаления
         return redirect('task-list')
