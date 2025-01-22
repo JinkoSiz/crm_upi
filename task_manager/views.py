@@ -764,13 +764,22 @@ def mark(request):
 
 def createMark(request):
     form = MarkForm()
-
     if request.method == 'POST':
         form = MarkForm(request.POST)
         if form.is_valid():
-            mark = form.save(commit=False)
-            mark.save()
-            cache.delete('mark_list')  # Удаляем кэш после создания
+            mark = form.save(commit=True)  # Сохраняем саму Mark
+
+            # Получаем отдел, который выбрал пользователь
+            chosen_department = form.cleaned_data['department']
+
+            # Удаляем старые связи (по идее для create их и нет, но на всякий случай)
+            DepartmentMark.objects.filter(mark=mark).delete()
+
+            # Создаём новую связь, если пользователь выбрал отдел
+            if chosen_department:
+                DepartmentMark.objects.create(mark=mark, department=chosen_department)
+
+            cache.delete('mark_list')  # Очистим кэш
             return redirect('mark-list')
 
     context = {'form': form}
@@ -779,14 +788,23 @@ def createMark(request):
 
 def updateMark(request, pk):
     mark = get_object_or_404(Mark, pk=pk)
-    form = MarkForm(instance=mark)
-
     if request.method == 'POST':
         form = MarkForm(request.POST, instance=mark)
         if form.is_valid():
-            mark = form.save()
-            cache.delete('mark_list')  # Удаляем кэш после обновления
+            mark = form.save(commit=True)
+
+            chosen_department = form.cleaned_data['department']
+            # Удаляем старую связь (если была)
+            DepartmentMark.objects.filter(mark=mark).delete()
+
+            if chosen_department:
+                DepartmentMark.objects.create(mark=mark, department=chosen_department)
+
+            cache.delete('mark_list')
             return redirect('mark-list')
+
+    else:
+        form = MarkForm(instance=mark)
 
     context = {'form': form, 'mark': mark}
     return render(request, 'task_manager/mark_form.html', context)
@@ -1187,7 +1205,7 @@ def report_create(request):
     # Загружаем данные из кэша или базы данных для селектов
     projects = cache.get_or_set('projects_cache', Project.objects.select_related('status').all(), timeout=60 * 15)
     sections = cache.get_or_set('sections_cache', Section.objects.all(), timeout=60 * 15)
-    marks = cache.get_or_set('mark_list', Mark.objects.all(), timeout=60 * 15)
+    marks = Mark.objects.filter(department_marks__department=request.user.department)
     tasks = cache.get_or_set('tasks', TaskType.objects.all(), timeout=60 * 15)
 
     context = {
