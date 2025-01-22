@@ -172,9 +172,19 @@ class SectionForm(forms.ModelForm):
 
 # Форма для модели Mark
 class MarkForm(forms.ModelForm):
+    department = forms.ModelChoiceField(
+        label="Отдел",
+        queryset=Department.objects.all(),
+        required=True,
+        widget=forms.Select(attrs={
+            'class': 'form-control'
+        })
+    )
+
     class Meta:
         model = Mark
-        fields = ['title']
+        fields = ['title']  # 'department' не в модели Mark, поэтому укажем только 'title'
+
         labels = {
             'title': 'Название',
         }
@@ -182,9 +192,29 @@ class MarkForm(forms.ModelForm):
             'title': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Название марки',
-                'required': True
+                'required': True,
+                'style': 'margin-bottom: 10px'
             }),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Если редактируем уже существующую марку, попробуем найти, к какому отделу она привязана
+        if self.instance and self.instance.pk:
+            department_mark = DepartmentMark.objects.filter(mark=self.instance).first()
+            if department_mark:
+                self.fields['department'].initial = department_mark.department
+
+    def save(self, commit=True):
+        """
+        Переопределяем save, чтобы:
+        - Сохранить саму Mark
+        - Но реальную логику привязки к Department делаем во view
+        """
+        mark = super().save(commit=False)
+        if commit:
+            mark.save()  # сохраняем Mark
+        return mark
 
 
 # Форма для модели TaskType
