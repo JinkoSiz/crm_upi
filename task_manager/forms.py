@@ -175,7 +175,10 @@ class MarkForm(forms.ModelForm):
     department = forms.ModelChoiceField(
         label="Отдел",
         queryset=Department.objects.all(),
-        required=False
+        required=True,
+        widget=forms.Select(attrs={
+            'class': 'form-control'
+        })
     )
 
     class Meta:
@@ -189,7 +192,8 @@ class MarkForm(forms.ModelForm):
             'title': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Название марки',
-                'required': True
+                'required': True,
+                'style': 'margin-bottom: 10px'
             }),
         }
 
