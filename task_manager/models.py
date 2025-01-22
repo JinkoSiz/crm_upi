@@ -196,6 +196,17 @@ class SectionMark(models.Model):
         unique_together = ('section', 'mark')
 
 
+class DepartmentMark(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='department_marks')
+    mark = models.ForeignKey(Mark, on_delete=models.CASCADE, related_name='department_marks')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('department', 'mark')
+
+
 class Timelog(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='timelogs')

@@ -84,6 +84,14 @@ class MarkAdmin(admin.ModelAdmin):
     readonly_fields = ('created_at', 'updated_at')
 
 
+# Марки - Отделы
+@admin.register(DepartmentMark)
+class DepartmentMarkAdmin(admin.ModelAdmin):
+    list_display = ('department', 'mark', 'created_at', 'updated_at')
+    search_fields = ('department', 'mark')
+    readonly_fields = ('created_at', 'updated_at')
+
+
 # Задачи
 @admin.register(TaskType)
 class TaskAdmin(admin.ModelAdmin):
