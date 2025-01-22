@@ -759,6 +759,10 @@ button.sorter span {
     justify-content: space-between;
 }
 
+.modal-footer.modal-footer-delete.solo-btn {
+    justify-content: center;
+}
+
 .modal-footer.modal-footer-delete form, .modal-footer.modal-footer-delete .btn-danger .btn-secondary {
     margin: 0;
 }

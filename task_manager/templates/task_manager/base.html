@@ -882,10 +882,7 @@
 
         resetFilters.forEach(btn => {
             btn.addEventListener('click', () => {
-                // Формируем URL без параметров
                 const newUrl = window.location.origin + window.location.pathname;
-
-                // Перенаправляем пользователя на новый URL
                 window.location.href = newUrl;
             });
         })

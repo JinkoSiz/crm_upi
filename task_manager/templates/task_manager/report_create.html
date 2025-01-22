@@ -147,7 +147,12 @@
         const buildingSelect = row.querySelector('input[name="building"] + .select');
         const sectionSelect = row.querySelector('input[name="section"] + .select');
 
-        const projectId = projectSelect.querySelector('.select__current').dataset.value;
+        const projectId = projectSelect.querySelector('.select__current')?.dataset?.value;
+
+        if (!projectId) {
+            console.error('Проект не выбран для строки:', row);
+            return;
+        }
 
         if (projectId) {
             try {
@@ -197,10 +202,6 @@
         });
     }
 
-    // Когда страница полностью загрузится (или данные отчета загружены для редактирования)
-    document.addEventListener('DOMContentLoaded', () => {
-        loadBuildingsAndSectionsForAllRows(); // Загружаем здания и разделы для всех строк
-    });
 
     document.addEventListener("DOMContentLoaded", function() {
         const projectSelect = document.getElementById('id_project');
@@ -250,12 +251,21 @@
         const projectSelect = row.querySelector('input[name="project"] + .select');
         const buildingSelect = row.querySelector('input[name="building"] + .select');
         const sectionSelect = row.querySelector('input[name="section"] + .select'); // Добавляем выбор раздела
+        const buildingHiddenInput = row.querySelector('input[name="building"]');
+        const sectionHiddenInput = row.querySelector('input[name="section"]');
 
         if (projectSelect) {
             projectSelect.addEventListener('click', async (e) => {
-                const projectId = e.target.closest('.select__item')?.dataset.value;
+                const projectId = e.target.closest('.select__item')?.dataset?.value;
 
                 if (projectId) {
+
+                    buildingHiddenInput.value = '';
+                    sectionHiddenInput.value = '';
+
+                    inputsChecker();
+
+
                     try {
                         // Уведомление о загрузке данных
                         buildingSelect.querySelector('.select__body').innerHTML = '<div>Загрузка...</div>';
@@ -297,13 +307,51 @@
         }
     }
 
-    // Добавление обработчиков событий для всех существующих строк
-    document.addEventListener('DOMContentLoaded', () => {
-        const rows = document.querySelectorAll('.custom-table-body .body-item');
-        rows.forEach(row => {
-            addEventListenersForRow(row);
-        });
-    });
+    async function chekerInputToNull(row) {
+        const ifSelectedInput = row.querySelector('input[name="project"]');
+        const buildingSelect = row.querySelector('input[name="building"] + .select');
+        const sectionSelect = row.querySelector('input[name="section"] + .select');
+
+            if(ifSelectedInput.value) {
+                try {
+                        // Уведомление о загрузке данных
+                        buildingSelect.querySelector('.select__body').innerHTML = '<div>Загрузка...</div>';
+                        sectionSelect.querySelector('.select__body').innerHTML = '<div>Загрузка...</div>'; // Загрузка разделов
+
+                        // Запрос данных для зданий
+                        const buildingResponse = await fetch(`/get-buildings/?project_id=${ifSelectedInput.value}`);
+                        if (!buildingResponse.ok) {
+                            throw new Error('Ошибка загрузки зданий');
+                        }
+                        const buildingData = await buildingResponse.json();
+
+                        // Запрос данных для разделов
+                        const sectionResponse = await fetch(`/get-sections/?project_id=${ifSelectedInput.value}`);
+                        if (!sectionResponse.ok) {
+                            throw new Error('Ошибка загрузки разделов');
+                        }
+                        const sectionData = await sectionResponse.json();
+
+                        // Обновление списка зданий
+                        const buildingOptions = buildingData.buildings.map(building => {
+                            return `<div class="select__item" data-value="${building.id}">${building.title}</div>`;
+                        }).join('');
+                        buildingSelect.querySelector('.select__body').innerHTML = buildingOptions;
+
+                        // Обновление списка разделов
+                        const sectionOptions = sectionData.sections.map(section => {
+                            return `<div class="select__item" data-value="${section.id}">${section.title}</div>`;
+                        }).join('');
+                        sectionSelect.querySelector('.select__body').innerHTML = sectionOptions;
+
+                    } catch (error) {
+                        console.error('Ошибка загрузки данных:', error);
+                        buildingSelect.querySelector('.select__body').innerHTML = '<div>Ошибка загрузки</div>';
+                        sectionSelect.querySelector('.select__body').innerHTML = '<div>Ошибка загрузки</div>';
+                    }
+            }
+    }
+
 
     const addRowBtn = document.querySelector('#addRowBtn'),
           tableBody = document.querySelector('.custom-table-body'),
@@ -451,7 +499,6 @@
             })
             if (item.value !== '' && parseInt(item.value) >= 0) {
                 counter += parseInt(item.value);
-                console.log(typeof(parseInt(item.value)));
                 totalConter.value = counter + ' ' + getHourLabel(counter);
                 inputsChecker();
             } else {
@@ -521,7 +568,6 @@
             rows.push(rowData);
         });
         localStorage.setItem(localStorageKey, JSON.stringify(rows));
-        console.log(localStorage);
     }
 
     // Восстановление данных таблицы
@@ -604,7 +650,8 @@
             `;
 
             tableBody.appendChild(row);
-            loadBuildingsAndSectionsForRow(row);
+            addEventListenersForRow(row);
+            chekerInputToNull(row);
         });
     }
 
@@ -620,11 +667,16 @@
     // Очистка данных в localStorage при отправке отчёта
     document.querySelector('#sendReport').addEventListener('click', () => {
         localStorage.removeItem(localStorageKey);
-        console.log('Данные из localStorage очищены.');
     });
 
     // Восстановление данных при загрузке страницы
     document.addEventListener('DOMContentLoaded', () => {
+        // Добавление обработчиков событий для всех существующих строк
+        const rows = document.querySelectorAll('.custom-table-body .body-item');
+        rows.forEach(row => {
+            addEventListenersForRow(row);
+        });
+        loadBuildingsAndSectionsForAllRows(); // Загружаем здания и разделы для всех строк
         restoreTableData();
         inputsChecker();
         calcInputsValues();
