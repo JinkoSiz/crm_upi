@@ -219,6 +219,13 @@ class MarkForm(forms.ModelForm):
 
 # Форма для модели TaskType
 class TaskTypeForm(forms.ModelForm):
+    department = forms.ModelChoiceField(
+        label="Отдел",
+        queryset=Department.objects.all(),
+        required=True,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
     class Meta:
         model = TaskType
         fields = ['title']
@@ -229,9 +236,23 @@ class TaskTypeForm(forms.ModelForm):
             'title': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Название задачи',
-                'required': True
+                'required': True,
+                'style': 'margin-bottom: 10px'
             }),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk:
+            department_task = DepartmentTaskType.objects.filter(task=self.instance).first()
+            if department_task:
+                self.fields['department'].initial = department_task.department
+
+    def save(self, commit=True):
+        task = super().save(commit=False)
+        if commit:
+            task.save()
+        return task
 
 
 # Форма для модели TimeLog
