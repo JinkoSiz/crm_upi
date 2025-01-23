@@ -109,6 +109,11 @@
                                 <!-- Локальная задача -->
                                 <div class="row-item">
                                     <input type="text" name="task" class="form-control" value="{{ timelog.task.title }}" placeholder="Локальная задача" style="width: 200px;">
+                                    <ul class="select-list">
+                                        {% for task in tasks %}
+                                        <li class="select-list-item">{{ task.title }}</li>
+                                        {% endfor %}
+                                    </ul>
                                 </div>
 
                                 <!-- Время -->
@@ -460,6 +465,11 @@
             </div>
             <div class="row-item">
                 <input type="text" name="task" class="form-control" placeholder="Локальная задача" style="width: 200px;">
+                <ul class="select-list">
+                    {% for task in tasks %}
+                    <li class="select-list-item">{{ task.title }}</li>
+                    {% endfor %}
+                </ul>
             </div>
             <div class="row-item">
                 <div class="flex-block" style="width: 103px;">
@@ -636,6 +646,11 @@
                 </div>
                 <div class="row-item">
                     <input type="text" name="task" class="form-control" value="${rowData.task}" placeholder="Локальная задача" style="width: 200px;">
+                    <ul class="select-list">
+                        {% for task in tasks %}
+                        <li class="select-list-item">{{ task.title }}</li>
+                        {% endfor %}
+                    </ul>
                 </div>
                 <div class="row-item">
                     <div class="flex-block" style="width: 103px;">
@@ -654,6 +669,46 @@
             chekerInputToNull(row);
         });
     }
+
+    const selectListItemArray = [
+        {% for task in tasks %}
+        {title: '{{ task.title }}'},
+        {% endfor %}
+    ];
+
+    console.log(selectListItemArray);
+
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('input[name="task"]')) {
+            const inputElement = e.target;
+            const parent = inputElement.parentElement;
+            const selectList = parent.querySelector('ul.select-list');
+
+            selectList.classList.add('active');
+
+            inputElement.addEventListener('input', (e) => {
+                selectList.innerHTML = '';
+                const filtered = selectListItemArray.filter(item => item.title.toLowerCase().includes(e.target.value));
+                selectList.innerHTML = '';
+                filtered.forEach(item => {
+                    const li = document.createElement('li');
+                    li.classList.add('select-list-item');
+                    li.innerText = item.title;
+                    selectList.appendChild(li);
+
+                    li.addEventListener('click', () => {
+                        inputElement.value = item.title;
+                        selectList.classList.remove('active');
+                        saveTableData();
+                    });
+                });
+            });
+        } else {
+            const allSelectLists = document.querySelectorAll('ul.select-list');
+            allSelectLists.forEach(list => list.classList.remove('active'));
+        }
+    });
+
 
     // Автоматическое сохранение при изменении данных
     document.addEventListener('input', function(event) {
