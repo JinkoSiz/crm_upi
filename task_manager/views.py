@@ -799,6 +799,8 @@ def updateMark(request, pk):
 
             if chosen_department:
                 DepartmentMark.objects.create(mark=mark, department=chosen_department)
+            else:
+                DepartmentMark.objects.filter(mark=mark).delete()
 
             cache.delete('mark_list')
             return redirect('mark-list')
@@ -815,6 +817,9 @@ def deleteMark(request, pk):
     if request.method == 'POST':
         if mark.section_marks.exists() or mark.timelogs.exists():
             return redirect('mark-list')
+
+        # Удаляем связку с отделом, если она существует
+        DepartmentMark.objects.filter(mark=mark).delete()
 
         mark.delete()
         cache.delete('mark_list')  # Удаляем кэш после удаления
@@ -848,6 +853,12 @@ def create_task(request):
         if form.is_valid():
             task = form.save(commit=False)
             task.save()
+
+            # Если есть привязка отдела, создаем запись в DepartmentTaskType
+            department_id = form.cleaned_data['department']
+            if department_id:
+                DepartmentTaskType.objects.create(department=department_id, task=task)
+
             cache.delete('tasktype_list')  # Удаляем кэш после создания
             return redirect('task-list')
 
@@ -861,7 +872,16 @@ def update_task(request, pk):
     if request.method == 'POST':
         form = TaskTypeForm(request.POST, instance=task)
         if form.is_valid():
-            form.save()
+            task = form.save()
+            department_id = form.cleaned_data['department']
+
+            # Удаляем все старые записи для этой задачи
+            DepartmentTaskType.objects.filter(task=task).delete()
+
+            # Добавляем новую связь, если отдел указан
+            if department_id:
+                DepartmentTaskType.objects.create(task=task, department=department_id)
+
             cache.delete('tasktype_list')  # Удаляем кэш после обновления
             return redirect('task-list')
 
@@ -874,6 +894,9 @@ def delete_task(request, pk):
     if request.method == 'POST':
         if task.timelogs.exists():
             return redirect('task-list')
+
+        # Удаляем связку с отделом, если она существует
+        DepartmentTaskType.objects.filter(task=task).delete()
 
         task.delete()
         cache.delete('tasktype_list')  # Удаляем кэш после удаления
@@ -1206,7 +1229,7 @@ def report_create(request):
     projects = cache.get_or_set('projects_cache', Project.objects.select_related('status').all(), timeout=60 * 15)
     sections = cache.get_or_set('sections_cache', Section.objects.all(), timeout=60 * 15)
     marks = Mark.objects.filter(department_marks__department=request.user.department)
-    tasks = cache.get_or_set('tasks', TaskType.objects.all(), timeout=60 * 15)
+    tasks = TaskType.objects.filter(department_tasks__department=request.user.department)
 
     context = {
         'form': form,
@@ -1312,7 +1335,7 @@ def reports_view(request):
         'detailed_report_departments': detailed_report_departments,
         'overall_total_time_departments': overall_total_time_departments,
         'start_date': start_date,
-        'end_date': end_date,
+        'end_date': end_date
     }
     return render(request, 'task_manager/reports.html', context)
 
