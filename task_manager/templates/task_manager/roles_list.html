@@ -32,7 +32,6 @@ Roles List
                         <td>
                             <p>
                                 {{ role.title }}
-                                {{ role.user_count }}
                             </p>
                         </td>
                         <td>
@@ -164,7 +163,7 @@ Roles List
         var roleTitle = button.data('title');
 
         var modal = $(this);
-        //modal.find('.modal-title').text('Edit Role: ' + roleTitle);
+        modal.find('input[name="title"]').val(roleTitle);
 
         // Update the form action URL
         $('#editRoleForm').attr('action', '/roles/' + roleId + '/edit/');

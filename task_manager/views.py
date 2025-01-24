@@ -9,7 +9,7 @@ from openpyxl import Workbook
 from django.core.cache import cache
 from django.db import IntegrityError
 from django.db.models.functions import Concat, TruncDate
-from django.db.models import F, Value, Count
+from django.db.models import F, Value, Count, Subquery, OuterRef
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.http import HttpResponse, JsonResponse
@@ -265,7 +265,14 @@ def updateUser(request, pk):
 def deleteUser(request, pk):
     user = get_object_or_404(CustomUser, pk=pk)
     if request.method == 'POST':
-        user.delete()
+        # Устанавливаем статус "уволен"
+        user.status = 'fired'
+
+        # Удаляем данные для входа
+        user.username = f"fired_{user.id}"  # Уникальное имя пользователя для сохранения истории
+        user.set_password(None)  # Удаляем пароль, делая вход невозможным
+
+        user.save()
 
         # Очищаем кэш после удаления пользователя
         cache.delete('user_list')
@@ -749,7 +756,14 @@ def mark(request):
     marks = cache.get('mark_list')
     if not marks:
         # Если кэш пуст, загружаем данные из базы и кэшируем
-        marks = Mark.objects.annotate(timelog_count=Count('timelogs', distinct=True), section_count=Count('section_marks', distinct=True))
+        marks = Mark.objects.annotate(
+            department_id=Subquery(
+                DepartmentMark.objects.filter(mark=OuterRef('pk')).values('department')[:1]
+            )
+        ).annotate(
+            timelog_count=Count('timelogs', distinct=True),
+            section_count=Count('section_marks', distinct=True)
+        )
         cache.set('mark_list', marks, timeout=60 * 15)  # Кэшируем на 15 минут
 
     selected_marks = request.GET.getlist('mark')
@@ -837,7 +851,12 @@ def task_list(request):
     tasks = cache.get(cache_key)
 
     if not tasks:
-        tasks = TaskType.objects.annotate(timelog_count=Count('timelogs', distinct=True))
+        tasks = TaskType.objects.annotate(
+            department_id=Subquery(
+                DepartmentTaskType.objects.filter(task=OuterRef('pk')).values('department')[:1]
+            )
+        ).annotate(timelog_count=Count('timelogs', distinct=True))
+
         cache.set(cache_key, tasks, timeout=60 * 15)  # Кэшируем на 15 минут
 
     form = TaskTypeForm()
@@ -1496,7 +1515,7 @@ def final_report(request):
 
     report_data = timelogs.values('project__title', 'building__title', 'mark__title').annotate(
         total_hours=Sum('time'),
-        user_full_name=Concat(F('user__first_name'), Value(' '), F('user__last_name'))
+        user_full_name=Concat(F('user__first_name'), Value(' '), F('user__last_name'), Value(' '), F('user__middle_name'))
     )
 
     # Получаем месяцы до последнего и дни последнего месяца

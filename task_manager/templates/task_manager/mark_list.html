@@ -36,7 +36,7 @@
                         </td>
                         <td>
                             <div class="actions-button-wrapper">
-                                <button class="edit" data-toggle="modal" data-target="#editMarkModal" data-id="{{ mark.pk }}" data-title="{{ mark.title }}">
+                                <button class="edit" data-toggle="modal" data-target="#editMarkModal" data-id="{{ mark.pk }}" data-title="{{ mark.title }}" data-department-id="{{ mark.department_id }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
                                         <path d="M1.31128 14.1984C1.34932 13.8561 1.36833 13.685 1.42012 13.525C1.46606 13.3831 1.53098 13.2481 1.6131 13.1235C1.70566 12.9832 1.82742 12.8614 2.07094 12.6179L13.0031 1.68577C13.9174 0.77141 15.3999 0.771411 16.3143 1.68577C17.2286 2.60013 17.2286 4.0826 16.3142 4.99696L5.38213 15.9291C5.1386 16.1726 5.01684 16.2943 4.87648 16.3869C4.75194 16.469 4.61688 16.5339 4.47496 16.5799C4.315 16.6317 4.14385 16.6507 3.80157 16.6887L1 17L1.31128 14.1984Z" stroke="#16AEDC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                     </svg>
@@ -161,11 +161,13 @@
         var button = $(event.relatedTarget);
         var markId = button.data('id');
         var markTitle = button.data('title');
+        var departmentId = button.data('department-id');
 
         var modal = $(this);
         // modal.find('.modal-title').text('Edit Mark: ' + markTitle);
 
-
+        modal.find('input[name="title"]').val(markTitle); // Поле названия
+        modal.find('select[name="department"]').val(departmentId); // Поле отдела
 
         // Update the form action URL
         $('#editMarkForm').attr('action', '/marks/' + markId + '/edit/');
