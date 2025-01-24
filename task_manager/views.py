@@ -875,11 +875,12 @@ def update_task(request, pk):
             task = form.save()
             department_id = form.cleaned_data['department']
 
-            # Обновление привязки отдела
+            # Удаляем все старые записи для этой задачи
+            DepartmentTaskType.objects.filter(task=task).delete()
+
+            # Добавляем новую связь, если отдел указан
             if department_id:
                 DepartmentTaskType.objects.create(task=task, department=department_id)
-            else:
-                DepartmentTaskType.objects.filter(task=task).delete()
 
             cache.delete('tasktype_list')  # Удаляем кэш после обновления
             return redirect('task-list')
