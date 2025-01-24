@@ -182,7 +182,7 @@
 
         var modal = $(this);
 
-        // modal.find('.modal-title').text('Edit Section: ' + sectionTitle);
+        modal.find('input[name="title"]').val(sectionTitle);
 
         // Update the form action URL
         $('#editSectionForm').attr('action', '/sections/' + sectionId + '/edit/');

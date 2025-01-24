@@ -257,7 +257,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const users = [
         {% for user in users %}
         {
-            name: "{{ user.first_name }} {{ user.last_name }}",
+            name: "{{ user.first_name }} {{ user.last_name }} {{ user.middle_name }}",
             department: "{% if user.department %}{{ user.department.title }}{% else %}Not assigned{% endif %}",
             role: "{% if user.role %}{{ user.role.title }}{% else %}Not assigned{% endif %}",
             isAdmin: "{{ user.is_admin|yesno:'Admin,User' }}",

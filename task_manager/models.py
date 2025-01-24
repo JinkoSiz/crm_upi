@@ -119,7 +119,7 @@ class CustomUser(AbstractUser):
             self.user_permissions.set(permissions)
             self.is_staff = True
             self.is_superuser = True
-            if self.status != 'invited' and self.status != 'active':
+            if self.status != 'invited' and self.status != 'active' and self.status != 'fired':
                 self.status = 'draft'
         else:
             # Clear admin rights if is_admin is False

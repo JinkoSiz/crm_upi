@@ -163,7 +163,7 @@ Departments List
         var departmentTitle = button.data('title');
 
         var modal = $(this);
-        // modal.find('.modal-title').text('Edit Department: ' + departmentTitle);
+        modal.find('input[name="title"]').val(departmentTitle);
 
         // Update the form action URL
         $('#editDepartmentForm').attr('action', '/departments/' + departmentId + '/edit/');

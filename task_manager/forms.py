@@ -178,7 +178,8 @@ class MarkForm(forms.ModelForm):
         required=True,
         widget=forms.Select(attrs={
             'class': 'form-control'
-        })
+        }),
+        empty_label=None
     )
 
     class Meta:
@@ -223,7 +224,8 @@ class TaskTypeForm(forms.ModelForm):
         label="Отдел",
         queryset=Department.objects.all(),
         required=True,
-        widget=forms.Select(attrs={'class': 'form-control'})
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        empty_label=None
     )
 
     class Meta:
