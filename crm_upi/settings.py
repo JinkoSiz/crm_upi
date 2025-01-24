@@ -44,7 +44,7 @@ LOGIN_URL = '/login/'
 SECRET_KEY = f'{DJANGO_KEY}'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True  # Purely for deploy
+DEBUG = False  # Purely for deploy
 
 CSRF_TRUSTED_ORIGINS = ['https://crm-upi.vercel.app',
                         'https://crm-upi-jinkosizs-projects-4c8f9ac9.vercel.app',
@@ -229,7 +229,7 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
 def show_toolbar(request):
-    return True  # Всегда показывать toolbar (используйте только для отладки)
+    return False  # Всегда показывать toolbar (используйте только для отладки)
 
 
 DEBUG_TOOLBAR_CONFIG = {
