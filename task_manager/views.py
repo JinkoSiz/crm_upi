@@ -1515,7 +1515,7 @@ def final_report(request):
 
     report_data = timelogs.values('project__title', 'building__title', 'mark__title').annotate(
         total_hours=Sum('time'),
-        user_full_name=Concat(F('user__last_name'), Value(' '), F('user__first_name'), Value(' '), F('user__middle_name'))
+        user_full_name=Concat(F('user__first_name'), Value(' '), F('user__last_name'))
     )
 
     # Получаем месяцы до последнего и дни последнего месяца
