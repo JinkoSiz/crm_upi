@@ -565,19 +565,22 @@
                 project: row.querySelector('input[name="project"]').value,
                 projectText: row.querySelector('.select[data-cid="simple-select"] .select__current').innerText,
                 stage: row.querySelector('input[name="stage"]').value,
-                stageText: row.querySelector('.select[data-cid="simple-select"] .select__current[data-value="' + row.querySelector('input[name="stage"]').value + '"]').innerText,
+                stageText: row.querySelector('input[name="stage"]').value != '' ? row.querySelector('.select[data-cid="simple-select"] .select__current[data-value="' + row.querySelector('input[name="stage"]').value + '"]').innerText : 'Стадия',
                 section: row.querySelector('input[name="section"]').value,
-                sectionText: row.querySelector('.select[data-cid="simple-select"] .select__current[data-value="' + row.querySelector('input[name="section"]').value + '"]').innerText,
+                sectionText: row.querySelector('input[name="section"]').value != '' ? row.querySelector('.select[data-cid="simple-select"] .select__current[data-value="' + row.querySelector('input[name="section"]').value + '"]').innerText : 'Раздел',
                 building: row.querySelector('input[name="building"]').value,
-                buildingText: row.querySelector('.select[data-cid="simple-select"] .select__current[data-value="' + row.querySelector('input[name="building"]').value + '"]').innerText,
+                buildingText: row.querySelector('input[name="building"]').value != '' ? row.querySelector('.select[data-cid="simple-select"] .select__current[data-value="' + row.querySelector('input[name="building"]').value + '"]').innerText : 'ЗИС',
                 mark: row.querySelector('input[name="mark"]').value,
-                markText: row.querySelector('.select[data-cid="simple-select"] .select__current[data-value="' + row.querySelector('input[name="mark"]').value + '"]').innerText,
+                markText: row.querySelector('input[name="mark"]').value != '' ? row.querySelector('.select[data-cid="simple-select"] .select__current[data-value="' + row.querySelector('input[name="mark"]').value + '"]').innerText : 'Марка',
                 task: row.querySelector('input[name="task"]').value,
                 time: row.querySelector('input[name="time"]').value,
             };
+            console.log(rowData);
+            
             rows.push(rowData);
         });
         localStorage.setItem(localStorageKey, JSON.stringify(rows));
+        console.log(rows);
     }
 
     // Восстановление данных таблицы
@@ -676,7 +679,21 @@
         {% endfor %}
     ];
 
-    console.log(selectListItemArray);
+    function addListenerForLi(arr, selector, input) {
+
+        arr.forEach(item => {
+            const li = document.createElement('li');
+            li.classList.add('select-list-item');
+            li.innerText = item.title;
+            selector.appendChild(li);
+
+            li.addEventListener('click', () => {
+                input.value = item.title;
+                selector.classList.remove('active');
+                saveTableData();
+            });
+        });
+    }
 
     document.addEventListener('click', (e) => {
         if (e.target.closest('input[name="task"]')) {
@@ -686,22 +703,27 @@
 
             selectList.classList.add('active');
 
-            inputElement.addEventListener('input', (e) => {
-                selectList.innerHTML = '';
-                const filtered = selectListItemArray.filter(item => item.title.toLowerCase().includes(e.target.value));
-                selectList.innerHTML = '';
-                filtered.forEach(item => {
-                    const li = document.createElement('li');
-                    li.classList.add('select-list-item');
-                    li.innerText = item.title;
-                    selectList.appendChild(li);
+            selectList.innerHTML = '';
 
-                    li.addEventListener('click', () => {
-                        inputElement.value = item.title;
-                        selectList.classList.remove('active');
-                        saveTableData();
-                    });
-                });
+            addListenerForLi(selectListItemArray, selectList, inputElement);
+
+            if(inputElement.value != '') {
+
+                selectList.innerHTML = '';
+
+                const filtered = selectListItemArray.filter(item => item.title.toLowerCase().includes(e.target.value.toLowerCase()));
+
+                addListenerForLi(filtered, selectList, inputElement);
+            }
+
+            inputElement.addEventListener('input', (e) => {
+
+                selectList.innerHTML = '';
+
+                const filtered = selectListItemArray.filter(item => item.title.toLowerCase().includes(e.target.value.toLowerCase()));
+
+                addListenerForLi(filtered, selectList, inputElement);
+
             });
         } else {
             const allSelectLists = document.querySelectorAll('ul.select-list');
