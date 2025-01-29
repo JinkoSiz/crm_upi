@@ -575,12 +575,10 @@
                 task: row.querySelector('input[name="task"]').value,
                 time: row.querySelector('input[name="time"]').value,
             };
-            console.log(rowData);
             
             rows.push(rowData);
         });
         localStorage.setItem(localStorageKey, JSON.stringify(rows));
-        console.log(rows);
     }
 
     // Восстановление данных таблицы
