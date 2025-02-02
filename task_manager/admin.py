@@ -100,6 +100,14 @@ class TaskAdmin(admin.ModelAdmin):
     readonly_fields = ('created_at', 'updated_at')
 
 
+# Задачи - Отделы
+@admin.register(DepartmentTaskType)
+class DepartmentTaskTypeAdmin(admin.ModelAdmin):
+    list_display = ('department', 'task', 'created_at', 'updated_at')
+    search_fields = ('department', 'task')
+    readonly_fields = ('created_at', 'updated_at')
+
+
 # Тайм Логи
 @admin.register(Timelog)
 class TimelogAdmin(admin.ModelAdmin):

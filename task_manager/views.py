@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, timezone
 import re
 import dateparser
 import pytz
+from django.contrib.postgres.aggregates import ArrayAgg
 from django.utils.timezone import now
 from openpyxl.styles import PatternFill, Alignment
 from openpyxl.utils import get_column_letter
@@ -9,7 +10,7 @@ from openpyxl import Workbook
 from django.core.cache import cache
 from django.db import IntegrityError
 from django.db.models.functions import Concat, TruncDate
-from django.db.models import F, Value, Count
+from django.db.models import F, Value, Count, Subquery, OuterRef
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.http import HttpResponse, JsonResponse
@@ -265,7 +266,14 @@ def updateUser(request, pk):
 def deleteUser(request, pk):
     user = get_object_or_404(CustomUser, pk=pk)
     if request.method == 'POST':
-        user.delete()
+        # Устанавливаем статус "уволен"
+        user.status = 'fired'
+
+        # Удаляем данные для входа
+        user.username = f"fired_{user.id}"  # Уникальное имя пользователя для сохранения истории
+        user.set_password(None)  # Удаляем пароль, делая вход невозможным
+
+        user.save()
 
         # Очищаем кэш после удаления пользователя
         cache.delete('user_list')
@@ -300,7 +308,7 @@ def user_login(request):
                 print(user.status)
                 # Очищаем кэш после обновления пользователя
                 cache.delete('user_list')
-                
+
             return redirect('user-dashboard')  # Redirect to your desired page after login
         else:
             messages.error(request, 'Invalid username or password')
@@ -332,7 +340,7 @@ def send_invitation(request, pk):
         user.set_password(password)
         user.status = 'invited'
         user.save()
-        
+
         # Очищаем кэш после обновления пользователя
         cache.delete('user_list')
 
@@ -383,7 +391,9 @@ def project(request):
     # Кэшируем проекты и связанные данные
     projects = cache.get_or_set(
         'projects_cache',
-        Project.objects.select_related('status').prefetch_related('project_buildings__building', 'project_sections__section').annotate(timelog_count=Count('timelogs')),
+        Project.objects.select_related('status').prefetch_related('project_buildings__building',
+                                                                  'project_sections__section').annotate(
+            timelog_count=Count('timelogs')),
         timeout=60 * 15  # Кэш на 15 минут
     )
 
@@ -513,19 +523,43 @@ def updateProject(request, pk):
         project = get_object_or_404(Project, pk=pk)
 
         with transaction.atomic():
-            # Обновляем название и статус проекта
             project.title = request.POST['title']
             project.status_id = request.POST['status']
             project.save()
 
-            # Обработка зданий
-            buildings = request.POST.getlist('buildings[]')
-            ProjectBuilding.objects.filter(project=project).delete()
-            for building_title in buildings:
-                building, created = Building.objects.get_or_create(title=building_title)
-                ProjectBuilding.objects.create(project=project, building=building)
+            buildings_ids = request.POST.getlist('buildings_id[]')
+            buildings_titles = request.POST.getlist('buildings[]')
+            print(f"buildings_ids: {buildings_ids}")
+            print(f"buildings_titles: {buildings_titles}")
 
-            # Удаление зданий
+            n_ids = len(buildings_ids)
+            for i, building_title in enumerate(buildings_titles):
+                if i < n_ids and buildings_ids[i]:
+                    building_id = buildings_ids[i]
+                    if building_id:
+                        try:
+                            building = Building.objects.get(pk=building_id)
+                            print(f"Обновляем здание {building_id} с новым названием '{building_title}'")
+                            building.title = building_title
+                            building.save()
+                        except Building.DoesNotExist:
+                            print(f"Здание с id {building_id} не найдено, создаём новое с названием '{building_title}'")
+                            building, created = Building.objects.get_or_create(title=building_title)
+                    else:
+                        print(
+                            f"Передан некорректный UUID {building_id}, создаём новое здание с названием '{building_title}'")
+                        building, created = Building.objects.get_or_create(title=building_title)
+                else:
+                    print(f"Нет id для здания с названием '{building_title}', создаём новое")
+                    building, created = Building.objects.get_or_create(title=building_title)
+
+                ProjectBuilding.objects.update_or_create(
+                    project=project,
+                    building=building,
+                    defaults={}
+                )
+
+            # Если требуется удалять связи с удаленными зданиями:
             removed_buildings = request.POST.getlist('removed_buildings[]')
             for building_id in removed_buildings:
                 try:
@@ -667,7 +701,8 @@ def building_delete(request, building_id):
 # Разделы
 @admin_required(login_url='login')
 def section(request):
-    sections = Section.objects.annotate(timelog_count=Count('timelogs', distinct=True), project_count=Count('project_sections', distinct=True))
+    sections = Section.objects.annotate(timelog_count=Count('timelogs', distinct=True),
+                                        project_count=Count('project_sections', distinct=True))
     available_marks = Mark.objects.all()  # Получаем все доступные марки
 
     selected_sections = request.GET.getlist('section')
@@ -749,7 +784,19 @@ def mark(request):
     marks = cache.get('mark_list')
     if not marks:
         # Если кэш пуст, загружаем данные из базы и кэшируем
-        marks = Mark.objects.annotate(timelog_count=Count('timelogs', distinct=True), section_count=Count('section_marks', distinct=True))
+        marks = Mark.objects.annotate(
+            department_id=Subquery(
+                DepartmentMark.objects.filter(mark=OuterRef('pk')).values('department')[:1]
+            )
+        ).annotate(
+            departments=ArrayAgg(
+                'department_marks__department__title',
+                distinct=True,
+                filter=Q(department_marks__department__title__isnull=False)
+            ),
+            timelog_count=Count('timelogs', distinct=True),
+            section_count=Count('section_marks', distinct=True)
+        )
         cache.set('mark_list', marks, timeout=60 * 15)  # Кэшируем на 15 минут
 
     selected_marks = request.GET.getlist('mark')
@@ -757,6 +804,18 @@ def mark(request):
     if selected_marks:
         selected_marks = selected_marks[0].split(',')
         marks = marks.filter(title__in=selected_marks)
+
+    # Фильтрация по названию отдела
+    selected_departments = request.GET.getlist('department')
+    # print(selected_departments)
+    if selected_departments:
+        if len(selected_departments) == 1 and ',' in selected_departments[0]:
+            selected_departments = selected_departments[0].split(',')
+        # Фильтрация через связь DepartmentMark -> Department -> title
+        marks = marks.filter(department_marks__department__title__in=selected_departments)
+
+    # Из-за соединения по связанной таблице могут возникать дубликаты – оставляем только уникальные объекты
+    # marks = marks.distinct()
 
     form = MarkForm()
     return render(request, 'task_manager/mark_list.html', {'marks': marks, 'form': form})
@@ -799,6 +858,8 @@ def updateMark(request, pk):
 
             if chosen_department:
                 DepartmentMark.objects.create(mark=mark, department=chosen_department)
+            else:
+                DepartmentMark.objects.filter(mark=mark).delete()
 
             cache.delete('mark_list')
             return redirect('mark-list')
@@ -816,6 +877,9 @@ def deleteMark(request, pk):
         if mark.section_marks.exists() or mark.timelogs.exists():
             return redirect('mark-list')
 
+        # Удаляем связку с отделом, если она существует
+        DepartmentMark.objects.filter(mark=mark).delete()
+
         mark.delete()
         cache.delete('mark_list')  # Удаляем кэш после удаления
         return redirect('mark-list')
@@ -832,8 +896,35 @@ def task_list(request):
     tasks = cache.get(cache_key)
 
     if not tasks:
-        tasks = TaskType.objects.annotate(timelog_count=Count('timelogs', distinct=True))
-        cache.set(cache_key, tasks, timeout=60 * 15)  # Кэшируем на 15 минут
+        tasks = TaskType.objects.annotate(
+            department_id=Subquery(
+                DepartmentTaskType.objects.filter(task=OuterRef('pk')).values('department')[:1]
+            )
+        ).annotate(
+            timelog_count=Count('timelogs', distinct=True),
+            departments=ArrayAgg(
+                'department_tasks__department__title',
+                distinct=True,
+                filter=Q(department_tasks__department__title__isnull=False)
+            ),
+        )
+
+    selected_tasks = request.GET.getlist('tasks')
+
+    if selected_tasks:
+        selected_tasks = selected_tasks[0].split(',')
+        tasks = tasks.filter(title__in=selected_tasks)
+
+    # Фильтрация по названию отдела
+    selected_departments = request.GET.getlist('department')
+    # print(selected_departments)
+    if selected_departments:
+        if len(selected_departments) == 1 and ',' in selected_departments[0]:
+            selected_departments = selected_departments[0].split(',')
+        # Фильтрация через связь DepartmentTaskType -> Department -> title
+        tasks = tasks.filter(department_tasks__department__title__in=selected_departments)
+
+    cache.set(cache_key, tasks, timeout=60 * 15)  # Кэшируем на 15 минут
 
     form = TaskTypeForm()
 
@@ -848,6 +939,12 @@ def create_task(request):
         if form.is_valid():
             task = form.save(commit=False)
             task.save()
+
+            # Если есть привязка отдела, создаем запись в DepartmentTaskType
+            department_id = form.cleaned_data['department']
+            if department_id:
+                DepartmentTaskType.objects.create(department=department_id, task=task)
+
             cache.delete('tasktype_list')  # Удаляем кэш после создания
             return redirect('task-list')
 
@@ -861,7 +958,16 @@ def update_task(request, pk):
     if request.method == 'POST':
         form = TaskTypeForm(request.POST, instance=task)
         if form.is_valid():
-            form.save()
+            task = form.save()
+            department_id = form.cleaned_data['department']
+
+            # Удаляем все старые записи для этой задачи
+            DepartmentTaskType.objects.filter(task=task).delete()
+
+            # Добавляем новую связь, если отдел указан
+            if department_id:
+                DepartmentTaskType.objects.create(task=task, department=department_id)
+
             cache.delete('tasktype_list')  # Удаляем кэш после обновления
             return redirect('task-list')
 
@@ -874,6 +980,9 @@ def delete_task(request, pk):
     if request.method == 'POST':
         if task.timelogs.exists():
             return redirect('task-list')
+
+        # Удаляем связку с отделом, если она существует
+        DepartmentTaskType.objects.filter(task=task).delete()
 
         task.delete()
         cache.delete('tasktype_list')  # Удаляем кэш после удаления
@@ -1206,7 +1315,7 @@ def report_create(request):
     projects = cache.get_or_set('projects_cache', Project.objects.select_related('status').all(), timeout=60 * 15)
     sections = cache.get_or_set('sections_cache', Section.objects.all(), timeout=60 * 15)
     marks = Mark.objects.filter(department_marks__department=request.user.department)
-    tasks = cache.get_or_set('tasks', TaskType.objects.all(), timeout=60 * 15)
+    tasks = TaskType.objects.filter(department_tasks__department=request.user.department)
 
     context = {
         'form': form,
@@ -1312,7 +1421,7 @@ def reports_view(request):
         'detailed_report_departments': detailed_report_departments,
         'overall_total_time_departments': overall_total_time_departments,
         'start_date': start_date,
-        'end_date': end_date,
+        'end_date': end_date
     }
     return render(request, 'task_manager/reports.html', context)
 

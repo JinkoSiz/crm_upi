@@ -119,7 +119,7 @@ class CustomUser(AbstractUser):
             self.user_permissions.set(permissions)
             self.is_staff = True
             self.is_superuser = True
-            if self.status != 'invited' and self.status != 'active':
+            if self.status != 'invited' and self.status != 'active' and self.status != 'fired':
                 self.status = 'draft'
         else:
             # Clear admin rights if is_admin is False
@@ -205,6 +205,17 @@ class DepartmentMark(models.Model):
 
     class Meta:
         unique_together = ('department', 'mark')
+
+
+class DepartmentTaskType(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='department_tasks')
+    task = models.ForeignKey(TaskType, on_delete=models.CASCADE, related_name='department_tasks')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('department', 'task')
 
 
 class Timelog(models.Model):

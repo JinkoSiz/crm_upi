@@ -190,7 +190,7 @@
     const logs = [
         {% for log in timelogs %}
         {
-            name: "{{ log.user }}",
+            name: "{{ log.user.last_name }} {{ log.user.first_name }} {{ log.user.middle_name }}",
             department: "{{ log.department.title }}",
             date: "{{ log.date|date:'Y-m-d' }}",
             project: "{{ log.project }}",
