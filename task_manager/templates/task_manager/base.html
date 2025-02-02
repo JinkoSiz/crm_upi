@@ -865,11 +865,36 @@
                 const hiddenInput = select.parentNode.querySelector('.hidden-input');
                 if (hiddenInput) {
                     hiddenInput.value = selectItem.getAttribute('data-value');
-                    saveTableData();// Сохранение данных строки в таблице
+                    saveTableData();
                 }
 
                 select.classList.remove('is-active');
 
+                if (currentText.dataset.cid === 'events-item') {
+                    const chosenValue = selectItem.innerText.trim();
+                    const specialValues = ['Выходной', 'Отпуск', 'Отгул', 'Больничный'];
+
+                    if (specialValues.includes(chosenValue)) {
+                        const bodyItem = select.closest('.body-item');
+                        bodyItem.querySelectorAll('input').forEach(inp => {
+                            if (inp.name === 'time') {
+                                inp.value = 0;
+                            } else if (inp !== hiddenInput) {
+                                inp.value = '-';
+                            }
+                        });
+
+                        // Меняем текст в остальных .select__current (кроме events-item) на "-"
+                        bodyItem.querySelectorAll('.select .select__current:not([data-cid="events-item"])')
+                                .forEach(sCur => {
+                                    sCur.innerText = '-';
+                                    sCur.dataset.value = '-';
+                                });
+                        
+                    }
+                }
+                saveTableData();
+                calcInputsValues();
                 inputsChecker();
             }
         });
