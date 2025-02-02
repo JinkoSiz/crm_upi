@@ -46,7 +46,11 @@
                         </td>
                         <td>
                             <p>
-                                HUI
+                                {% if mark.departments %}
+                                    {{ mark.departments|join:", " }}
+                                {% else %}
+
+                                {% endif %}
                             </p>
                         </td>
                         <td>

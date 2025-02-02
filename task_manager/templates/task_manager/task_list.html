@@ -45,7 +45,11 @@ Tasks List
                             </p>
                         </td>
                         <td>
-                            S
+                            {% if task.departments %}
+                                {{ task.departments|join:", " }}
+                            {% else %}
+
+                            {% endif %}
                         </td>
                         <td>
                             <div class="actions-button-wrapper">
