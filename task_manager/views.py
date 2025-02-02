@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, timezone
 import re
 import dateparser
 import pytz
+from django.contrib.postgres.aggregates import ArrayAgg
 from django.utils.timezone import now
 from openpyxl.styles import PatternFill, Alignment
 from openpyxl.utils import get_column_letter
@@ -307,7 +308,7 @@ def user_login(request):
                 print(user.status)
                 # Очищаем кэш после обновления пользователя
                 cache.delete('user_list')
-                
+
             return redirect('user-dashboard')  # Redirect to your desired page after login
         else:
             messages.error(request, 'Invalid username or password')
@@ -339,7 +340,7 @@ def send_invitation(request, pk):
         user.set_password(password)
         user.status = 'invited'
         user.save()
-        
+
         # Очищаем кэш после обновления пользователя
         cache.delete('user_list')
 
@@ -390,7 +391,9 @@ def project(request):
     # Кэшируем проекты и связанные данные
     projects = cache.get_or_set(
         'projects_cache',
-        Project.objects.select_related('status').prefetch_related('project_buildings__building', 'project_sections__section').annotate(timelog_count=Count('timelogs')),
+        Project.objects.select_related('status').prefetch_related('project_buildings__building',
+                                                                  'project_sections__section').annotate(
+            timelog_count=Count('timelogs')),
         timeout=60 * 15  # Кэш на 15 минут
     )
 
@@ -520,19 +523,43 @@ def updateProject(request, pk):
         project = get_object_or_404(Project, pk=pk)
 
         with transaction.atomic():
-            # Обновляем название и статус проекта
             project.title = request.POST['title']
             project.status_id = request.POST['status']
             project.save()
 
-            # Обработка зданий
-            buildings = request.POST.getlist('buildings[]')
-            ProjectBuilding.objects.filter(project=project).delete()
-            for building_title in buildings:
-                building, created = Building.objects.get_or_create(title=building_title)
-                ProjectBuilding.objects.create(project=project, building=building)
+            buildings_ids = request.POST.getlist('buildings_id[]')
+            buildings_titles = request.POST.getlist('buildings[]')
+            print(f"buildings_ids: {buildings_ids}")
+            print(f"buildings_titles: {buildings_titles}")
 
-            # Удаление зданий
+            n_ids = len(buildings_ids)
+            for i, building_title in enumerate(buildings_titles):
+                if i < n_ids and buildings_ids[i]:
+                    building_id = buildings_ids[i]
+                    if building_id:
+                        try:
+                            building = Building.objects.get(pk=building_id)
+                            print(f"Обновляем здание {building_id} с новым названием '{building_title}'")
+                            building.title = building_title
+                            building.save()
+                        except Building.DoesNotExist:
+                            print(f"Здание с id {building_id} не найдено, создаём новое с названием '{building_title}'")
+                            building, created = Building.objects.get_or_create(title=building_title)
+                    else:
+                        print(
+                            f"Передан некорректный UUID {building_id}, создаём новое здание с названием '{building_title}'")
+                        building, created = Building.objects.get_or_create(title=building_title)
+                else:
+                    print(f"Нет id для здания с названием '{building_title}', создаём новое")
+                    building, created = Building.objects.get_or_create(title=building_title)
+
+                ProjectBuilding.objects.update_or_create(
+                    project=project,
+                    building=building,
+                    defaults={}
+                )
+
+            # Если требуется удалять связи с удаленными зданиями:
             removed_buildings = request.POST.getlist('removed_buildings[]')
             for building_id in removed_buildings:
                 try:
@@ -674,7 +701,8 @@ def building_delete(request, building_id):
 # Разделы
 @admin_required(login_url='login')
 def section(request):
-    sections = Section.objects.annotate(timelog_count=Count('timelogs', distinct=True), project_count=Count('project_sections', distinct=True))
+    sections = Section.objects.annotate(timelog_count=Count('timelogs', distinct=True),
+                                        project_count=Count('project_sections', distinct=True))
     available_marks = Mark.objects.all()  # Получаем все доступные марки
 
     selected_sections = request.GET.getlist('section')
@@ -761,6 +789,11 @@ def mark(request):
                 DepartmentMark.objects.filter(mark=OuterRef('pk')).values('department')[:1]
             )
         ).annotate(
+            departments=ArrayAgg(
+                'department_marks__department__title',
+                distinct=True,
+                filter=Q(department_marks__department__title__isnull=False)
+            ),
             timelog_count=Count('timelogs', distinct=True),
             section_count=Count('section_marks', distinct=True)
         )
@@ -771,6 +804,18 @@ def mark(request):
     if selected_marks:
         selected_marks = selected_marks[0].split(',')
         marks = marks.filter(title__in=selected_marks)
+
+    # Фильтрация по названию отдела
+    selected_departments = request.GET.getlist('department')
+    # print(selected_departments)
+    if selected_departments:
+        if len(selected_departments) == 1 and ',' in selected_departments[0]:
+            selected_departments = selected_departments[0].split(',')
+        # Фильтрация через связь DepartmentMark -> Department -> title
+        marks = marks.filter(department_marks__department__title__in=selected_departments)
+
+    # Из-за соединения по связанной таблице могут возникать дубликаты – оставляем только уникальные объекты
+    # marks = marks.distinct()
 
     form = MarkForm()
     return render(request, 'task_manager/mark_list.html', {'marks': marks, 'form': form})
@@ -855,9 +900,31 @@ def task_list(request):
             department_id=Subquery(
                 DepartmentTaskType.objects.filter(task=OuterRef('pk')).values('department')[:1]
             )
-        ).annotate(timelog_count=Count('timelogs', distinct=True))
+        ).annotate(
+            timelog_count=Count('timelogs', distinct=True),
+            departments=ArrayAgg(
+                'department_tasks__department__title',
+                distinct=True,
+                filter=Q(department_tasks__department__title__isnull=False)
+            ),
+        )
 
-        cache.set(cache_key, tasks, timeout=60 * 15)  # Кэшируем на 15 минут
+    selected_tasks = request.GET.getlist('tasks')
+
+    if selected_tasks:
+        selected_tasks = selected_tasks[0].split(',')
+        tasks = tasks.filter(title__in=selected_tasks)
+
+    # Фильтрация по названию отдела
+    selected_departments = request.GET.getlist('department')
+    # print(selected_departments)
+    if selected_departments:
+        if len(selected_departments) == 1 and ',' in selected_departments[0]:
+            selected_departments = selected_departments[0].split(',')
+        # Фильтрация через связь DepartmentTaskType -> Department -> title
+        tasks = tasks.filter(department_tasks__department__title__in=selected_departments)
+
+    cache.set(cache_key, tasks, timeout=60 * 15)  # Кэшируем на 15 минут
 
     form = TaskTypeForm()
 

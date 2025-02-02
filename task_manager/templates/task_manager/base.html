@@ -473,7 +473,7 @@
         <button class="reset-filters" type="reset">Сбросить</button>
     </div>
     <!-- Задача -->
-    <div class="fiter-modal-search" data-cid="task">
+    <div class="fiter-modal-search" data-cid="tasks">
         <div class="search-block">
             <input type="text" id="search">
             <input type="text" id="searchHidden" hidden>
@@ -968,7 +968,7 @@
             const backToList = block.querySelector('.search-list span');
             const dataCid = block.dataset.cid;
             const selectedItems = [];
-            
+
 
             searchInput.addEventListener('click', () => {
                 searchList.classList.add('active');
@@ -1006,7 +1006,7 @@
                     const listItem = event.target;
 
                     if (!isAlreadySelected) {
-                        
+
                         // Преобразуем выбранный текст в соответствующие сокращения
                         if (selectedValue === 'РД') selectedItems.push('RD');
                         else if (selectedValue === 'ОТР') selectedItems.push('OTR');
@@ -1079,11 +1079,11 @@
                     });
                     updatePlaceholder(findeItems, selectedItems);
                 }
-                
-                
+
+
             }
 
-            
+
             checkerApply();
 
             // const applyButton = block.querySelector('.apply-filters');
