@@ -45,7 +45,7 @@
                                 <div class="row-item">   
                                     <input type="hidden" name="project" class="hidden-input" value="{{ timelog.project.id }}">
                                     <div class="select" data-cid="simple-select" style="width: 220px;">
-                                        <span class="select__current" data-value="{{ timelog.project.id }}">{{ timelog.project.title }}</span>
+                                        <span class="select__current" data-value="{{ timelog.project.id }}" data-cid="events-item">{{ timelog.project.title }}</span>
                                         <div class="select__body">
                                             {% for project in projects %}
                                             <div class="select__item" data-value="{{ project.id }}">{{ project.title }}</div>
@@ -373,7 +373,9 @@
         }
     }
 
+
     function inputsChecker() {
+
         let hasError = false;
 
         document.querySelectorAll('.body-item .row-item input').forEach(input => {
@@ -402,6 +404,25 @@
             }
         });
 
+        if (!hasError) {
+        const rows = document.querySelectorAll('.body-item');
+        // Проверяем, что строк больше одной
+        if (rows.length > 1) {
+            const specialValues = ['Выходной','Отпуск','Отгул','Больничный'];
+
+            // Смотрим, есть ли хотя бы в одной строке значение из specialValues
+            const hasSpecialInAnyRow = Array.from(rows).some(row => {
+                const eventSelect = row.querySelector('.select__current[data-cid="events-item"]');
+                if (!eventSelect) return false; 
+                return specialValues.includes(eventSelect.innerText.trim());
+            });
+
+            if (hasSpecialInAnyRow) {
+                hasError = true;
+            }
+        }
+    }
+
         sendReportBtn.disabled = hasError;
     }
 
@@ -415,7 +436,7 @@
             <div class="row-item">
                 <input type="hidden" name="project" class="hidden-input">
                 <div style="width: 220px;" class="select" data-cid="simple-select">
-                    <span class="select__current" data-value="">Объект</span>
+                    <span class="select__current" data-value="" data-cid="events-item">Объект</span>
                     <div class="select__body">
                         {% for project in projects %}
                         <div class="select__item" data-value="{{ project.id }}">{{ project.title }}</div>
@@ -575,7 +596,6 @@
                 task: row.querySelector('input[name="task"]').value,
                 time: row.querySelector('input[name="time"]').value,
             };
-            
             rows.push(rowData);
         });
         localStorage.setItem(localStorageKey, JSON.stringify(rows));
@@ -595,7 +615,7 @@
                 <div class="row-item">
                     <input type="hidden" name="project" class="hidden-input" value="${rowData.project}">
                     <div class="select" data-cid="simple-select" style="width: 220px;">
-                        <span class="select__current" data-value="${rowData.project}">${rowData.projectText}</span>
+                        <span class="select__current" data-value="${rowData.project}" data-cid="events-item">${rowData.projectText}</span>
                         <div class="select__body">
                             {% for project in projects %}
                             <div class="select__item" data-value="{{ project.id }}">{{ project.title }}</div>
