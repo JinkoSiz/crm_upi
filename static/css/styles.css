@@ -99,6 +99,7 @@ input.error {
 
 body {
     background: var(--Background);
+    padding: 0 0 86px 0;
 }
 
 button:active,

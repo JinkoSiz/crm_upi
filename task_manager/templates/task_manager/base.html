@@ -473,7 +473,7 @@
         <button class="reset-filters" type="reset">Сбросить</button>
     </div>
     <!-- Задача -->
-    <div class="fiter-modal-search" data-cid="task">
+    <div class="fiter-modal-search" data-cid="tasks">
         <div class="search-block">
             <input type="text" id="search">
             <input type="text" id="searchHidden" hidden>
@@ -865,11 +865,36 @@
                 const hiddenInput = select.parentNode.querySelector('.hidden-input');
                 if (hiddenInput) {
                     hiddenInput.value = selectItem.getAttribute('data-value');
-                    saveTableData();// Сохранение данных строки в таблице
+                    saveTableData();
                 }
 
                 select.classList.remove('is-active');
 
+                if (currentText.dataset.cid === 'events-item') {
+                    const chosenValue = selectItem.innerText.trim();
+                    const specialValues = ['Выходной', 'Отпуск', 'Отгул', 'Больничный'];
+
+                    if (specialValues.includes(chosenValue)) {
+                        const bodyItem = select.closest('.body-item');
+                        bodyItem.querySelectorAll('input').forEach(inp => {
+                            if (inp.name === 'time') {
+                                inp.value = 0;
+                            } else if (inp !== hiddenInput) {
+                                inp.value = '-';
+                            }
+                        });
+
+                        // Меняем текст в остальных .select__current (кроме events-item) на "-"
+                        bodyItem.querySelectorAll('.select .select__current:not([data-cid="events-item"])')
+                                .forEach(sCur => {
+                                    sCur.innerText = '-';
+                                    sCur.dataset.value = '-';
+                                });
+                        
+                    }
+                }
+                saveTableData();
+                calcInputsValues();
                 inputsChecker();
             }
         });
@@ -943,7 +968,7 @@
             const backToList = block.querySelector('.search-list span');
             const dataCid = block.dataset.cid;
             const selectedItems = [];
-            
+
 
             searchInput.addEventListener('click', () => {
                 searchList.classList.add('active');
@@ -981,7 +1006,7 @@
                     const listItem = event.target;
 
                     if (!isAlreadySelected) {
-                        
+
                         // Преобразуем выбранный текст в соответствующие сокращения
                         if (selectedValue === 'РД') selectedItems.push('RD');
                         else if (selectedValue === 'ОТР') selectedItems.push('OTR');
@@ -1054,11 +1079,11 @@
                     });
                     updatePlaceholder(findeItems, selectedItems);
                 }
-                
-                
+
+
             }
 
-            
+
             checkerApply();
 
             // const applyButton = block.querySelector('.apply-filters');
