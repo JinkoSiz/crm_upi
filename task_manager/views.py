@@ -1540,12 +1540,61 @@ def get_days_in_month(month_date):
     return [month_date + timedelta(days=i) for i in range((end_of_month - month_date).days + 1)]
 
 
+def get_months_in_period(start_date, end_date):
+    """
+    Возвращает список объектов date, представляющих первый день каждого месяца,
+    в котором попадает период от start_date до end_date.
+    """
+    months = []
+    current_month = start_date.replace(day=1)
+    while current_month <= end_date:
+        months.append(current_month)
+        if current_month.month == 12:
+            current_month = current_month.replace(year=current_month.year + 1, month=1)
+        else:
+            current_month = current_month.replace(month=current_month.month + 1)
+    return months
+
+
+def get_days_in_period(start_date, end_date):
+    """
+    Возвращает словарь, где для каждого месяца (ключ в виде 'YYYY-MM')
+    указаны:
+      - 'month_name': название месяца (например, "February" или "Февраль", если настроена локаль)
+      - 'days': список дат (объектов date), попадающих в выбранный период.
+    Если период начинается не с первого дня месяца или заканчивается раньше конца месяца,
+    то в список попадут только дни в рамках периода.
+    """
+    days_by_month = {}
+    months = get_months_in_period(start_date, end_date)
+    for month_start in months:
+        # Определяем последний день месяца (при помощи трюка с timedelta)
+        next_month = (month_start.replace(day=28) + timedelta(days=4)).replace(day=1)
+        month_end = next_month - timedelta(days=1)
+        # Границы в данном месяце: с первого дня месяца, но корректируем их согласно периоду
+        effective_start = max(start_date, month_start)
+        effective_end = min(end_date, month_end)
+        # Формируем список дней от effective_start до effective_end включительно
+        days = []
+        day = effective_start
+        while day <= effective_end:
+            days.append(day)
+            day += timedelta(days=1)
+        month_key = month_start.strftime('%Y-%m')
+        days_by_month[month_key] = {
+            'month_name': month_start.strftime('%B'),
+            'days': days,
+        }
+    return days_by_month
+
+
 @admin_required(login_url='login')
 def final_report(request):
+    # Получаем даты начала и конца из GET-параметров (если не переданы — используется текущий месяц/день)
     start_date = request.GET.get('start_date', timezone.now().replace(day=1).date())
     end_date = request.GET.get('end_date', timezone.now().date())
 
-    # Преобразуем даты с использованием новой функции
+    # Преобразуем даты, если они переданы в виде строки
     start_date = parse_custom_date(start_date) if isinstance(start_date, str) else start_date
     end_date = parse_custom_date(end_date) if isinstance(end_date, str) else end_date
 
@@ -1576,49 +1625,31 @@ def final_report(request):
         timelogs = timelogs.filter(mark__title__in=selected_marks)
 
     # Используем select_related для оптимизации запросов
-    timelogs = timelogs.select_related(
-        'project', 'building', 'mark', 'user'
-    )
+    timelogs = timelogs.select_related('project', 'building', 'mark', 'user')
 
-    report_data = timelogs.values('project__title', 'building__title', 'mark__title').annotate(
+    # Если необходимо, можно использовать аннотации (например, суммирование часов)
+    # В данном примере в report_data также передаём дату, чтобы в шаблоне можно было сопоставлять лог с конкретным днём.
+    report_data = timelogs.values(
+        'project__title',
+        'building__title',
+        'mark__title',
+        'date'
+    ).annotate(
         total_hours=Sum('time'),
         user_full_name=Concat(F('user__first_name'), Value(' '), F('user__last_name'))
     )
 
-    # Получаем месяцы до последнего и дни последнего месяца
-    months_in_range = get_months_in_range(start_date, end_date)
-    days_in_last_month = get_days_in_month(end_date.replace(day=1))
-
-    # Группировка данных по месяцам и дням
-    monthly_hours = {}
-    grouped_hours = {}
-    last_month_key = end_date.strftime('%Y-%m')
-
-    for log in timelogs:
-        key_str = f"{log.project.title}|{log.building.title}|{log.mark.title}|{log.user.first_name} {log.user.last_name}"
-        month_key = log.date.strftime('%Y-%m')
-        day_key = log.date.strftime('%Y-%m-%d')
-
-        if month_key != last_month_key:
-            # Группируем по месяцам, кроме последнего
-            if key_str not in grouped_hours:
-                grouped_hours[key_str] = {}
-            grouped_hours[key_str][month_key] = grouped_hours[key_str].get(month_key, 0) + log.time
-        else:
-            # Последний месяц по дням
-            if key_str not in monthly_hours:
-                monthly_hours[key_str] = {}
-            monthly_hours[key_str][day_key] = log.time
+    # Вместо группировки по месяцам/дням формируем структуру с днями, попадающими именно в выбранный период
+    days_by_period = get_days_in_period(start_date, end_date)
 
     context = {
         'report_data': report_data,
-        'months_in_range': months_in_range,
-        'days_in_last_month': days_in_last_month,
-        'grouped_hours': grouped_hours,
-        'monthly_hours': monthly_hours,
+        'days_by_period': days_by_period,  # Структура: для каждого месяца название и дни в пределах периода
         'start_date': start_date,
         'end_date': end_date,
     }
+
+    print(days_by_period)
 
     return render(request, 'task_manager/final_report.html', context)
 
