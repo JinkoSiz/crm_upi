@@ -495,6 +495,11 @@
         <button class="reset-filters" type="reset">Сбросить</button>
     </div>
 </div>
+<div id="scrollToTop">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M10.7071 2.29289C11.0976 2.68342 11.0976 3.31658 10.7071 3.70711L5.41421 9H17C17.5523 9 18 9.44772 18 10C18 10.5523 17.5523 11 17 11H5.41421L10.7071 16.2929C11.0976 16.6834 11.0976 17.3166 10.7071 17.7071C10.3166 18.0976 9.68342 18.0976 9.29289 17.7071L2.29289 10.7071C1.90237 10.3166 1.90237 9.68342 2.29289 9.29289L9.29289 2.29289C9.68342 1.90237 10.3166 1.90237 10.7071 2.29289Z" fill="#202020"/>
+    </svg>
+</div>
 </body>
 <script>
 
@@ -1100,6 +1105,38 @@
 
             window.location.href = `${window.location.pathname}?${form.toString()}`;
         }
+
+        const btnScrollToTop = document.querySelector('#scrollToTop');
+        const tableHeader = document.querySelector('.table .table__header');
+        const tableWrapper = document.querySelector('.table-wrapper');
+        const usersTable = document.querySelector('#usersTable');
+        
+
+        let scrollPosition = window.scrollY;
+        let scrollCounter = 0;
+
+        btnScrollToTop.addEventListener('click', () => {
+            window.scrollTo(pageYOffset, 0);
+        });
+
+        usersTable ? scrollCounter = 320 : scrollCounter = 455;
+
+        window.addEventListener('scroll', (e) => {
+            scrollPosition = window.scrollY;
+            //console.log(scrollPosition);
+            if (scrollPosition >= scrollCounter) {
+                tableWrapper.style.paddingTop = '58px';
+                tableHeader.classList.add('scrolled');
+                btnScrollToTop.classList.add('active');
+
+            } 
+            else {
+                tableWrapper.style.paddingTop = '0px';
+                tableHeader.classList.remove('scrolled');
+                btnScrollToTop.classList.remove('active');
+
+            }
+        });
 
     });
 
