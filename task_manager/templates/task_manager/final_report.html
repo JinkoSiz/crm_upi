@@ -96,39 +96,39 @@
                 <div class="table__scroll">
                     <div class="table">
                         <div class="table__header">
+                            {% for month_key, month_data in days_by_period.items %}
                             <div class="table__header__wrapper">
-                                <div class="table__header__title">Февраль</div>
+                                <div class="table__header__title">{{ month_data.month_name }}</div>
                                 <div class="table__row" style="height: 34px;">
-                                    {% for month in months_in_range %}
-                                    <div class="table__item" class="rotated" style="width: 30px; height: 34px; padding: 5px 10px;"><p>{{ month|date:"F" }}</p></div>
-                                    {% endfor %}
-                                        <!-- Дни последнего месяца -->
-                                    {% for date in days_in_last_month %}
-                                        <div class="table__item" style="width: 30px; height: 34px; padding: 5px 10px;"><p>{{ date|date:"d" }}</p></div>
+                                    {% for day in month_data.days %}
+                                        <div class="table__item" style="width: 30px; height: 34px; padding: 5px 10px;">
+                                            <p>{{ day|date:"d" }}</p>
+                                        </div>
                                     {% endfor %}
                                 </div>
                             </div>
+                            {% endfor %}
                         </div>
                         <div class="table__body">
                             {% for item in report_data %}
                             <div class="table__row">
                                 {% with item_key=item.project__title|add:"|"|add:item.building__title|add:"|"|add:item.mark__title|add:"|"|add:item.user_full_name %}
-                            <!-- Месяцы до последнего -->
-                                    {% for month in months_in_range %}
-                                        {% with month_key=month|date:"Y-m" %}
+                                
+                                    <!-- Проходим по месяцам -->
+                                    {% for month_key, month_data in days_by_period.items %}
+                                        {% for date in month_data.days %}
                                             <div class="table__item checking-days">
-                                                {% if grouped_hours|get_item:item_key|get_item:month_key %}*{% else %}-{% endif %}
+                                                {% with date_key=date|date:"Y-m-d" %}
+                                                    {% for log in report_data %}
+                                                        {% if log.date|date:"Y-m-d" == date_key and log.project__title == item.project__title and log.building__title == item.building__title and log.user_full_name == item.user_full_name %}
+                                                            {{ log.mark__title }}
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                {% endwith %}
                                             </div>
-                                        {% endwith %}
+                                        {% endfor %}
                                     {% endfor %}
-                                    <!-- Дни последнего месяца -->
-                                    {% for date in days_in_last_month %}
-                                        <div class="table__item checking-days">
-                                            {% with date_key=date|date:"Y-m-d" %}
-                                                {% if monthly_hours|get_item:item_key|get_item:date_key %}*{% else %}-{% endif %}
-                                            {% endwith %}
-                                        </div>
-                                    {% endfor %}
+                                    
                                 {% endwith %}
                             </div>
                             {% endfor %}
