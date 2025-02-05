@@ -9,10 +9,10 @@
             Добавить Пользователя
         </button>
         <div class="table-wrapper">
-            <table class="table table-striped" id="usersTable">
-                <thead>
-                    <tr>
-                        <th class="col-2">
+            <div class="table table-striped" id="usersTable">
+                <div class="table__header">
+                    <div class="table__row">
+                        <div class="table__item col-2">
                             <button class="sorter" data-cid="employees">
                                 <p>ФИО</p>
                                 <span>
@@ -21,8 +21,8 @@
                                     </svg>
                                 </span>
                             </button>
-                        </th>
-                        <th class="col-1">
+                        </div>
+                        <div class="table__item col-1">
                             <button class="sorter" data-cid="department">
                                 <p>Отдел</p>
                                 <span>
@@ -31,8 +31,8 @@
                                     </svg>
                                 </span>
                             </button>
-                        </th>
-                        <th class="col-2">
+                        </div>
+                        <div class="table__item col-2">
                             <button class="sorter" data-cid="role">
                                 <p>Должность</p>
                                 <span>
@@ -41,8 +41,8 @@
                                     </svg>
                                 </span>
                             </button>
-                        </th>
-                        <th class="col-2">
+                        </div>
+                        <div class="table__item col-2">
                             <button class="sorter" data-cid="is_admin">
                                 <p>Роль</p>
                                 <span>
@@ -51,11 +51,11 @@
                                     </svg>
                                 </span>
                             </button>
-                        </th>
-                        <th class="col-3">
+                        </div>
+                        <div class="table__item col-3">
                             <p>Email</p>
-                        </th>
-                        <th class="col-1">
+                        </div>
+                        <div class="table__item col-1">
                             <button class="sorter" data-cid="status_user">
                                 <p>Статус</p>
                                 <span>
@@ -64,24 +64,15 @@
                                     </svg>
                                 </span>
                             </button>
-                        </th>
-                        <th class="col-1">
+                        </div>
+                        <div class="table__item col-1">
                             <p>Действия</p>
-                        </th>
-                    </tr>
-                </thead>
-                <tbody id="usersTableBody"></tbody>
-            </table>
-        </div>
-
-        <div class="pagination" id="pagination">
-            <p id="pageInfo" class="page-info"></p>
-            <div class="pagination-btn-wrapper">
-                <button id="prevPage" class="pagination-button">Назад</button>
-                <button id="nextPage" class="pagination-button">Вперед</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="table__body" id="usersTableBody"></div>
             </div>
         </div>
-
     </div>
 </div>
 
@@ -268,23 +259,20 @@ document.addEventListener('DOMContentLoaded', function() {
         {% endfor %}
     ];
 
-    let currentPage = 1;
-    const rowsPerPage = 7;
-
     function displayUsers(usersToShow) {
         const tableBody = document.querySelector('#usersTableBody');
         tableBody.innerHTML = '';
 
         usersToShow.forEach(user => {
             const row = `
-                <tr>
-                    <td>${user.name}</td>
-                    <td>${user.department}</td>
-                    <td>${user.role}</td>
-                    <td>${user.isAdmin}</td>
-                    <td>${user.email}</td>
-                    <td>${user.status}</td>
-                    <td>
+                <div class="table__row">
+                    <div class="table__item no-border col-2">${user.name}</div>
+                    <div class="table__item no-border col-1">${user.department}</div>
+                    <div class="table__item no-border col-2">${user.role}</div>
+                    <div class="table__item no-border col-2">${user.isAdmin}</div>
+                    <div class="table__item no-border col-3">${user.email}</div>
+                    <div class="table__item no-border col-1">${user.status}</div>
+                    <div class="table__item no-border col-1">
                         <div class="actions-button-wrapper">
                             <button class="delete" data-toggle="modal" data-target="#deleteUserModal" data-id="${user.id}" data-name="${user.name}">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="23" height="24" viewBox="0 0 23 24" fill="none">
@@ -300,44 +288,11 @@ document.addEventListener('DOMContentLoaded', function() {
                                 </button>
                             </form>
                         </div>
-                    </td>
-                </tr>
+                    </div>
+                </div>
             `;
             tableBody.innerHTML += row;
         });
-    }
-
-    function updatePageInfo(totalPages) {
-        const pageInfo = document.getElementById('pageInfo');
-        pageInfo.innerText = `Страница ${currentPage} / ${totalPages}`;
-    }
-
-    function setupPagination(users) {
-        const totalPages = Math.ceil(users.length / rowsPerPage);
-
-        if(totalPages <= 1) {
-            document.querySelector('#pagination').style.display = 'none';
-        }
-
-        document.getElementById('prevPage').addEventListener('click', () => {
-            if (currentPage > 1) {
-                currentPage--;
-                displayPage(users, totalPages);
-            }
-            checkedInvateBtns();
-            setupFormHandlers();
-        });
-
-        document.getElementById('nextPage').addEventListener('click', () => {
-            if (currentPage < totalPages) {
-                currentPage++;
-                displayPage(users, totalPages);
-            }
-            checkedInvateBtns();
-            setupFormHandlers();
-        });
-
-        displayPage(users, totalPages);
     }
 
     function setupFormHandlers() {
@@ -358,17 +313,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
-    
-
-    function displayPage(users, totalPages) {
-        const start = (currentPage - 1) * rowsPerPage;
-        const end = start + rowsPerPage;
-        const usersToShow = users.slice(start, end);
-        displayUsers(usersToShow);
-        updatePageInfo(totalPages);
-    }
-
-        setupPagination(users);
 
     function checkedInvateBtns() {
         const submitBtns = document.querySelectorAll('button.send-invite');
@@ -378,6 +322,7 @@ document.addEventListener('DOMContentLoaded', function() {
         })
     }
 
+    displayUsers(users);
     checkedInvateBtns();
     setupFormHandlers();
     

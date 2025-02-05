@@ -8,10 +8,10 @@ Tasks List
 <div class="row">
     <div class="col-md-12">
         <div class="table-wrapper only-bottom">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th class="col-3">
+            <div class="table table-striped">
+                <div class="table__header">
+                    <div class="table__row">
+                        <div class="table__item col-3">
                             <button class="sorter" data-cid="tasks">
                                 <p>Название</p>
                                 <span>
@@ -20,8 +20,8 @@ Tasks List
                                     </svg>
                                 </span>
                             </button>
-                        </th>
-                        <th class="col-3">
+                        </div>
+                        <div class="table__item col-3">
                             <button class="sorter" data-cid="department">
                                 <p>Отделы</p>
                                 <span>
@@ -30,28 +30,28 @@ Tasks List
                                     </svg>
                                 </span>
                             </button>
-                        </th>
-                        <th class="col">
+                        </div>
+                        <div class="table__item col">
                             <p>Действия</p>
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
+                        </div>
+                    </div>
+                </div>
+                <div class="table__body">
                     {% for task in tasks %}
-                    <tr>
-                        <td>
+                    <div class="table__row">
+                        <div class="table__item no-border col-3">
                             <p>
                                 {{ task.title }}
                             </p>
-                        </td>
-                        <td>
+                        </div>
+                        <div class="table__item no-border col-3">
                             {% if task.departments %}
                                 {{ task.departments|join:", " }}
                             {% else %}
 
                             {% endif %}
-                        </td>
-                        <td>
+                        </div>
+                        <div class="table__item no-border col">
                             <div class="actions-button-wrapper">
                                 <button class="edit" data-toggle="modal" data-target="#editTaskModal" data-id="{{ task.pk }}" data-title="{{ task.title }}" data-department-id="{{ task.department_id }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -64,11 +64,11 @@ Tasks List
                                     </svg>
                                 </button>
                             </div>
-                        </td>
-                    </tr>
+                        </div>
+                    </div>
                     {% endfor %}
-                </tbody>
-            </table>
+                </div>
+            </div>
         </div>
     </div>
 </div>
