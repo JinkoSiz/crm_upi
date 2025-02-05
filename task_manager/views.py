@@ -2,6 +2,8 @@ from datetime import datetime, timedelta, timezone
 import re
 import dateparser
 import pytz
+import pandas as pd
+from openpyxl.styles import Font, Border, Side
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.utils.timezone import now
 from openpyxl.styles import PatternFill, Alignment
@@ -1679,6 +1681,13 @@ def parse_russian_date(date_str):
 
 
 def export_to_excel(request):
+    # Маппинг английских месяцев на русский
+    months_map = {
+        "January": "Январь", "February": "Февраль", "March": "Март", "April": "Апрель",
+        "May": "Май", "June": "Июнь", "July": "Июль", "August": "Август",
+        "September": "Сентябрь", "October": "Октябрь", "November": "Ноябрь", "December": "Декабрь"
+    }
+
     # Получаем строки дат из запроса
     start_date_str = request.GET.get('start_date')
     end_date_str = request.GET.get('end_date')
@@ -1697,9 +1706,9 @@ def export_to_excel(request):
     selected_users = request.GET.getlist('employees')
     selected_buildings = request.GET.getlist('zis')
     selected_marks = request.GET.getlist('mark')
+
     # Получаем данные из базы данных
     timelogs = Timelog.objects.filter(date__range=[start_date, end_date])
-    print(f'start {timelogs}')
 
     # Применяем фильтры, если они указаны
     if selected_projects:
@@ -1719,46 +1728,37 @@ def export_to_excel(request):
         selected_marks = selected_marks[0].split(',')
         timelogs = timelogs.filter(mark__title__in=selected_marks)
 
-    # Создаем переменные для хранения часов по месяцам и дням
-    grouped_hours = {}
-    monthly_hours = {}
-
-    last_month_key = end_date.strftime('%Y-%m')
+    # Создаем переменные для хранения марок по дням
+    daily_marks = {}
     for log in timelogs:
         key_str = f"{log.project.title}|{log.building.title}|{log.mark.title}|{log.user.first_name} {log.user.last_name}"
-        month_key = log.date.strftime('%Y-%m')
-
-        if month_key != last_month_key:
-            # Группируем по месяцам, кроме последнего
-            if key_str not in grouped_hours:
-                grouped_hours[key_str] = {}
-            grouped_hours[key_str][month_key] = grouped_hours[key_str].get(month_key, 0) + log.time
-        else:
-            # Последний месяц по дням
-            if key_str not in monthly_hours:
-                monthly_hours[key_str] = {}
-            daily_key = log.date.strftime('%Y-%m-%d')
-            monthly_hours[key_str][daily_key] = log.time
+        day_key = log.date.strftime('%Y-%m-%d')
+        if key_str not in daily_marks:
+            daily_marks[key_str] = {}
+        daily_marks[key_str][day_key] = log.mark.title
 
     # Создаем новую книгу Excel
     wb = Workbook()
     ws = wb.active
-    ws.title = "Отчет по таймлогам"
+    ws.title = "Календарный план"
 
     # Записываем заголовки
     headers = ["Объект", "ЗиС", "Марка", "Исполнитель", "Часы"]
-    months_in_range = get_months_in_range(start_date, end_date)
-    days_in_last_month = get_days_in_month(end_date.replace(day=1))
-
-    for month in months_in_range:
-        headers.append(month.strftime("%B %Y"))  # Заголовок месяца
-    for day in days_in_last_month:
-        headers.append(day.strftime("%d %b %Y"))  # Заголовок дня
-
+    days_in_range = pd.date_range(start=start_date, end=end_date)
+    headers.extend([day.strftime('%d') for day in days_in_range])  # Только число без месяца
     ws.append(headers)
 
-    # Стилизация для заливки ячеек с данными
-    fill_style = PatternFill(start_color="ADD8E6", end_color="ADD8E6", fill_type="solid")
+    # Формируем строку с месяцами
+    month_row = ["", "", "", "", ""]
+    current_month = ""
+    for day in days_in_range:
+        month_name = months_map[day.strftime('%B')]
+        if month_name != current_month:
+            month_row.append(month_name)
+            current_month = month_name
+        else:
+            month_row.append("")
+    ws.append(month_row)
 
     # Обработка данных для экспорта
     for item in timelogs.values('project__title', 'building__title', 'mark__title').annotate(
@@ -1773,35 +1773,45 @@ def export_to_excel(request):
             f"{item['total_hours']}"
         ]
 
-        # Добавляем данные по месяцам
-        for month in months_in_range:
-            month_key = month.strftime("%Y-%m")
-            hours = grouped_hours.get(
+        for day in days_in_range:
+            day_key = day.strftime('%Y-%m-%d')
+            mark = daily_marks.get(
                 f"{item['project__title']}|{item['building__title']}|{item['mark__title']}|{item['user_full_name']}",
-                {}).get(month_key, "-")
-            row.append(hours)
-            if hours != "-":
-                ws[f"{get_column_letter(len(row))}{ws.max_row}"].fill = fill_style  # Заливаем ячейку
-
-        # Добавляем данные по дням последнего месяца
-        for date in days_in_last_month:
-            day_key = date.strftime("%Y-%m-%d")
-            hours = monthly_hours.get(
-                f"{item['project__title']}|{item['building__title']}|{item['mark__title']}|{item['user_full_name']}",
-                {}).get(day_key, "-")
-            row.append(item['mark__title'] if hours != "-" else hours)
-
+                {}).get(day_key, "")
+            row.append(mark)
         ws.append(row)
 
-    # Настройка ширины колонок и выравнивание
-    for col in range(1, len(headers) + 1):
-        ws.column_dimensions[get_column_letter(col)].width = 15
-        for cell in ws[get_column_letter(col)]:
-            cell.alignment = Alignment(horizontal="center", vertical="center")
+    # Настройка ширины колонок
+    column_widths = [30, 20, 20, 25, 15] + [5] * len(days_in_range)
+    for i, col in enumerate(ws.columns, 1):
+        ws.column_dimensions[get_column_letter(i)].width = column_widths[i - 1]
 
-    # Генерация ответа с файлом Excel
+    # Фиксация заголовков и первых столбцов
+    ws.freeze_panes = "F3"  # Фиксируем первую строку с заголовками и первые 5 столбцов
+
+    # Форматирование заголовков
+    for row in ws.iter_rows(min_row=1, max_row=2):
+        for cell in row:
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+            cell.font = Font(bold=True)
+            cell.fill = PatternFill(start_color="D9EAD3", end_color="D9EAD3", fill_type="solid")
+
+    # Выделение суббот и воскресений красным
+    for col_num, day in enumerate(days_in_range, start=6):
+        if day.weekday() in [5, 6]:  # 5 - суббота, 6 - воскресенье
+            for row in ws.iter_rows(min_row=1, max_row=ws.max_row, min_col=col_num, max_col=col_num):
+                for cell in row:
+                    cell.fill = PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid")
+
+    # Добавление границ для всех ячеек
+    for row in ws.iter_rows(min_row=1, max_row=ws.max_row, min_col=1, max_col=len(headers)):
+        for cell in row:
+            cell.border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'),
+                                 bottom=Side(style='thin'))
+
+    # Генерация файла
     response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-    response["Content-Disposition"] = 'attachment; filename="timelog_report.xlsx"'
+    response["Content-Disposition"] = 'attachment; filename="calendar_plan.xlsx"'
     wb.save(response)
     return response
 
