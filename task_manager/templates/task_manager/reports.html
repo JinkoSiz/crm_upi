@@ -28,10 +28,10 @@
             </div>
         </form>
         <div id="laborCostsProjectsTable" class="table-wrapper only-bottom">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th style="width: 170px">
+            <div class="table">
+                <div class="table__header">
+                    <div class="table__row">
+                        <div class="table__item col-2">
                             <button class="sorter" data-cid="project">
                                 <p>Объект</p>
                                 <span>
@@ -40,8 +40,8 @@
                                     </svg>
                                 </span>
                             </button>
-                        </th>
-                        <th style="width: 100px">
+                        </div>
+                        <div class="table__item col-1">
                             <button class="sorter" data-cid="department">
                                 <p>Отдел</p>
                                 <span>
@@ -50,8 +50,8 @@
                                     </svg>
                                 </span>
                             </button>
-                        </th>
-                        <th style="width: 140px">
+                        </div>
+                        <div class="table__item col-1">
                             <button class="sorter" data-cid="employees">
                                 <p>Сотрудник</p>
                                 <span>
@@ -60,8 +60,8 @@
                                     </svg>
                                 </span>
                             </button>
-                        </th>
-                        <th style="width: 80px">
+                        </div>
+                        <div class="table__item col-1">
                             <button class="sorter" data-cid="stage">
                                 <p>Стадия</p>
                                 <span>
@@ -70,8 +70,8 @@
                                     </svg>
                                 </span>
                             </button>
-                        </th>
-                        <th>
+                        </div>
+                        <div class="table__item col-2">
                             <button class="sorter" data-cid="zis">
                                 <p>ЗИС</p>
                                 <span>
@@ -80,8 +80,8 @@
                                     </svg>
                                 </span>
                             </button>
-                        </th>
-                        <th style="width: 70px">
+                        </div>
+                        <div class="table__item col-1">
                             <button class="sorter" data-cid="mark">
                                 <p>Марка</p>
                                 <span>
@@ -90,8 +90,8 @@
                                     </svg>
                                 </span>
                             </button>
-                        </th>
-                        <th style="width: 190px">
+                        </div>
+                        <div class="table__item col-2">
                             <button class="sorter" data-cid="task">
                                 <p>Локальная задача</p>
                                 <span>
@@ -100,33 +100,33 @@
                                     </svg>
                                 </span>
                             </button>
-                        </th>
-                        <th style="width: 69px">
+                        </div>
+                        <div class="table__item col-1">
                             <p>Время</p>
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
+                        </div>
+                    </div>
+                </div>
+                <div class="table__body">
                     {% for project_title, project_data in detailed_report_projects.items %}
                         {% for entry in project_data.entries %}
-                            <tr>
-                                <td>{{ entry.project.title }}</td>
-                                <td>{{ entry.department.title }}</td>
-                                <td>{{ entry.user.last_name }} {{ entry.user.first_name }} {{ entry.user.middle_name }}</td>
-                                <td>{{ entry.stage }}</td>
-                                <td>{{ entry.building.title }}</td>
-                                <td>{{ entry.mark.title }}</td>
-                                <td>{{ entry.task.title }}</td>
-                                <td>{{ entry.time }}</td>
-                            </tr>
+                            <div class="table__row">
+                                <div class="table__item col-2">{{ entry.project.title }}</div>
+                                <div class="table__item col-1">{{ entry.department.title }}</div>
+                                <div class="table__item col-1">{{ entry.user.last_name }} {{ entry.user.first_name }} {{ entry.user.middle_name }}</div>
+                                <div class="table__item col-1">{{ entry.stage }}</div>
+                                <div class="table__item col-2">{{ entry.building.title }}</div>
+                                <div class="table__item col-1">{{ entry.mark.title }}</div>
+                                <div class="table__item col-2">{{ entry.task.title }}</div>
+                                <div class="table__item col-1" style="text-align: right;">{{ entry.time }}</div>
+                            </div>
                         {% endfor %}
-                        <tr class="finish-tr">
-                            <td colspan="7" class="text-left">Итого {{ project_title }}</td>
-                            <td colspan="1" class="text-left">{{ project_data.total_time }}</td>
-                        </tr>
+                        <div class="table__row finish-tr">
+                            <div class="table__item no-border col-9">Итого {{ project_title }}</div>
+                            <div class="table__item no-border col-3" style="text-align: right;">{{ project_data.total_time }}</div>
+                        </div>
                     {% endfor %}
-                </tbody>
-            </table>
+                </div>
+            </div>
         </div>
     </div>
 </div>

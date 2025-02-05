@@ -30,10 +30,10 @@
             </div>
         </form>
         <div class="table-wrapper only-bottom">
-            <table id="logsTable" class="table table-striped">
-                <thead>
-                    <tr>
-                        <th style="width: 110px">
+            <div id="logsTable" class="table table-striped">
+                <div class="table__header">
+                    <div class="table__row">
+                        <div class="table__item" style="width: 133px">
                             <button class="sorter" data-cid="employees">
                                 <p>Сотрудник</p>
                                 <span>
@@ -42,8 +42,8 @@
                                     </svg>
                                 </span>
                             </button>
-                        </th>
-                        <th >
+                        </div>
+                        <div class="table__item" style="width: 115px">
                             <button class="sorter" data-cid="department">
                                 <p>Отдел</p>
                                 <span>
@@ -52,8 +52,8 @@
                                     </svg>
                                 </span>
                             </button>
-                        </th>
-                        <th >
+                        </div>
+                        <div class="table__item" style="width: 93px">
                             <button class="sorter"> 
                                 <p>Дата</p>
                                 <span>
@@ -62,8 +62,8 @@
                                     </svg>
                                 </span>
                             </button>
-                        </th>
-                        <th style="width: 153px">
+                        </div>
+                        <div class="table__item" style="width: 174px">
                             <button class="sorter" data-cid="project">
                                 <p>Объект</p>
                                 <span>
@@ -72,8 +72,8 @@
                                     </svg>
                                 </span>
                             </button>
-                        </th>
-                        <th >
+                        </div>
+                        <div class="table__item" style="width: 93px">
                             <button class="sorter" data-cid="stage">
                                 <p>Стадия</p>
                                 <span>
@@ -82,8 +82,8 @@
                                     </svg>
                                 </span>
                             </button>
-                        </th>
-                        <th >
+                        </div>
+                        <div class="table__item" style="width: 94px">
                             <button class="sorter" data-cid="section">
                                 <p>Раздел</p>
                                 <span>
@@ -92,8 +92,8 @@
                                     </svg>
                                 </span>
                             </button>
-                        </th>
-                        <th style="width: 223px">
+                        </div>
+                        <div class="table__item" style="width: 243px">
                             <button class="sorter" data-cid="zis">
                                 <p>ЗИС</p>
                                 <span>
@@ -102,8 +102,8 @@
                                     </svg>
                                 </span>
                             </button>
-                        </th>
-                        <th >
+                        </div>
+                        <div class="table__item" style="width: 84px">
                             <button class="sorter" data-cid="mark">
                                 <p>Марка</p>
                                 <span>
@@ -112,9 +112,9 @@
                                     </svg>
                                 </span>
                             </button>
-                        </th>
-                        <th >
-                            <button class="sorter" data-cid="task"> 
+                        </div>
+                        <div class="table__item" style="width: 153px">
+                            <button class="sorter" data-cid="tasks"> 
                                 <p>Задача</p>
                                 <span>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -122,21 +122,13 @@
                                     </svg>
                                 </span>
                             </button>
-                        </th>
-                        <th style="width: 88px">
+                        </div>
+                        <div class="table__item" style="width: 89px">
                             <p>Время</p>
-                        </th>
-                    </tr>
-                </thead>
-                <tbody id="logsTableBody"></tbody>
-            </table>
-        </div>
-    
-        <div class="pagination" id="pagination">
-            <p id="pageInfo" class="page-info"></p>
-            <div class="pagination-btn-wrapper">
-                <button id="prevPage" class="pagination-button">Назад</button>
-                <button id="nextPage" class="pagination-button">Вперед</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="table__body" id="logsTableBody"></div>
             </div>
         </div>
     </div>
@@ -206,113 +198,65 @@
 
     logs.sort((a, b) =>  new Date(b.date) - new Date(a.date));
 
-    let currentPage = 1;
-    const rowsPerPage = 5;
 
     function displayUsers(logsToShow) {
         const tableBody = document.querySelector('#logsTableBody');
         tableBody.innerHTML = '';
 
         logsToShow.forEach(logs => {
-            // switch (logs.stage){
-            //     case 'RD':
-            //         logs.stage = 'РД';
-            //     case 'OTR':
-            //         logs.stage = 'ОТР';
-            //     case 'PD':
-            //         logs.stage = 'ПД';
-            // }
-
             if(logs.stage === 'RD') {
                 const row = `
-                    <tr>
-                        <td>${logs.name}</td>
-                        <td>${logs.department}</td>
-                        <td>${logs.date}</td>
-                        <td>${logs.project}</td>
-                        <td>РД</td> 
-                        <td>${logs.section}</td>
-                        <td>${logs.building}</td>
-                        <td>${logs.mark}</td>
-                        <td>${logs.task}</td>
-                        <td>${logs.time} часов</td>
-                    </tr>
+                    <div class="table__row">
+                        <div class="table__item" style="width: 133px">${logs.name}</div>
+                        <div class="table__item" style="width: 115px">${logs.department}</div>
+                        <div class="table__item" style="width: 93x">${logs.date}</div>
+                        <div class="table__item" style="width: 174px">${logs.project}</div>
+                        <div class="table__item" style="width: 93px">РД</div> 
+                        <div class="table__item" style="width: 94px">${logs.section}</div>
+                        <div class="table__item" style="width: 243px">${logs.building}</div>
+                        <div class="table__item" style="width: 84px">${logs.mark}</div>
+                        <div class="table__item" style="width: 153px">${logs.task}</div>
+                        <div class="table__item" style="width: 89px">${logs.time} часов</div>
+                    </div>
                 `;
                 tableBody.innerHTML += row;
             } else if (logs.stage === 'OTR') {
                 const row = `
-                    <tr>
-                        <td>${logs.name}</td>
-                        <td>${logs.department}</td>
-                        <td>${logs.date}</td>
-                        <td>${logs.project}</td>
-                        <td>ОТР</td> 
-                        <td>${logs.section}</td>
-                        <td>${logs.building}</td>
-                        <td>${logs.mark}</td>
-                        <td>${logs.task}</td>
-                        <td>${logs.time} часов</td>
-                    </tr>
+                    <div class="table__row">
+                         <div class="table__item" style="width: 133px">${logs.name}</div>
+                        <div class="table__item" style="width: 115px">${logs.department}</div>
+                        <div class="table__item" style="width: 93x">${logs.date}</div>
+                        <div class="table__item" style="width: 174px">${logs.project}</div>
+                        <div class="table__item" style="width: 93px">ОТР</div> 
+                        <div class="table__item" style="width: 94px">${logs.section}</div>
+                        <div class="table__item" style="width: 243px">${logs.building}</div>
+                        <div class="table__item" style="width: 84px">${logs.mark}</div>
+                        <div class="table__item" style="width: 153px">${logs.task}</div>
+                        <div class="table__item" style="width: 89px">${logs.time} часов</div>
+                    </div>
                 `;
                 tableBody.innerHTML += row;
             } else if (logs.stage === 'PD') {
                 const row = `
-                    <tr>
-                        <td>${logs.name}</td>
-                        <td>${logs.department}</td>
-                        <td>${logs.date}</td>
-                        <td>${logs.project}</td>
-                        <td>ПД</td> 
-                        <td>${logs.section}</td>
-                        <td>${logs.building}</td>
-                        <td>${logs.mark}</td>
-                        <td>${logs.task}</td>
-                        <td>${logs.time} часов</td>
-                    </tr>
+                    <div class="table__row">
+                         <div class="table__item" style="width: 133px">${logs.name}</div>
+                        <div class="table__item" style="width: 115px">${logs.department}</div>
+                        <div class="table__item" style="width: 93x">${logs.date}</div>
+                        <div class="table__item" style="width: 174px">${logs.project}</div>
+                        <div class="table__item" style="width: 93px">ПД</div> 
+                        <div class="table__item" style="width: 94px">${logs.section}</div>
+                        <div class="table__item" style="width: 243px">${logs.building}</div>
+                        <div class="table__item" style="width: 84px">${logs.mark}</div>
+                        <div class="table__item" style="width: 153px">${logs.task}</div>
+                        <div class="table__item" style="width: 89px">${logs.time} часов</div>
+                    </div>
                 `;
                 tableBody.innerHTML += row;
             }
         });
     }
 
-    function updatePageInfo(totalPages) {
-        const pageInfo = document.getElementById('pageInfo');
-        pageInfo.innerText = `Страница ${currentPage} / ${totalPages}`;
-    }
-
-    function setupPagination(logs) {
-        const totalPages = Math.ceil(logs.length / rowsPerPage);
-
-        if(totalPages <= 1) {
-            document.querySelector('#pagination').style.display = 'none';
-        }
-
-        document.getElementById('prevPage').addEventListener('click', () => {
-            if (currentPage > 1) {
-                currentPage--;
-                displayPage(logs, totalPages);
-            }
-        });
-
-        document.getElementById('nextPage').addEventListener('click', () => {
-            if (currentPage < totalPages) {
-                currentPage++;
-                displayPage(logs, totalPages);
-            }
-        });
-
-        displayPage(logs, totalPages);
-    }
-
-    function displayPage(logs, totalPages) {
-        const start = (currentPage - 1) * rowsPerPage;
-        const end = start + rowsPerPage;
-        const logsToShow = logs.slice(start, end);
-        displayUsers(logsToShow);
-        updatePageInfo(totalPages);
-    }
-
-    setupPagination(logs);
+    displayUsers(logs);
 
 </script>
 {% endblock %}
