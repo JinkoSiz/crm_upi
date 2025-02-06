@@ -1560,47 +1560,37 @@ def get_months_in_period(start_date, end_date):
 
 def get_days_in_period(start_date, end_date):
     """
-    Возвращает словарь, где для каждого месяца (ключ в виде 'YYYY-MM')
-    указаны:
-      - 'month_name': название месяца (например, "February" или "Февраль", если настроена локаль)
-      - 'days': список дат (объектов date), попадающих в выбранный период.
-    Если период начинается не с первого дня месяца или заканчивается раньше конца месяца,
-    то в список попадут только дни в рамках периода.
+    Возвращает словарь, где для каждого месяца (ключ в формате 'YYYY-MM')
+    указан список дат (объекты date), входящих в выбранный период.
+    Если период начинается не с первого дня месяца или заканчивается раньше,
+    то в список попадут только дни внутри периода.
     """
     days_by_month = {}
-    months = get_months_in_period(start_date, end_date)
-    for month_start in months:
-        # Определяем последний день месяца (при помощи трюка с timedelta)
-        next_month = (month_start.replace(day=28) + timedelta(days=4)).replace(day=1)
-        month_end = next_month - timedelta(days=1)
-        # Границы в данном месяце: с первого дня месяца, но корректируем их согласно периоду
-        effective_start = max(start_date, month_start)
-        effective_end = min(end_date, month_end)
-        # Формируем список дней от effective_start до effective_end включительно
-        days = []
-        day = effective_start
-        while day <= effective_end:
-            days.append(day)
-            day += timedelta(days=1)
-        month_key = month_start.strftime('%Y-%m')
-        days_by_month[month_key] = {
-            'month_name': month_start.strftime('%B'),
-            'days': days,
-        }
+    current = start_date
+    while current <= end_date:
+        month_key = current.strftime('%Y-%m')
+        if month_key not in days_by_month:
+            days_by_month[month_key] = {
+                'month_name': current.strftime('%B'),
+                'days': []
+            }
+        days_by_month[month_key]['days'].append(current)
+        current += timedelta(days=1)
     return days_by_month
 
 
 @admin_required(login_url='login')
 def final_report(request):
-    # Получаем даты начала и конца из GET-параметров (если не переданы — используется текущий месяц/день)
+
+    # Получаем даты из GET-параметров
     start_date = request.GET.get('start_date', timezone.now().replace(day=1).date())
     end_date = request.GET.get('end_date', timezone.now().date())
 
-    # Преобразуем даты, если они переданы в виде строки
+    # Преобразуем даты, если они переданы как строки
     start_date = parse_custom_date(start_date) if isinstance(start_date, str) else start_date
     end_date = parse_custom_date(end_date) if isinstance(end_date, str) else end_date
 
-    # Фильтры из GET-запроса
+    # Фильтры (проект, исполнитель, зиС, марка) применяются как в вашем коде…
     selected_projects = request.GET.getlist('project')
     selected_users = request.GET.getlist('employees')
     selected_buildings = request.GET.getlist('zis')
@@ -1608,7 +1598,6 @@ def final_report(request):
 
     timelogs = Timelog.objects.filter(date__range=[start_date, end_date])
 
-    # Применяем фильтры, если они указаны
     if selected_projects:
         selected_projects = selected_projects[0].split(',')
         timelogs = timelogs.filter(project__title__in=selected_projects)
@@ -1626,32 +1615,47 @@ def final_report(request):
         selected_marks = selected_marks[0].split(',')
         timelogs = timelogs.filter(mark__title__in=selected_marks)
 
-    # Используем select_related для оптимизации запросов
     timelogs = timelogs.select_related('project', 'building', 'mark', 'user')
 
-    # Если необходимо, можно использовать аннотации (например, суммирование часов)
-    # В данном примере в report_data также передаём дату, чтобы в шаблоне можно было сопоставлять лог с конкретным днём.
+    # Сгруппируем логи по уникальному ряду и по дате.
+    grouped_data = {}
+    for log in timelogs:
+        # Формируем уникальный ключ строки. Разделитель можно выбрать любой.
+        row_key = f"{log.project.title}|{log.building.title}|{log.mark.title}|{log.user.first_name} {log.user.last_name}"
+        date_key = log.date.strftime('%Y-%m-%d')
+        if row_key not in grouped_data:
+            grouped_data[row_key] = {
+                'project': log.project.title,
+                'building': log.building.title,
+                'mark': log.mark.title,
+                'user': f"{log.user.last_name} {log.user.first_name} {log.user.middle_name}",
+                'total_hours': 0,  # можно суммировать часы по всем датам
+                'logs': {}  # здесь будут логи по датам
+            }
+        grouped_data[row_key]['total_hours'] += log.time
+        # Если по одной дате может быть несколько записей – можно делать список.
+        grouped_data[row_key]['logs'][date_key] = log.time
+
+    # Если вам требуется оставить и report_data для других целей, можно его оставить:
     report_data = timelogs.values(
         'project__title',
         'building__title',
-        'mark__title',
-        'date'
+        'mark__title'
     ).annotate(
         total_hours=Sum('time'),
-        user_full_name=Concat(F('user__first_name'), Value(' '), F('user__last_name'))
+        user_full_name=Concat(F('user__last_name'), Value(' '), F('user__first_name'))
     )
 
-    # Вместо группировки по месяцам/дням формируем структуру с днями, попадающими именно в выбранный период
+    # Получаем структуру дней, входящих в выбранный период
     days_by_period = get_days_in_period(start_date, end_date)
 
     context = {
-        'report_data': report_data,
-        'days_by_period': days_by_period,  # Структура: для каждого месяца название и дни в пределах периода
+        'report_data': report_data,  # если нужен для сортировки или прочего
+        'grouped_data': grouped_data,  # сгруппированные данные для таблицы
+        'days_by_period': days_by_period,  # структура дней по месяцам
         'start_date': start_date,
         'end_date': end_date,
     }
-
-    print(days_by_period)
 
     return render(request, 'task_manager/final_report.html', context)
 
