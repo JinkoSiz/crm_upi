@@ -1927,7 +1927,7 @@ def export_reports_employees_excel(request):
     for department_title, group in detailed_report_departments.items():
         entries = sorted(group['entries'], key=lambda x: x.date)
         for entry in entries:
-            full_name = f"{entry.user.first_name} {entry.user.last_name}"
+            full_name = f"{entry.user.last_name} {entry.user.first_name}"
             if hasattr(entry.user, 'middle_name') and entry.user.middle_name:
                 full_name += f" {entry.user.middle_name}"
             row = [
@@ -2085,7 +2085,7 @@ def export_reports_view_excel(request):
     for department_title, group in detailed_report_departments.items():
         entries = sorted(group['entries'], key=lambda x: x.date)
         for entry in entries:
-            full_name = f"{entry.user.first_name} {entry.user.last_name}"
+            full_name = f"{entry.user.last_name} {entry.user.first_name}"
             if hasattr(entry.user, 'middle_name') and entry.user.middle_name:
                 full_name += f" {entry.user.middle_name}"
             row = [
