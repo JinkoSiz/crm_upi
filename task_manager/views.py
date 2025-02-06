@@ -1627,7 +1627,7 @@ def final_report(request):
                 'project': log.project.title,
                 'building': log.building.title,
                 'mark': log.mark.title,
-                'user': f"{log.user.last_name} {log.user.first_name} {log.user.middle_name}",
+                'user': f"{log.user.last_name}",
                 'total_hours': 0,  # можно суммировать часы по всем датам
                 'logs': {}  # здесь будут логи по датам
             }
