@@ -1844,3 +1844,164 @@ def get_buildings_for_project(request, project_id):
     building_data = [{'id': building.id, 'name': building.name} for building in buildings]
 
     return JsonResponse({'buildings': building_data})
+
+
+def export_reports_employees_excel(request):
+    # Получаем начальную и конечную даты из GET параметров
+    start_date = request.GET.get('start_date', timezone.now().replace(day=1).date())
+    end_date = request.GET.get('end_date', timezone.now().date())
+
+    # Преобразуем даты (если они переданы как строки)
+    start_date = parse_custom_date(start_date) if isinstance(start_date, str) else start_date
+    end_date = parse_custom_date(end_date) if isinstance(end_date, str) else end_date
+
+    # Фильтры из GET-запроса
+    selected_projects = request.GET.getlist('project')
+    selected_departments = request.GET.getlist('department')
+    selected_users = request.GET.getlist('employees')
+    selected_stages = request.GET.getlist('stage')
+    selected_buildings = request.GET.getlist('zis')
+    selected_marks = request.GET.getlist('mark')
+    selected_tasks = request.GET.getlist('task')
+
+    # Получаем все записи Timelog с оптимизацией связанных данных
+    timelogs = (
+        Timelog.objects
+        .filter(date__range=[start_date, end_date])
+        .select_related('project', 'department', 'user', 'building', 'mark', 'task')
+    )
+
+    # Применяем фильтры, если они указаны
+    if selected_projects:
+        selected_projects = selected_projects[0].split(',')
+        timelogs = timelogs.filter(project__title__in=selected_projects)
+    if selected_departments:
+        selected_departments = selected_departments[0].split(',')
+        timelogs = timelogs.filter(department__title__in=selected_departments)
+    if selected_users:
+        user_filters = Q()
+        user_list = selected_users[0].split(',')
+        for full_name in user_list:
+            first_name, last_name = full_name.strip().split(' ', 1)
+            user_filters |= Q(user__first_name=first_name, user__last_name=last_name)
+        timelogs = timelogs.filter(user_filters)
+    if selected_stages:
+        selected_stages = selected_stages[0].split(',')
+        timelogs = timelogs.filter(stage__in=selected_stages)
+    if selected_buildings:
+        selected_buildings = selected_buildings[0].split(',')
+        timelogs = timelogs.filter(building__title__in=selected_buildings)
+    if selected_marks:
+        selected_marks = selected_marks[0].split(',')
+        timelogs = timelogs.filter(mark__title__in=selected_marks)
+    if selected_tasks:
+        selected_tasks = selected_tasks[0].split(',')
+        timelogs = timelogs.filter(task__title__in=selected_tasks)
+
+    # Группировка данных по проектам
+    detailed_report_projects = {}
+    for item in timelogs:
+        project_title = item.project.title
+        if project_title not in detailed_report_projects:
+            detailed_report_projects[project_title] = {
+                'entries': [],
+                'total_time': 0
+            }
+        detailed_report_projects[project_title]['entries'].append(item)
+        detailed_report_projects[project_title]['total_time'] += item.time
+
+    overall_total_time_projects = sum(group['total_time'] for group in detailed_report_projects.values())
+
+    # Группировка данных по отделам
+    detailed_report_departments = {}
+    for item in timelogs:
+        department_title = item.department.title
+        if department_title not in detailed_report_departments:
+            detailed_report_departments[department_title] = {
+                'entries': [],
+                'total_time': 0
+            }
+        detailed_report_departments[department_title]['entries'].append(item)
+        detailed_report_departments[department_title]['total_time'] += item.time
+
+    overall_total_time_departments = sum(group['total_time'] for group in detailed_report_departments.values())
+
+    # Создаем книгу Excel
+    wb = Workbook()
+
+    # Лист "Проекты"
+    ws_projects = wb.active
+    ws_projects.title = "Проекты"
+    headers_projects = ["Проект", "Дата", "Отдел", "Исполнитель", "Здание", "Марка", "Задача", "Время"]
+    ws_projects.append(headers_projects)
+    for cell in ws_projects[1]:
+        cell.font = Font(bold=True)
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+
+    # Заполняем данные для проектов
+    for project_title, group in detailed_report_projects.items():
+        entries = group['entries']
+        for entry in entries:
+            # Формирование полного ФИО с middle name
+            full_name = f"{entry.user.first_name} {entry.user.last_name}"
+            if hasattr(entry.user, 'middle_name') and entry.user.middle_name:
+                full_name += f" {entry.user.middle_name}"
+            row = [
+                entry.project.title,
+                entry.date.strftime("%Y-%m-%d"),
+                entry.department.title,
+                full_name,
+                entry.building.title if entry.building else "",
+                entry.mark.title if entry.mark else "",
+                entry.task.title if entry.task else "",
+                entry.time,
+            ]
+            ws_projects.append(row)
+        # Строка с итогом по проекту
+        ws_projects.append(["", "", "", "", "", "Итого по проекту:", group['total_time']])
+        ws_projects.append([])  # пустая строка для разделения
+
+    # Лист "Отделы"
+    ws_departments = wb.create_sheet(title="Отделы")
+    headers_departments = ["Отдел", "Проект", "Дата", "Исполнитель", "Здание", "Марка", "Задача", "Время"]
+    ws_departments.append(headers_departments)
+    for cell in ws_departments[1]:
+        cell.font = Font(bold=True)
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+
+    for department_title, group in detailed_report_departments.items():
+        entries = group['entries']
+        for entry in entries:
+            full_name = f"{entry.user.first_name} {entry.user.last_name}"
+            if hasattr(entry.user, 'middle_name') and entry.user.middle_name:
+                full_name += f" {entry.user.middle_name}"
+            row = [
+                entry.department.title,
+                entry.project.title,
+                entry.date.strftime("%Y-%m-%d"),
+                full_name,
+                entry.building.title if entry.building else "",
+                entry.mark.title if entry.mark else "",
+                entry.task.title if entry.task else "",
+                entry.time,
+            ]
+            ws_departments.append(row)
+        ws_departments.append(["", "", "", "", "", "Итого по отделу:", group['total_time']])
+        ws_departments.append([])
+
+    # Лист "Итого" – сводные итоги
+    ws_summary = wb.create_sheet(title="Итого")
+    ws_summary.append(["Общая сумма времени по проектам", overall_total_time_projects])
+    ws_summary.append(["Общая сумма времени по отделам", overall_total_time_departments])
+    for cell in ws_summary[1]:
+        cell.font = Font(bold=True)
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+
+    # Генерация ответа с файлом Excel
+    response = HttpResponse(
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    filename = f"reports_employees_{start_date.strftime('%Y%m%d')}_{end_date.strftime('%Y%m%d')}.xlsx"
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    wb.save(response)
+    return response
