@@ -151,7 +151,50 @@
             <li class="data-list" data-cid="reports-employees"><a href="{% url 'reports-employees' %}">Трудозатраты по сотрудникам</a></li>
             <li class="data-list" data-cid="final-report"><a href="{% url 'final-report' %}">Итоговый отчет</a></li>
         </ul>
+
         <form method="get" action="{% url 'export_to_excel' %}" data-cid="final-report" class="export-exel-form">
+            <input type="hidden" name="start_date" value="{{ start_date }}">
+            <input type="hidden" name="end_date" value="{{ end_date }}">
+            {% if request.GET.project %}
+                <input type="hidden" name="project" value="{{ request.GET.project }}">
+            {% endif %}
+
+            {% if request.GET.employees %}
+                <input type="hidden" name="employees" value="{{ request.GET.employees }}">
+            {% endif %}
+
+            {% if request.GET.zis %}
+                <input type="hidden" name="zis" value="{{ request.GET.zis }}">
+            {% endif %}
+
+            {% if request.GET.mark %}
+                <input type="hidden" name="mark" value="{{ request.GET.mark }}">
+            {% endif %}
+            <button type="submit" class="add-depart active">Экспорт в Excel</button>
+        </form>
+
+        <form method="get" action="{% url 'export_reports_view_excel' %}" data-cid="reports" class="export-exel-form">
+            <input type="hidden" name="start_date" value="{{ start_date }}">
+            <input type="hidden" name="end_date" value="{{ end_date }}">
+            {% if request.GET.project %}
+                <input type="hidden" name="project" value="{{ request.GET.project }}">
+            {% endif %}
+
+            {% if request.GET.employees %}
+                <input type="hidden" name="employees" value="{{ request.GET.employees }}">
+            {% endif %}
+
+            {% if request.GET.zis %}
+                <input type="hidden" name="zis" value="{{ request.GET.zis }}">
+            {% endif %}
+
+            {% if request.GET.mark %}
+                <input type="hidden" name="mark" value="{{ request.GET.mark }}">
+            {% endif %}
+            <button type="submit" class="add-depart active">Экспорт в Excel</button>
+        </form>
+
+        <form method="get" action="{% url 'export_reports_employees_excel' %}" data-cid="reports-employees" class="export-exel-form">
             <input type="hidden" name="start_date" value="{{ start_date }}">
             <input type="hidden" name="end_date" value="{{ end_date }}">
             {% if request.GET.project %}
@@ -511,7 +554,7 @@
             adminLinksListItem = document.querySelectorAll('.data-list'),
             adminLinksBtnsListItem = document.querySelectorAll('.add-depart'),
             adminMainNavigation = document.querySelector('.admin-main-navigation'),
-            exportExelForms = document.querySelector('form.export-exel-form'),
+            exportExelForms = document.querySelectorAll('form.export-exel-form'),
             header = document.querySelector('header'),
             laborCostsProjects = document.querySelector('li.data-list[data-cid="reports"]'),
             laborCostsProjectsSwitcher = document.querySelector('li.data-list[data-cid="reports"] p'),
@@ -578,12 +621,12 @@
 
         }
 
-        function setStatus (url, mainList, secondaryList, secondaryListBtns) {
+        function setStatus (url, mainList, secondaryList, secondaryListBtns, excelForms) {
             adminHandbooksNavList.style.display = 'none';
             adminReportsNavList.style.display = 'none';
             adminMainNavigation.style.display = 'block';
             header.style.display = 'flex';
-            exportExelForms.classList.remove('active');
+            excelForms.forEach(item => item.classList.remove('active'));
 
             switch (url) {
                 case 'login':
@@ -627,8 +670,9 @@
                 case 'final-report':
                     dataMining(mainList, 'reports');
                     adminReportsNavList.style.display = 'flex';
+                    console.log(excelForms);
                     dataMining(secondaryList, url);
-                    exportExelForms.classList.add('active');
+                    dataMining(excelForms, url);
                     break;
 
                 default:
@@ -638,7 +682,7 @@
             }
         }
 
-        setStatus(currentUrlPath, adminBtnsListItem, adminLinksListItem, adminLinksBtnsListItem);
+        setStatus(currentUrlPath, adminBtnsListItem, adminLinksListItem, adminLinksBtnsListItem, exportExelForms);
 
         const datepicker = document.querySelector(".datepicker-container");
         let activeInput = null;
