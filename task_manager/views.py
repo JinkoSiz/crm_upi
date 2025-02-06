@@ -1634,7 +1634,7 @@ def final_report(request):
             }
         grouped_data[row_key]['total_hours'] += log.time
         # Если по одной дате может быть несколько записей – можно делать список.
-        grouped_data[row_key]['logs'][date_key] = log.time
+        grouped_data[row_key]['logs'][date_key] = log.mark.title
 
     # Если вам требуется оставить и report_data для других целей, можно его оставить:
     report_data = timelogs.values(
@@ -1735,7 +1735,8 @@ def export_to_excel(request):
     # Создаем переменные для хранения марок по дням
     daily_marks = {}
     for log in timelogs:
-        key_str = f"{log.project.title}|{log.building.title}|{log.mark.title}|{log.user.first_name} {log.user.last_name}"
+        # Группировка по: проект, здание, марка и уникальный идентификатор пользователя
+        key_str = f"{log.project.title}|{log.building.title}|{log.mark.title}|{log.user.id}"
         day_key = log.date.strftime('%Y-%m-%d')
         if key_str not in daily_marks:
             daily_marks[key_str] = {}
@@ -1765,23 +1766,37 @@ def export_to_excel(request):
     ws.append(month_row)
 
     # Обработка данных для экспорта
-    for item in timelogs.values('project__title', 'building__title', 'mark__title').annotate(
-            total_hours=Sum('time'),
-            user_full_name=Concat(F('user__first_name'), Value(' '), F('user__last_name'))
+    for item in timelogs.values(
+            'project__title',
+            'building__title',
+            'mark__title',
+            'user__id',
+            'user__middle_name'
+    ).annotate(
+        total_hours=Sum('time'),
+        user_full_name=Concat(
+            F('user__last_name'),
+            Value(' '),
+            F('user__first_name'),
+            Value(' '),
+            F('user__middle_name')
+        )
     ):
+        # Формируем строку с данными
         row = [
             item['project__title'],
             item['building__title'],
             item['mark__title'],
-            item['user_full_name'],
+            item['user_full_name'],  # Теперь включает middle name
             f"{item['total_hours']}"
         ]
 
+        # Формируем группирующий ключ, используя user__id
+        key_str = f"{item['project__title']}|{item['building__title']}|{item['mark__title']}|{item['user__id']}"
+
         for day in days_in_range:
             day_key = day.strftime('%Y-%m-%d')
-            mark = daily_marks.get(
-                f"{item['project__title']}|{item['building__title']}|{item['mark__title']}|{item['user_full_name']}",
-                {}).get(day_key, "")
+            mark = daily_marks.get(key_str, {}).get(day_key, "")
             row.append(mark)
         ws.append(row)
 

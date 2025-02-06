@@ -99,7 +99,7 @@
                                     <td class="checking-days">
                                         {% with date_key=day|date:"Y-m-d" %}
                                             {% if row.logs|get_item:date_key %}
-                                                *
+                                                {{ row.logs|get_item:date_key }}
                                             {% else %}
                                                 -
                                             {% endif %}
