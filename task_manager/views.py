@@ -1581,7 +1581,6 @@ def get_days_in_period(start_date, end_date):
 
 @admin_required(login_url='login')
 def final_report(request):
-
     # Получаем даты из GET-параметров
     start_date = request.GET.get('start_date', timezone.now().replace(day=1).date())
     end_date = request.GET.get('end_date', timezone.now().date())
@@ -1851,7 +1850,121 @@ def export_reports_employees_excel(request):
     start_date = request.GET.get('start_date', timezone.now().replace(day=1).date())
     end_date = request.GET.get('end_date', timezone.now().date())
 
-    # Преобразуем даты (если они переданы как строки)
+    # Преобразуем даты, если они переданы как строки
+    start_date = parse_custom_date(start_date) if isinstance(start_date, str) else start_date
+    end_date = parse_custom_date(end_date) if isinstance(end_date, str) else end_date
+
+    # Фильтры из GET-запроса
+    selected_projects    = request.GET.getlist('project')
+    selected_departments = request.GET.getlist('department')
+    selected_users       = request.GET.getlist('employees')
+    selected_stages      = request.GET.getlist('stage')
+    selected_buildings   = request.GET.getlist('zis')
+    selected_marks       = request.GET.getlist('mark')
+    selected_tasks       = request.GET.getlist('task')
+
+    # Фильтрация Timelog по диапазону дат с оптимизацией связанных данных
+    timelogs = (
+        Timelog.objects
+        .filter(date__range=[start_date, end_date])
+        .select_related('project', 'department', 'user', 'building', 'mark', 'task')
+    )
+
+    # Применяем фильтры, если они указаны
+    if selected_projects:
+        selected_projects = selected_projects[0].split(',')
+        timelogs = timelogs.filter(project__title__in=selected_projects)
+    if selected_departments:
+        selected_departments = selected_departments[0].split(',')
+        timelogs = timelogs.filter(department__title__in=selected_departments)
+    if selected_users:
+        user_filters = Q()
+        user_list = selected_users[0].split(',')
+        for full_name in user_list:
+            first_name, last_name = full_name.strip().split(' ', 1)
+            user_filters |= Q(user__first_name=first_name, user__last_name=last_name)
+        timelogs = timelogs.filter(user_filters)
+    if selected_stages:
+        selected_stages = selected_stages[0].split(',')
+        timelogs = timelogs.filter(stage__in=selected_stages)
+    if selected_buildings:
+        selected_buildings = selected_buildings[0].split(',')
+        timelogs = timelogs.filter(building__title__in=selected_buildings)
+    if selected_marks:
+        selected_marks = selected_marks[0].split(',')
+        timelogs = timelogs.filter(mark__title__in=selected_marks)
+    if selected_tasks:
+        selected_tasks = selected_tasks[0].split(',')
+        timelogs = timelogs.filter(task__title__in=selected_tasks)
+
+    # Группировка данных по отделам (вместо проектов)
+    detailed_report_departments = {}
+    for item in timelogs:
+        department_title = item.department.title
+        if department_title not in detailed_report_departments:
+            detailed_report_departments[department_title] = {
+                'entries': [],
+                'total_time': 0
+            }
+        detailed_report_departments[department_title]['entries'].append(item)
+        detailed_report_departments[department_title]['total_time'] += item.time
+
+    overall_total_time_departments = sum(group['total_time'] for group in detailed_report_departments.values())
+
+    # Создаем книгу Excel
+    wb = Workbook()
+
+    # Лист "Отделы"
+    ws_departments = wb.active
+    ws_departments.title = "Отделы"
+    headers_departments = ["Отдел", "Проект", "Дата", "Исполнитель", "Здание", "Марка", "Задача", "Время"]
+    ws_departments.append(headers_departments)
+    for cell in ws_departments[1]:
+        cell.font = Font(bold=True)
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+
+    # Сортируем записи по дате для отделов
+    for department_title, group in detailed_report_departments.items():
+        entries = sorted(group['entries'], key=lambda x: x.date)
+        for entry in entries:
+            full_name = f"{entry.user.first_name} {entry.user.last_name}"
+            if hasattr(entry.user, 'middle_name') and entry.user.middle_name:
+                full_name += f" {entry.user.middle_name}"
+            row = [
+                entry.department.title,
+                entry.project.title,
+                entry.date.strftime("%d.%m.%Y"),  # Форматируем дату
+                full_name,
+                entry.building.title if entry.building else "",
+                entry.mark.title if entry.mark else "",
+                entry.task.title if entry.task else "",
+                entry.time,
+            ]
+            ws_departments.append(row)
+        ws_departments.append(["", "", "", "", "", "Итого по отделу:", group['total_time']])
+        ws_departments.append([])
+
+    # Лист "Итого" – сводные итоги
+    ws_summary = wb.create_sheet(title="Итого")
+    ws_summary.append(["Общая сумма времени по отделам", overall_total_time_departments])
+    for cell in ws_summary[1]:
+        cell.font = Font(bold=True)
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+
+    # Генерация ответа с файлом Excel
+    response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    filename = f"reports_employees_{start_date.strftime('%Y%m%d')}_{end_date.strftime('%Y%m%d')}.xlsx"
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    wb.save(response)
+    return response
+
+
+def export_reports_view_excel(request):
+    # Получаем начальную и конечную даты из GET параметров
+    start_date = request.GET.get('start_date', timezone.now().replace(day=1).date())
+    end_date = request.GET.get('end_date', timezone.now().date())
+
+    # Преобразуем даты, если они переданы как строки
     start_date = parse_custom_date(start_date) if isinstance(start_date, str) else start_date
     end_date = parse_custom_date(end_date) if isinstance(end_date, str) else end_date
 
@@ -1864,7 +1977,7 @@ def export_reports_employees_excel(request):
     selected_marks = request.GET.getlist('mark')
     selected_tasks = request.GET.getlist('task')
 
-    # Получаем все записи Timelog с оптимизацией связанных данных
+    # Фильтрация Timelog по диапазону дат с оптимизацией связанных данных
     timelogs = (
         Timelog.objects
         .filter(date__range=[start_date, end_date])
@@ -1938,17 +2051,17 @@ def export_reports_employees_excel(request):
         cell.font = Font(bold=True)
         cell.alignment = Alignment(horizontal="center", vertical="center")
 
-    # Заполняем данные для проектов
+    # Заполняем данные для проектов. Сортируем записи по дате.
     for project_title, group in detailed_report_projects.items():
-        entries = group['entries']
+        entries = sorted(group['entries'], key=lambda x: x.date)
         for entry in entries:
-            # Формирование полного ФИО с middle name
+            # Формируем полное ФИО (добавляем middle name, если есть)
             full_name = f"{entry.user.first_name} {entry.user.last_name}"
             if hasattr(entry.user, 'middle_name') and entry.user.middle_name:
                 full_name += f" {entry.user.middle_name}"
             row = [
                 entry.project.title,
-                entry.date.strftime("%Y-%m-%d"),
+                entry.date.strftime("%d.%m.%Y"),
                 entry.department.title,
                 full_name,
                 entry.building.title if entry.building else "",
@@ -1957,7 +2070,7 @@ def export_reports_employees_excel(request):
                 entry.time,
             ]
             ws_projects.append(row)
-        # Строка с итогом по проекту
+        # Итоговая строка по проекту
         ws_projects.append(["", "", "", "", "", "Итого по проекту:", group['total_time']])
         ws_projects.append([])  # пустая строка для разделения
 
@@ -1970,7 +2083,7 @@ def export_reports_employees_excel(request):
         cell.alignment = Alignment(horizontal="center", vertical="center")
 
     for department_title, group in detailed_report_departments.items():
-        entries = group['entries']
+        entries = sorted(group['entries'], key=lambda x: x.date)
         for entry in entries:
             full_name = f"{entry.user.first_name} {entry.user.last_name}"
             if hasattr(entry.user, 'middle_name') and entry.user.middle_name:
@@ -1978,7 +2091,7 @@ def export_reports_employees_excel(request):
             row = [
                 entry.department.title,
                 entry.project.title,
-                entry.date.strftime("%Y-%m-%d"),
+                entry.date.strftime("%d.%m.%Y"),
                 full_name,
                 entry.building.title if entry.building else "",
                 entry.mark.title if entry.mark else "",
@@ -1998,10 +2111,8 @@ def export_reports_employees_excel(request):
         cell.alignment = Alignment(horizontal="center", vertical="center")
 
     # Генерация ответа с файлом Excel
-    response = HttpResponse(
-        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
-    filename = f"reports_employees_{start_date.strftime('%Y%m%d')}_{end_date.strftime('%Y%m%d')}.xlsx"
+    response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    filename = f"reports_view_{start_date.strftime('%Y%m%d')}_{end_date.strftime('%Y%m%d')}.xlsx"
     response["Content-Disposition"] = f'attachment; filename="{filename}"'
     wb.save(response)
     return response
