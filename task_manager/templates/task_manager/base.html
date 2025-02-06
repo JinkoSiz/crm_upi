@@ -239,7 +239,7 @@
             </span>
         </div>
         
-        <ul class="search-list">
+        <ul class="search-list" id="employees-list">
             <span>Вернуться к списку</span>
             {% for user in all_users %}
             <li>{{ user.full_name }}</li>
@@ -261,7 +261,7 @@
             </span>
         </div>
         
-        <ul class="search-list">
+        <ul class="search-list" id="department-list">
             <span>Вернуться к списку</span>
             {% for department in all_departments %}
             <li>{{ department.title }}</li>
@@ -283,7 +283,7 @@
             </span>
         </div>
         
-        <ul class="search-list">
+        <ul class="search-list" id="role-list">
             <span>Вернуться к списку</span>
             {% for role in all_roles %}
             <li>{{ role.title }}</li>
@@ -374,7 +374,7 @@
             </span>
         </div>
         
-        <ul class="search-list">
+        <ul class="search-list" id="project-list">
             <span>Вернуться к списку</span>
             {% for project in all_projects %}
             <li>{{ project.title }}</li>
@@ -398,8 +398,8 @@
         
         <ul class="search-list">
             <span>Вернуться к списку</span>
-            <li>РД</li>
             <li>ОТР</li>
+            <li>РД</li>
             <li>ПД</li>
         </ul>
         <ul class="finde-items active"></ul>
@@ -418,7 +418,7 @@
             </span>
         </div>
         
-        <ul class="search-list">
+        <ul class="search-list" id="section-list">
             <span>Вернуться к списку</span>
             {% for section in all_sections %}
             <li>{{ section.title }}</li>
@@ -440,7 +440,7 @@
             </span>
         </div>
         
-        <ul class="search-list">
+        <ul class="search-list" id="zis-list">
             <span>Вернуться к списку</span>
             {% for building in all_buildings %}
             <li>{{ building.title }}</li>
@@ -462,7 +462,7 @@
             </span>
         </div>
         
-        <ul class="search-list">
+        <ul class="search-list" id="mark-list">
             <span>Вернуться к списку</span>
             {% for mark in all_marks %}
             <li>{{ mark.title }}</li>
@@ -484,7 +484,7 @@
             </span>
         </div>
         
-        <ul class="search-list">
+        <ul class="search-list" id="tasks-list">
             <span>Вернуться к списку</span>
             {% for task in all_tasks %}
             <li>{{ task.title }}</li>
@@ -965,6 +965,132 @@
             }
         }
 
+        const employeesList = document.querySelector('#employees-list'),
+              departmentList = document.querySelector('#department-list'),
+              roleList = document.querySelector('#role-list'),
+              projectList = document.querySelector('#project-list'),
+              sectionList = document.querySelector('#section-list'),
+              zisList = document.querySelector('#zis-list'),
+              markList = document.querySelector('#mark-list'),
+              tasksList = document.querySelector('#tasks-list');
+
+        const employeesArr = [
+            {% for user in all_users %}
+            {
+                title: "{{ user.full_name }}",
+            },
+            {% endfor %}
+        ]
+
+        const departmentArr = [
+            {% for department in all_departments %}
+            {
+                title: "{{ department.title }}",
+            },
+            {% endfor %}
+        ]
+
+        const roleArr = [
+            {% for role in all_roles %}
+            {
+                title: "{{ role.title }}",
+            },
+            {% endfor %}
+        ]
+
+        const projectArr = [
+            {% for project in all_projects %}
+            {
+                title: "{{ project.title }}",
+            },
+            {% endfor %}
+        ]
+
+        const sectionArr = [
+            {% for section in all_sections %}
+            {
+                title: "{{ section.title }}",
+            },
+            {% endfor %}
+        ]
+
+        const zisArr = [
+            {% for building in all_buildings %}
+            {
+                title: "{{ building.title }}",
+            },
+            {% endfor %}
+        ]
+
+        const markArr = [
+            {% for mark in all_marks %}
+            {
+                title: "{{ mark.title }}",
+            },
+            {% endfor %}
+        ]
+
+        const taskArr = [
+            {% for task in all_tasks %}
+            {
+                title: "{{ task.title }}",
+            },
+            {% endfor %}
+        ]
+
+        function appendToLayout(layuotId, arr) {
+
+            layuotId.innerHTML = '';
+
+            layuotId.innerHTML += '<span>Вернуться к списку</span>';
+
+            function extractNumber(str) {
+                const match = str.match(/^\d+$/);
+                return match ? parseInt(str, 10) : NaN;
+            }
+
+            function categorizeTitle(title) {
+                if (/^\d+$/.test(title)) return 1;
+                if (/^[А-Яа-яЁё\s\d]+$/.test(title)) return 2;
+                return 3;
+            }
+
+            arr.sort((a,b) => {
+                const categoryA = categorizeTitle(a.title);
+                const categoryB = categorizeTitle(b.title);
+
+                if (categoryA !== categoryB) {
+                    return categoryA - categoryB;
+                }
+
+                const numberA = extractNumber(a.title);
+                const numberB = extractNumber(b.title);
+
+                if (!isNaN(numberA) && !isNaN(numberB)) {
+                    return numberA - numberB;
+                }
+
+                return a.title.localeCompare(b.title, undefined, { numeric: true, sensitivity: 'base' });
+            });
+
+            arr.forEach(item => {
+                const row = `
+                    <li>${item.title.replace(/\n/g, '')}</li>
+                `
+                layuotId.innerHTML += row;
+            })
+
+        }
+
+        appendToLayout(employeesList, employeesArr);
+        appendToLayout(departmentList, departmentArr);
+        appendToLayout(roleList, roleArr);
+        appendToLayout(projectList, projectArr);
+        appendToLayout(sectionList, sectionArr);
+        appendToLayout(zisList, zisArr);
+        appendToLayout(markList, markArr);
+        appendToLayout(tasksList, taskArr);
+
         filterModals.forEach(block => {
             const searchInput = block.querySelector('.search-block input[type="text"]');
             const searchHiddenInput = block.querySelector('.search-block input[type="text"][hidden]');
@@ -1003,34 +1129,29 @@
 
             searchList.addEventListener('click', (event) => {
                 if (event.target.tagName === 'LI') {
-                    const selectedValue = event.target.textContent.trim(); // Получаем выбранный текст
+                    const selectedValue = event.target.textContent.trim();
 
-                    // Проверка, находится ли элемент уже в массиве
                     const isAlreadySelected = selectedItems.includes(selectedValue);
 
                     const listItem = event.target;
 
                     if (!isAlreadySelected) {
 
-                        // Преобразуем выбранный текст в соответствующие сокращения
                         if (selectedValue === 'РД') selectedItems.push('RD');
                         else if (selectedValue === 'ОТР') selectedItems.push('OTR');
                         else if (selectedValue === 'ПД') selectedItems.push('PD');
-                        else selectedItems.push(selectedValue); // Для других значений
+                        else selectedItems.push(selectedValue);
 
-                        // Создаем новый элемент списка
                         const newItem = document.createElement('li');
                         newItem.innerHTML = `${selectedValue} <span>+</span>`;
                         findeItems.appendChild(newItem);
 
-                        // Добавляем класс для выделения элемента
                         listItem.classList.add('active');
                     } else {
-                        // Если элемент уже в массиве, удаляем его
+
                         selectedItems.splice(selectedItems.indexOf(selectedValue), 1);
                         listItem.classList.remove('active');
 
-                        // Ищем и удаляем элемент в DOM
                         const itemToRemove = Array.from(findeItems.children).find(
                             child => child.textContent.trim().startsWith(selectedValue)
                         );
@@ -1039,14 +1160,11 @@
                         }
                     }
 
-                    // Обновляем скрытый инпут с сериализованным массивом
                     searchHiddenInput.value = JSON.stringify(selectedItems);
 
-                    // Обновляем placeholder с текущими выбранными значениями
                     updatePlaceholder(findeItems, selectedItems);
                 }
 
-                // Применение внешней логики
                 checkerApply();
             });
 
@@ -1084,18 +1202,10 @@
                     });
                     updatePlaceholder(findeItems, selectedItems);
                 }
-
-
             }
-
 
             checkerApply();
 
-            // const applyButton = block.querySelector('.apply-filters');
-            // applyButton.addEventListener('click', () => {
-            //     sendToBackend(dataCid, selectedItems);
-            // });
-            // updatePlaceholder(findeItems, selectedItems);
         });
 
         function sendToBackend(cid, data) {
