@@ -29,114 +29,90 @@
                 <button class="accept-btn" type="submit">Применить</button>
             </div>
         </form>
-        <div class="table__wrapper">
-            <div class="table__left">
-                <div class="table">
-                    <div class="table__header">
-                        <div class="table__row">
-                            <div class="table__item" style="width: 202px;">
-                                <button class="sorter" data-cid="project">
-                                    <p>Объект</p>
-                                    <span>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                            <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                        </svg>
-                                    </span>
-                                </button>
-                            </div>
-                            <div class="table__item" style="width: 220px;">
-                                <button class="sorter" data-cid="zis">
-                                    <p>ЗиС</p>
-                                    <span>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                            <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                        </svg>
-                                    </span>
-                                </button>
-                            </div>
-                            <div class="table__item" style="width: 80px;">
-                                <button class="sorter" data-cid="mark">
-                                    <p>Марка</p>
-                                    <span>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                            <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                        </svg>
-                                    </span>
-                                </button>
-                            </div>
-                            <div class="table__item" style="width: 160px;">
-                                <button class="sorter" data-cid="employees">
-                                    <p>Исполнитель</p>
-                                    <span>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                            <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                        </svg>
-                                    </span>
-                                </button>
-                            </div>
-                            <div class="table__item" style="width: 96px; padding: 20px 10px;">
-                                <p>Часы</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="table__body">
-                        {% for item in report_data %}
-                        <div class="table__row">
-                            <div class="table__item" style="width: 202px;">{{ item.project__title }}</div>
-                            <div class="table__item" style="width: 220px;">{{ item.building__title }}</div>
-                            <div class="table__item" style="width: 80px;">{{ item.mark__title }}</div>
-                            <div class="table__item" style="width: 160px;">{{ item.user_full_name }}</div>
-                            <div class="table__item border-in" style="width: 96px; padding: 20px 10px;">{{ item.total_hours }} ч</div>
-                        </div>
+        <div class="table-wrapper only-bottom scroller">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>
+                            <button class="sorter" data-cid="project">
+                                <p>Объект</p>
+                                <span>
+                                    <!-- SVG-иконка сортировки -->
+                                </span>
+                            </button>
+                        </th>
+                        <th>
+                            <button class="sorter" data-cid="zis">
+                                <p>ЗиС</p>
+                                <span>
+                                    <!-- SVG-иконка сортировки -->
+                                </span>
+                            </button>
+                        </th>
+                        <th>
+                            <button class="sorter" data-cid="mark">
+                                <p>Марка</p>
+                                <span>
+                                    <!-- SVG-иконка сортировки -->
+                                </span>
+                            </button>
+                        </th>
+                        <th>
+                            <button class="sorter" data-cid="employees">
+                                <p>Исполнитель</p>
+                                <span>
+                                    <!-- SVG-иконка сортировки -->
+                                </span>
+                            </button>
+                        </th>
+                        <th>
+                            <p>Часы</p>
+                        </th>
+                        {# Заголовок для дней по месяцам #}
+                        {% for month_key, month_data in days_by_period.items %}
+                            <th class="rotated">
+                                <p>{{ month_data.month_name }}</p>
+                            </th>
                         {% endfor %}
-                    </div>
-                </div>
-            </div>
-            <div class="table__right">
-                <div class="table__scroll">
-                    <div class="table">
-                        <div class="table__header">
-                            {% for month_key, month_data in days_by_period.items %}
-                            <div class="table__header__wrapper">
-                                <div class="table__header__title">{{ month_data.month_name }}</div>
-                                <div class="table__row" style="height: 34px;">
-                                    {% for day in month_data.days %}
-                                        <div class="table__item" style="width: 30px; height: 34px; padding: 5px 10px;">
-                                            <p>{{ day|date:"d" }}</p>
-                                        </div>
-                                    {% endfor %}
-                                </div>
-                            </div>
+                    </tr>
+                    <tr>
+                        <th colspan="5"></th>
+                        {# Выводим дни для каждого месяца #}
+                        {% for month_key, month_data in days_by_period.items %}
+                            {% for day in month_data.days %}
+                                <th><p>{{ day|date:"d" }}</p></th>
                             {% endfor %}
-                        </div>
-                        <div class="table__body">
-                            {% for item in report_data %}
-                            <div class="table__row">
-                                {% with item_key=item.project__title|add:"|"|add:item.building__title|add:"|"|add:item.mark__title|add:"|"|add:item.user_full_name %}
-                                
-                                    <!-- Проходим по месяцам -->
-                                    {% for month_key, month_data in days_by_period.items %}
-                                        {% for date in month_data.days %}
-                                            <div class="table__item checking-days">
-                                                {% with date_key=date|date:"Y-m-d" %}
-                                                    {% for log in report_data %}
-                                                        {% if log.date|date:"Y-m-d" == date_key and log.project__title == item.project__title and log.building__title == item.building__title and log.user_full_name == item.user_full_name %}
-                                                            {{ log.mark__title }}
-                                                        {% endif %}
-                                                    {% endfor %}
-                                                {% endwith %}
-                                            </div>
-                                        {% endfor %}
-                                    {% endfor %}
-                                    
-                                {% endwith %}
-                            </div>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in grouped_data.values %}
+                    <tr>
+                        <td>{{ row.project }}</td>
+                        <td>{{ row.building }}</td>
+                        <td>{{ row.mark }}</td>
+                        <td>{{ row.user }}</td>
+                        <td>{{ row.total_hours }} ч</td>
+                        {% for month_key, month_data in days_by_period.items %}
+                            <!-- Месяцы до последнего -->
+                            {% for day in month_data.days %}
+                                    <td class="checking-days">
+                                        {% with date_key=day|date:"Y-m-d" %}
+                                            {% if row.logs|get_item:date_key %}
+                                                {{ row.logs|get_item:date_key }}
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        {% endwith %}
+                                    </td>
                             {% endfor %}
-                        </div>
-                    </div>
-                </div>
-            </div>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
+
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const checkingDays = document.querySelectorAll('td.checking-days');
