@@ -1,5 +1,6 @@
 from task_manager.models import *
 
+
 def all_users(request):
     """
     Контекстный процессор для добавления всех данных в контекст, с фильтрацией зданий по проектам.
@@ -12,7 +13,7 @@ def all_users(request):
     all_marks = Mark.objects.all()
     all_tasks = TaskType.objects.all()
 
-    # Фильтрация зданий по выбранным проектамBc
+    # Фильтрация зданий по выбранным проектам
     all_buildings = Building.objects.all()
     selected_projects = request.GET.get('project', '')  # Получаем строку проектов из GET
 

@@ -2,6 +2,8 @@ from datetime import datetime, timedelta, timezone
 import re
 import dateparser
 import pytz
+import pandas as pd
+from openpyxl.styles import Font, Border, Side
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.utils.timezone import now
 from openpyxl.styles import PatternFill, Alignment
@@ -1540,16 +1542,54 @@ def get_days_in_month(month_date):
     return [month_date + timedelta(days=i) for i in range((end_of_month - month_date).days + 1)]
 
 
+def get_months_in_period(start_date, end_date):
+    """
+    Возвращает список объектов date, представляющих первый день каждого месяца,
+    в котором попадает период от start_date до end_date.
+    """
+    months = []
+    current_month = start_date.replace(day=1)
+    while current_month <= end_date:
+        months.append(current_month)
+        if current_month.month == 12:
+            current_month = current_month.replace(year=current_month.year + 1, month=1)
+        else:
+            current_month = current_month.replace(month=current_month.month + 1)
+    return months
+
+
+def get_days_in_period(start_date, end_date):
+    """
+    Возвращает словарь, где для каждого месяца (ключ в формате 'YYYY-MM')
+    указан список дат (объекты date), входящих в выбранный период.
+    Если период начинается не с первого дня месяца или заканчивается раньше,
+    то в список попадут только дни внутри периода.
+    """
+    days_by_month = {}
+    current = start_date
+    while current <= end_date:
+        month_key = current.strftime('%Y-%m')
+        if month_key not in days_by_month:
+            days_by_month[month_key] = {
+                'month_name': current.strftime('%B'),
+                'days': []
+            }
+        days_by_month[month_key]['days'].append(current)
+        current += timedelta(days=1)
+    return days_by_month
+
+
 @admin_required(login_url='login')
 def final_report(request):
+    # Получаем даты из GET-параметров
     start_date = request.GET.get('start_date', timezone.now().replace(day=1).date())
     end_date = request.GET.get('end_date', timezone.now().date())
 
-    # Преобразуем даты с использованием новой функции
+    # Преобразуем даты, если они переданы как строки
     start_date = parse_custom_date(start_date) if isinstance(start_date, str) else start_date
     end_date = parse_custom_date(end_date) if isinstance(end_date, str) else end_date
 
-    # Фильтры из GET-запроса
+    # Фильтры (проект, исполнитель, зиС, марка) применяются как в вашем коде…
     selected_projects = request.GET.getlist('project')
     selected_users = request.GET.getlist('employees')
     selected_buildings = request.GET.getlist('zis')
@@ -1557,7 +1597,6 @@ def final_report(request):
 
     timelogs = Timelog.objects.filter(date__range=[start_date, end_date])
 
-    # Применяем фильтры, если они указаны
     if selected_projects:
         selected_projects = selected_projects[0].split(',')
         timelogs = timelogs.filter(project__title__in=selected_projects)
@@ -1575,47 +1614,44 @@ def final_report(request):
         selected_marks = selected_marks[0].split(',')
         timelogs = timelogs.filter(mark__title__in=selected_marks)
 
-    # Используем select_related для оптимизации запросов
-    timelogs = timelogs.select_related(
-        'project', 'building', 'mark', 'user'
-    )
+    timelogs = timelogs.select_related('project', 'building', 'mark', 'user')
 
-    report_data = timelogs.values('project__title', 'building__title', 'mark__title').annotate(
-        total_hours=Sum('time'),
-        user_full_name=Concat(F('user__first_name'), Value(' '), F('user__last_name'))
-    )
-
-    # Получаем месяцы до последнего и дни последнего месяца
-    months_in_range = get_months_in_range(start_date, end_date)
-    days_in_last_month = get_days_in_month(end_date.replace(day=1))
-
-    # Группировка данных по месяцам и дням
-    monthly_hours = {}
-    grouped_hours = {}
-    last_month_key = end_date.strftime('%Y-%m')
-
+    # Сгруппируем логи по уникальному ряду и по дате.
+    grouped_data = {}
     for log in timelogs:
-        key_str = f"{log.project.title}|{log.building.title}|{log.mark.title}|{log.user.first_name} {log.user.last_name}"
-        month_key = log.date.strftime('%Y-%m')
-        day_key = log.date.strftime('%Y-%m-%d')
+        # Формируем уникальный ключ строки. Разделитель можно выбрать любой.
+        row_key = f"{log.project.title}|{log.building.title}|{log.mark.title}|{log.user.first_name} {log.user.last_name}"
+        date_key = log.date.strftime('%Y-%m-%d')
+        if row_key not in grouped_data:
+            grouped_data[row_key] = {
+                'project': log.project.title,
+                'building': log.building.title,
+                'mark': log.mark.title,
+                'user': f"{log.user.last_name} {log.user.first_name} {log.user.middle_name}",
+                'total_hours': 0,  # можно суммировать часы по всем датам
+                'logs': {}  # здесь будут логи по датам
+            }
+        grouped_data[row_key]['total_hours'] += log.time
+        # Если по одной дате может быть несколько записей – можно делать список.
+        grouped_data[row_key]['logs'][date_key] = log.mark.title
 
-        if month_key != last_month_key:
-            # Группируем по месяцам, кроме последнего
-            if key_str not in grouped_hours:
-                grouped_hours[key_str] = {}
-            grouped_hours[key_str][month_key] = grouped_hours[key_str].get(month_key, 0) + log.time
-        else:
-            # Последний месяц по дням
-            if key_str not in monthly_hours:
-                monthly_hours[key_str] = {}
-            monthly_hours[key_str][day_key] = log.time
+    # Если вам требуется оставить и report_data для других целей, можно его оставить:
+    report_data = timelogs.values(
+        'project__title',
+        'building__title',
+        'mark__title'
+    ).annotate(
+        total_hours=Sum('time'),
+        user_full_name=Concat(F('user__last_name'), Value(' '), F('user__first_name'))
+    )
+
+    # Получаем структуру дней, входящих в выбранный период
+    days_by_period = get_days_in_period(start_date, end_date)
 
     context = {
-        'report_data': report_data,
-        'months_in_range': months_in_range,
-        'days_in_last_month': days_in_last_month,
-        'grouped_hours': grouped_hours,
-        'monthly_hours': monthly_hours,
+        'report_data': report_data,  # если нужен для сортировки или прочего
+        'grouped_data': grouped_data,  # сгруппированные данные для таблицы
+        'days_by_period': days_by_period,  # структура дней по месяцам
         'start_date': start_date,
         'end_date': end_date,
     }
@@ -1648,6 +1684,13 @@ def parse_russian_date(date_str):
 
 
 def export_to_excel(request):
+    # Маппинг английских месяцев на русский
+    months_map = {
+        "January": "Январь", "February": "Февраль", "March": "Март", "April": "Апрель",
+        "May": "Май", "June": "Июнь", "July": "Июль", "August": "Август",
+        "September": "Сентябрь", "October": "Октябрь", "November": "Ноябрь", "December": "Декабрь"
+    }
+
     # Получаем строки дат из запроса
     start_date_str = request.GET.get('start_date')
     end_date_str = request.GET.get('end_date')
@@ -1666,9 +1709,9 @@ def export_to_excel(request):
     selected_users = request.GET.getlist('employees')
     selected_buildings = request.GET.getlist('zis')
     selected_marks = request.GET.getlist('mark')
+
     # Получаем данные из базы данных
     timelogs = Timelog.objects.filter(date__range=[start_date, end_date])
-    print(f'start {timelogs}')
 
     # Применяем фильтры, если они указаны
     if selected_projects:
@@ -1688,89 +1731,105 @@ def export_to_excel(request):
         selected_marks = selected_marks[0].split(',')
         timelogs = timelogs.filter(mark__title__in=selected_marks)
 
-    # Создаем переменные для хранения часов по месяцам и дням
-    grouped_hours = {}
-    monthly_hours = {}
-
-    last_month_key = end_date.strftime('%Y-%m')
+    # Создаем переменные для хранения марок по дням
+    daily_marks = {}
     for log in timelogs:
-        key_str = f"{log.project.title}|{log.building.title}|{log.mark.title}|{log.user.first_name} {log.user.last_name}"
-        month_key = log.date.strftime('%Y-%m')
-
-        if month_key != last_month_key:
-            # Группируем по месяцам, кроме последнего
-            if key_str not in grouped_hours:
-                grouped_hours[key_str] = {}
-            grouped_hours[key_str][month_key] = grouped_hours[key_str].get(month_key, 0) + log.time
-        else:
-            # Последний месяц по дням
-            if key_str not in monthly_hours:
-                monthly_hours[key_str] = {}
-            daily_key = log.date.strftime('%Y-%m-%d')
-            monthly_hours[key_str][daily_key] = log.time
+        # Группировка по: проект, здание, марка и уникальный идентификатор пользователя
+        key_str = f"{log.project.title}|{log.building.title}|{log.mark.title}|{log.user.id}"
+        day_key = log.date.strftime('%Y-%m-%d')
+        if key_str not in daily_marks:
+            daily_marks[key_str] = {}
+        daily_marks[key_str][day_key] = log.mark.title
 
     # Создаем новую книгу Excel
     wb = Workbook()
     ws = wb.active
-    ws.title = "Отчет по таймлогам"
+    ws.title = "Календарный план"
 
     # Записываем заголовки
     headers = ["Объект", "ЗиС", "Марка", "Исполнитель", "Часы"]
-    months_in_range = get_months_in_range(start_date, end_date)
-    days_in_last_month = get_days_in_month(end_date.replace(day=1))
-
-    for month in months_in_range:
-        headers.append(month.strftime("%B %Y"))  # Заголовок месяца
-    for day in days_in_last_month:
-        headers.append(day.strftime("%d %b %Y"))  # Заголовок дня
-
+    days_in_range = pd.date_range(start=start_date, end=end_date)
+    headers.extend([day.strftime('%d') for day in days_in_range])  # Только число без месяца
     ws.append(headers)
 
-    # Стилизация для заливки ячеек с данными
-    fill_style = PatternFill(start_color="ADD8E6", end_color="ADD8E6", fill_type="solid")
+    # Формируем строку с месяцами
+    month_row = ["", "", "", "", ""]
+    current_month = ""
+    for day in days_in_range:
+        month_name = months_map[day.strftime('%B')]
+        if month_name != current_month:
+            month_row.append(month_name)
+            current_month = month_name
+        else:
+            month_row.append("")
+    ws.append(month_row)
 
     # Обработка данных для экспорта
-    for item in timelogs.values('project__title', 'building__title', 'mark__title').annotate(
-            total_hours=Sum('time'),
-            user_full_name=Concat(F('user__first_name'), Value(' '), F('user__last_name'))
+    for item in timelogs.values(
+            'project__title',
+            'building__title',
+            'mark__title',
+            'user__id',
+            'user__middle_name'
+    ).annotate(
+        total_hours=Sum('time'),
+        user_full_name=Concat(
+            F('user__last_name'),
+            Value(' '),
+            F('user__first_name'),
+            Value(' '),
+            F('user__middle_name')
+        )
     ):
+        # Формируем строку с данными
         row = [
             item['project__title'],
             item['building__title'],
             item['mark__title'],
-            item['user_full_name'],
+            item['user_full_name'],  # Теперь включает middle name
             f"{item['total_hours']}"
         ]
 
-        # Добавляем данные по месяцам
-        for month in months_in_range:
-            month_key = month.strftime("%Y-%m")
-            hours = grouped_hours.get(
-                f"{item['project__title']}|{item['building__title']}|{item['mark__title']}|{item['user_full_name']}",
-                {}).get(month_key, "-")
-            row.append(hours)
-            if hours != "-":
-                ws[f"{get_column_letter(len(row))}{ws.max_row}"].fill = fill_style  # Заливаем ячейку
+        # Формируем группирующий ключ, используя user__id
+        key_str = f"{item['project__title']}|{item['building__title']}|{item['mark__title']}|{item['user__id']}"
 
-        # Добавляем данные по дням последнего месяца
-        for date in days_in_last_month:
-            day_key = date.strftime("%Y-%m-%d")
-            hours = monthly_hours.get(
-                f"{item['project__title']}|{item['building__title']}|{item['mark__title']}|{item['user_full_name']}",
-                {}).get(day_key, "-")
-            row.append(item['mark__title'] if hours != "-" else hours)
-
+        for day in days_in_range:
+            day_key = day.strftime('%Y-%m-%d')
+            mark = daily_marks.get(key_str, {}).get(day_key, "")
+            row.append(mark)
         ws.append(row)
 
-    # Настройка ширины колонок и выравнивание
-    for col in range(1, len(headers) + 1):
-        ws.column_dimensions[get_column_letter(col)].width = 15
-        for cell in ws[get_column_letter(col)]:
-            cell.alignment = Alignment(horizontal="center", vertical="center")
+    # Настройка ширины колонок
+    column_widths = [30, 20, 20, 25, 15] + [5] * len(days_in_range)
+    for i, col in enumerate(ws.columns, 1):
+        ws.column_dimensions[get_column_letter(i)].width = column_widths[i - 1]
 
-    # Генерация ответа с файлом Excel
+    # Фиксация заголовков и первых столбцов
+    ws.freeze_panes = "F3"  # Фиксируем первую строку с заголовками и первые 5 столбцов
+
+    # Форматирование заголовков
+    for row in ws.iter_rows(min_row=1, max_row=2):
+        for cell in row:
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+            cell.font = Font(bold=True)
+            cell.fill = PatternFill(start_color="D9EAD3", end_color="D9EAD3", fill_type="solid")
+
+    # Выделение суббот и воскресений красным
+    for col_num, day in enumerate(days_in_range, start=6):
+        if day.weekday() in [5, 6]:  # 5 - суббота, 6 - воскресенье
+            for row in ws.iter_rows(min_row=1, max_row=ws.max_row, min_col=col_num, max_col=col_num):
+                for cell in row:
+                    cell.fill = PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid")
+
+    # Добавление границ для всех ячеек
+    for row in ws.iter_rows(min_row=1, max_row=ws.max_row, min_col=1, max_col=len(headers)):
+        for cell in row:
+            cell.border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'),
+                                 bottom=Side(style='thin'))
+
+    # Генерация файла
     response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-    response["Content-Disposition"] = 'attachment; filename="timelog_report.xlsx"'
+    response["Content-Disposition"] = 'attachment; filename="calendar_plan.xlsx"'
     wb.save(response)
     return response
 
@@ -1784,3 +1843,276 @@ def get_buildings_for_project(request, project_id):
     building_data = [{'id': building.id, 'name': building.name} for building in buildings]
 
     return JsonResponse({'buildings': building_data})
+
+
+def export_reports_employees_excel(request):
+    # Получаем начальную и конечную даты из GET параметров
+    start_date = request.GET.get('start_date', timezone.now().replace(day=1).date())
+    end_date = request.GET.get('end_date', timezone.now().date())
+
+    # Преобразуем даты, если они переданы как строки
+    start_date = parse_custom_date(start_date) if isinstance(start_date, str) else start_date
+    end_date = parse_custom_date(end_date) if isinstance(end_date, str) else end_date
+
+    # Фильтры из GET-запроса
+    selected_projects    = request.GET.getlist('project')
+    selected_departments = request.GET.getlist('department')
+    selected_users       = request.GET.getlist('employees')
+    selected_stages      = request.GET.getlist('stage')
+    selected_buildings   = request.GET.getlist('zis')
+    selected_marks       = request.GET.getlist('mark')
+    selected_tasks       = request.GET.getlist('task')
+
+    # Фильтрация Timelog по диапазону дат с оптимизацией связанных данных
+    timelogs = (
+        Timelog.objects
+        .filter(date__range=[start_date, end_date])
+        .select_related('project', 'department', 'user', 'building', 'mark', 'task')
+    )
+
+    # Применяем фильтры, если они указаны
+    if selected_projects:
+        selected_projects = selected_projects[0].split(',')
+        timelogs = timelogs.filter(project__title__in=selected_projects)
+    if selected_departments:
+        selected_departments = selected_departments[0].split(',')
+        timelogs = timelogs.filter(department__title__in=selected_departments)
+    if selected_users:
+        user_filters = Q()
+        user_list = selected_users[0].split(',')
+        for full_name in user_list:
+            first_name, last_name = full_name.strip().split(' ', 1)
+            user_filters |= Q(user__first_name=first_name, user__last_name=last_name)
+        timelogs = timelogs.filter(user_filters)
+    if selected_stages:
+        selected_stages = selected_stages[0].split(',')
+        timelogs = timelogs.filter(stage__in=selected_stages)
+    if selected_buildings:
+        selected_buildings = selected_buildings[0].split(',')
+        timelogs = timelogs.filter(building__title__in=selected_buildings)
+    if selected_marks:
+        selected_marks = selected_marks[0].split(',')
+        timelogs = timelogs.filter(mark__title__in=selected_marks)
+    if selected_tasks:
+        selected_tasks = selected_tasks[0].split(',')
+        timelogs = timelogs.filter(task__title__in=selected_tasks)
+
+    # Группировка данных по отделам (вместо проектов)
+    detailed_report_departments = {}
+    for item in timelogs:
+        department_title = item.department.title
+        if department_title not in detailed_report_departments:
+            detailed_report_departments[department_title] = {
+                'entries': [],
+                'total_time': 0
+            }
+        detailed_report_departments[department_title]['entries'].append(item)
+        detailed_report_departments[department_title]['total_time'] += item.time
+
+    overall_total_time_departments = sum(group['total_time'] for group in detailed_report_departments.values())
+
+    # Создаем книгу Excel
+    wb = Workbook()
+
+    # Лист "Отделы"
+    ws_departments = wb.active
+    ws_departments.title = "Отделы"
+    headers_departments = ["Отдел", "Проект", "Дата", "Исполнитель", "Здание", "Марка", "Задача", "Время"]
+    ws_departments.append(headers_departments)
+    for cell in ws_departments[1]:
+        cell.font = Font(bold=True)
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+
+    # Сортируем записи по дате для отделов
+    for department_title, group in detailed_report_departments.items():
+        entries = sorted(group['entries'], key=lambda x: x.date)
+        for entry in entries:
+            full_name = f"{entry.user.first_name} {entry.user.last_name}"
+            if hasattr(entry.user, 'middle_name') and entry.user.middle_name:
+                full_name += f" {entry.user.middle_name}"
+            row = [
+                entry.department.title,
+                entry.project.title,
+                entry.date.strftime("%d.%m.%Y"),  # Форматируем дату
+                full_name,
+                entry.building.title if entry.building else "",
+                entry.mark.title if entry.mark else "",
+                entry.task.title if entry.task else "",
+                entry.time,
+            ]
+            ws_departments.append(row)
+        ws_departments.append(["", "", "", "", "", "Итого по отделу:", group['total_time']])
+        ws_departments.append([])
+
+    # Лист "Итого" – сводные итоги
+    ws_summary = wb.create_sheet(title="Итого")
+    ws_summary.append(["Общая сумма времени по отделам", overall_total_time_departments])
+    for cell in ws_summary[1]:
+        cell.font = Font(bold=True)
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+
+    # Генерация ответа с файлом Excel
+    response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    filename = f"reports_employees_{start_date.strftime('%Y%m%d')}_{end_date.strftime('%Y%m%d')}.xlsx"
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    wb.save(response)
+    return response
+
+
+def export_reports_view_excel(request):
+    # Получаем начальную и конечную даты из GET параметров
+    start_date = request.GET.get('start_date', timezone.now().replace(day=1).date())
+    end_date = request.GET.get('end_date', timezone.now().date())
+
+    # Преобразуем даты, если они переданы как строки
+    start_date = parse_custom_date(start_date) if isinstance(start_date, str) else start_date
+    end_date = parse_custom_date(end_date) if isinstance(end_date, str) else end_date
+
+    # Фильтры из GET-запроса
+    selected_projects = request.GET.getlist('project')
+    selected_departments = request.GET.getlist('department')
+    selected_users = request.GET.getlist('employees')
+    selected_stages = request.GET.getlist('stage')
+    selected_buildings = request.GET.getlist('zis')
+    selected_marks = request.GET.getlist('mark')
+    selected_tasks = request.GET.getlist('task')
+
+    # Фильтрация Timelog по диапазону дат с оптимизацией связанных данных
+    timelogs = (
+        Timelog.objects
+        .filter(date__range=[start_date, end_date])
+        .select_related('project', 'department', 'user', 'building', 'mark', 'task')
+    )
+
+    # Применяем фильтры, если они указаны
+    if selected_projects:
+        selected_projects = selected_projects[0].split(',')
+        timelogs = timelogs.filter(project__title__in=selected_projects)
+    if selected_departments:
+        selected_departments = selected_departments[0].split(',')
+        timelogs = timelogs.filter(department__title__in=selected_departments)
+    if selected_users:
+        user_filters = Q()
+        user_list = selected_users[0].split(',')
+        for full_name in user_list:
+            first_name, last_name = full_name.strip().split(' ', 1)
+            user_filters |= Q(user__first_name=first_name, user__last_name=last_name)
+        timelogs = timelogs.filter(user_filters)
+    if selected_stages:
+        selected_stages = selected_stages[0].split(',')
+        timelogs = timelogs.filter(stage__in=selected_stages)
+    if selected_buildings:
+        selected_buildings = selected_buildings[0].split(',')
+        timelogs = timelogs.filter(building__title__in=selected_buildings)
+    if selected_marks:
+        selected_marks = selected_marks[0].split(',')
+        timelogs = timelogs.filter(mark__title__in=selected_marks)
+    if selected_tasks:
+        selected_tasks = selected_tasks[0].split(',')
+        timelogs = timelogs.filter(task__title__in=selected_tasks)
+
+    # Группировка данных по проектам
+    detailed_report_projects = {}
+    for item in timelogs:
+        project_title = item.project.title
+        if project_title not in detailed_report_projects:
+            detailed_report_projects[project_title] = {
+                'entries': [],
+                'total_time': 0
+            }
+        detailed_report_projects[project_title]['entries'].append(item)
+        detailed_report_projects[project_title]['total_time'] += item.time
+
+    overall_total_time_projects = sum(group['total_time'] for group in detailed_report_projects.values())
+
+    # Группировка данных по отделам
+    detailed_report_departments = {}
+    for item in timelogs:
+        department_title = item.department.title
+        if department_title not in detailed_report_departments:
+            detailed_report_departments[department_title] = {
+                'entries': [],
+                'total_time': 0
+            }
+        detailed_report_departments[department_title]['entries'].append(item)
+        detailed_report_departments[department_title]['total_time'] += item.time
+
+    overall_total_time_departments = sum(group['total_time'] for group in detailed_report_departments.values())
+
+    # Создаем книгу Excel
+    wb = Workbook()
+
+    # Лист "Проекты"
+    ws_projects = wb.active
+    ws_projects.title = "Проекты"
+    headers_projects = ["Проект", "Дата", "Отдел", "Исполнитель", "Здание", "Марка", "Задача", "Время"]
+    ws_projects.append(headers_projects)
+    for cell in ws_projects[1]:
+        cell.font = Font(bold=True)
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+
+    # Заполняем данные для проектов. Сортируем записи по дате.
+    for project_title, group in detailed_report_projects.items():
+        entries = sorted(group['entries'], key=lambda x: x.date)
+        for entry in entries:
+            # Формируем полное ФИО (добавляем middle name, если есть)
+            full_name = f"{entry.user.first_name} {entry.user.last_name}"
+            if hasattr(entry.user, 'middle_name') and entry.user.middle_name:
+                full_name += f" {entry.user.middle_name}"
+            row = [
+                entry.project.title,
+                entry.date.strftime("%d.%m.%Y"),
+                entry.department.title,
+                full_name,
+                entry.building.title if entry.building else "",
+                entry.mark.title if entry.mark else "",
+                entry.task.title if entry.task else "",
+                entry.time,
+            ]
+            ws_projects.append(row)
+        # Итоговая строка по проекту
+        ws_projects.append(["", "", "", "", "", "Итого по проекту:", group['total_time']])
+        ws_projects.append([])  # пустая строка для разделения
+
+    # Лист "Отделы"
+    ws_departments = wb.create_sheet(title="Отделы")
+    headers_departments = ["Отдел", "Проект", "Дата", "Исполнитель", "Здание", "Марка", "Задача", "Время"]
+    ws_departments.append(headers_departments)
+    for cell in ws_departments[1]:
+        cell.font = Font(bold=True)
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+
+    for department_title, group in detailed_report_departments.items():
+        entries = sorted(group['entries'], key=lambda x: x.date)
+        for entry in entries:
+            full_name = f"{entry.user.first_name} {entry.user.last_name}"
+            if hasattr(entry.user, 'middle_name') and entry.user.middle_name:
+                full_name += f" {entry.user.middle_name}"
+            row = [
+                entry.department.title,
+                entry.project.title,
+                entry.date.strftime("%d.%m.%Y"),
+                full_name,
+                entry.building.title if entry.building else "",
+                entry.mark.title if entry.mark else "",
+                entry.task.title if entry.task else "",
+                entry.time,
+            ]
+            ws_departments.append(row)
+        ws_departments.append(["", "", "", "", "", "Итого по отделу:", group['total_time']])
+        ws_departments.append([])
+
+    # Лист "Итого" – сводные итоги
+    ws_summary = wb.create_sheet(title="Итого")
+    ws_summary.append(["Общая сумма времени по проектам", overall_total_time_projects])
+    ws_summary.append(["Общая сумма времени по отделам", overall_total_time_departments])
+    for cell in ws_summary[1]:
+        cell.font = Font(bold=True)
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+
+    # Генерация ответа с файлом Excel
+    response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    filename = f"reports_view_{start_date.strftime('%Y%m%d')}_{end_date.strftime('%Y%m%d')}.xlsx"
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    wb.save(response)
+    return response

@@ -80,5 +80,7 @@ urlpatterns = [
 
     # Экспорт в эксель
     path('export-to-excel/', views.export_to_excel, name='export_to_excel'),
+    path('export-to-excel-employees/', views.export_reports_employees_excel, name='export_reports_employees_excel'),
+    path('export-to-excel-project/', views.export_reports_view_excel, name='export_reports_view_excel'),
 
 ]

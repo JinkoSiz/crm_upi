@@ -18,6 +18,10 @@
     --Hover-button-2: #0DA0CC;
 }
 
+html {
+    scroll-behavior: smooth;
+  }
+
 
 select::after,
 select::before {
@@ -179,11 +183,6 @@ tbody tr td {
     font-weight: 400;
     line-height: 18px;
 }
-
-tr.finish-tr {
-    background: var(--Secondary);
-}
-
 .container {
     max-width: 1290px;
     margin: 0 auto;
@@ -589,17 +588,151 @@ button.sorter span {
     margin: 0;
 }
 
-.table thead {
+.table .table__header {
     border: none;
     background: var(--Secondary);
 }
 
-.table tbody tr {
+.table .table__header .table__row {
+    height: 58px;
+    align-items: center;
+}
+
+.table .table__header .table__row,
+.table .table__body .table__row {
+    display: flex;
+    justify-content: space-between;
+}
+
+.table .table__body .table__row.finish-tr {
+    background: var(--Secondary);
+}
+
+.table .table__header .table__row .table__item,
+.table .table__body .table__row .table__item {
+    padding: 20px 10px;
+}
+
+.table .table__header .table__row .table__item:first-child,
+.table .table__body .table__row .table__item:first-child {
+    padding: 20px 10px 20px 20px;
+}
+
+.table .table__header .table__row .table__item:last-child,
+.table .table__body .table__row .table__item:last-child {
+    padding: 20px 20px 20px 10px;
+}
+
+.table .table__body .table__row .table__item {
+    height: auto;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 18px;
+    text-align: left;
+    text-underline-position: from-font;
+    text-decoration-skip-ink: none;
+    border-right: 1px solid var(--Text_Gray_20);
+    overflow: hidden;
+}
+
+.table .table__body .table__row .table__item.no-border {
+    border: none
+}
+
+.table .table__body .table__row .table__item.border-in {
+    border-right: 1px solid var(--Text_Gray_20) !important;
+}
+
+.table .table__body .table__row .table__item:last-child {
+    border-right: none;
+}
+
+.table .table__header .table__row .table__item p {
+    color: var(--Text_Gray_100);
+    font-feature-settings: 'liga' off, 'clig' off;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 18px; /* 128.571% */
+}
+
+.table .table__body .table__row {
     border-bottom: 1px solid var(--Text_Gray_20);
 }
 
-.table tbody tr:last-child {
-    border: none;
+
+.table .table__header.scrolled {
+    position: fixed;
+    top: 0;
+    width: 1290px;
+    z-index: 100;
+}
+
+.table__wrapper {
+    display: flex;
+}
+
+.table__wrapper .table__left,
+.table__wrapper .table__right {
+    height: 100%;
+}
+
+.table__wrapper .table__left {
+    min-width: 758px;
+    max-width: 758px;
+}
+
+.table__wrapper .table__left .table .table__header .table__row {
+    justify-content: start;
+}
+
+.table__wrapper .table__right {
+    width: 100%;
+    overflow: hidden;
+}
+
+.table__wrapper .table__right .table__scroll {
+    overflow-x: auto;
+}
+
+.table__wrapper .table__right .table__scroll .table {
+    display: grid;
+}
+
+.table__wrapper .table__right .table__scroll .table .table__header {
+    display: flex;
+}
+
+.table__wrapper .table__right .table__scroll .table .table__header .table__header__title {
+    text-align: left;
+    padding: 0 10px;
+    letter-spacing: 1px;
+}
+
+.table__wrapper .table__right .table__scroll .table .table__body .table__row {
+    justify-content: start;
+}
+
+.table__wrapper .table__right .table__scroll .table .table__header .table__row .table__item {
+    background-color: var(--Secondary);
+}
+
+.table__wrapper .table__right .table__scroll .table .table__body .table__row .table__item {
+    background-color: var(--Text_Gray_10);
+    overflow: visible;
+    width: 30px !important;
+    max-height: 58px !important;
+}
+
+.table__wrapper .table__right .table__scroll .table .table__body .table__row .table__item:first-child,
+.table__wrapper .table__right .table__scroll .table .table__header .table__row .table__item:first-child {
+    padding: 20px 10px;
+}
+
+.table__wrapper .table__left .table .table__body .table__row .table__item:first-child {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .table.table-report-create tbody tr:last-child {
@@ -2261,4 +2394,29 @@ button.apply-filters:disabled {
 
 .custom-table-body .body-item .row-item .select-list .select-list-item:hover {
     background-color: var(--Secondary);
+}
+
+#scrollToTop {
+    width: 60px;
+    height: 60px;
+    position: fixed;
+    bottom: 25px;
+    right: -100px;
+    border-radius: 100%;
+    border: 2px solid var(--Text_Gray_40);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    background-color: var(--Text_Gray_20);
+    transition: .2s all ease-in;
+}
+
+#scrollToTop.active {
+    right: 40px;
+    transition: .2s all ease-in;
+}
+
+#scrollToTop svg {
+    transform: rotate(90deg);
 }

@@ -151,7 +151,50 @@
             <li class="data-list" data-cid="reports-employees"><a href="{% url 'reports-employees' %}">Трудозатраты по сотрудникам</a></li>
             <li class="data-list" data-cid="final-report"><a href="{% url 'final-report' %}">Итоговый отчет</a></li>
         </ul>
+
         <form method="get" action="{% url 'export_to_excel' %}" data-cid="final-report" class="export-exel-form">
+            <input type="hidden" name="start_date" value="{{ start_date }}">
+            <input type="hidden" name="end_date" value="{{ end_date }}">
+            {% if request.GET.project %}
+                <input type="hidden" name="project" value="{{ request.GET.project }}">
+            {% endif %}
+
+            {% if request.GET.employees %}
+                <input type="hidden" name="employees" value="{{ request.GET.employees }}">
+            {% endif %}
+
+            {% if request.GET.zis %}
+                <input type="hidden" name="zis" value="{{ request.GET.zis }}">
+            {% endif %}
+
+            {% if request.GET.mark %}
+                <input type="hidden" name="mark" value="{{ request.GET.mark }}">
+            {% endif %}
+            <button type="submit" class="add-depart active">Экспорт в Excel</button>
+        </form>
+
+        <form method="get" action="{% url 'export_reports_view_excel' %}" data-cid="reports" class="export-exel-form">
+            <input type="hidden" name="start_date" value="{{ start_date }}">
+            <input type="hidden" name="end_date" value="{{ end_date }}">
+            {% if request.GET.project %}
+                <input type="hidden" name="project" value="{{ request.GET.project }}">
+            {% endif %}
+
+            {% if request.GET.employees %}
+                <input type="hidden" name="employees" value="{{ request.GET.employees }}">
+            {% endif %}
+
+            {% if request.GET.zis %}
+                <input type="hidden" name="zis" value="{{ request.GET.zis }}">
+            {% endif %}
+
+            {% if request.GET.mark %}
+                <input type="hidden" name="mark" value="{{ request.GET.mark }}">
+            {% endif %}
+            <button type="submit" class="add-depart active">Экспорт в Excel</button>
+        </form>
+
+        <form method="get" action="{% url 'export_reports_employees_excel' %}" data-cid="reports-employees" class="export-exel-form">
             <input type="hidden" name="start_date" value="{{ start_date }}">
             <input type="hidden" name="end_date" value="{{ end_date }}">
             {% if request.GET.project %}
@@ -239,7 +282,7 @@
             </span>
         </div>
         
-        <ul class="search-list">
+        <ul class="search-list" id="employees-list">
             <span>Вернуться к списку</span>
             {% for user in all_users %}
             <li>{{ user.full_name }}</li>
@@ -261,7 +304,7 @@
             </span>
         </div>
         
-        <ul class="search-list">
+        <ul class="search-list" id="department-list">
             <span>Вернуться к списку</span>
             {% for department in all_departments %}
             <li>{{ department.title }}</li>
@@ -283,7 +326,7 @@
             </span>
         </div>
         
-        <ul class="search-list">
+        <ul class="search-list" id="role-list">
             <span>Вернуться к списку</span>
             {% for role in all_roles %}
             <li>{{ role.title }}</li>
@@ -374,7 +417,7 @@
             </span>
         </div>
         
-        <ul class="search-list">
+        <ul class="search-list" id="project-list">
             <span>Вернуться к списку</span>
             {% for project in all_projects %}
             <li>{{ project.title }}</li>
@@ -398,8 +441,8 @@
         
         <ul class="search-list">
             <span>Вернуться к списку</span>
-            <li>РД</li>
             <li>ОТР</li>
+            <li>РД</li>
             <li>ПД</li>
         </ul>
         <ul class="finde-items active"></ul>
@@ -418,7 +461,7 @@
             </span>
         </div>
         
-        <ul class="search-list">
+        <ul class="search-list" id="section-list">
             <span>Вернуться к списку</span>
             {% for section in all_sections %}
             <li>{{ section.title }}</li>
@@ -440,7 +483,7 @@
             </span>
         </div>
         
-        <ul class="search-list">
+        <ul class="search-list" id="zis-list">
             <span>Вернуться к списку</span>
             {% for building in all_buildings %}
             <li>{{ building.title }}</li>
@@ -462,7 +505,7 @@
             </span>
         </div>
         
-        <ul class="search-list">
+        <ul class="search-list" id="mark-list">
             <span>Вернуться к списку</span>
             {% for mark in all_marks %}
             <li>{{ mark.title }}</li>
@@ -484,7 +527,7 @@
             </span>
         </div>
         
-        <ul class="search-list">
+        <ul class="search-list" id="tasks-list">
             <span>Вернуться к списку</span>
             {% for task in all_tasks %}
             <li>{{ task.title }}</li>
@@ -494,6 +537,11 @@
         <button class="apply-filters">Применить</button>
         <button class="reset-filters" type="reset">Сбросить</button>
     </div>
+</div>
+<div id="scrollToTop">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M10.7071 2.29289C11.0976 2.68342 11.0976 3.31658 10.7071 3.70711L5.41421 9H17C17.5523 9 18 9.44772 18 10C18 10.5523 17.5523 11 17 11H5.41421L10.7071 16.2929C11.0976 16.6834 11.0976 17.3166 10.7071 17.7071C10.3166 18.0976 9.68342 18.0976 9.29289 17.7071L2.29289 10.7071C1.90237 10.3166 1.90237 9.68342 2.29289 9.29289L9.29289 2.29289C9.68342 1.90237 10.3166 1.90237 10.7071 2.29289Z" fill="#202020"/>
+    </svg>
 </div>
 </body>
 <script>
@@ -506,7 +554,7 @@
             adminLinksListItem = document.querySelectorAll('.data-list'),
             adminLinksBtnsListItem = document.querySelectorAll('.add-depart'),
             adminMainNavigation = document.querySelector('.admin-main-navigation'),
-            exportExelForms = document.querySelector('form.export-exel-form'),
+            exportExelForms = document.querySelectorAll('form.export-exel-form'),
             header = document.querySelector('header'),
             laborCostsProjects = document.querySelector('li.data-list[data-cid="reports"]'),
             laborCostsProjectsSwitcher = document.querySelector('li.data-list[data-cid="reports"] p'),
@@ -573,12 +621,12 @@
 
         }
 
-        function setStatus (url, mainList, secondaryList, secondaryListBtns) {
+        function setStatus (url, mainList, secondaryList, secondaryListBtns, excelForms) {
             adminHandbooksNavList.style.display = 'none';
             adminReportsNavList.style.display = 'none';
             adminMainNavigation.style.display = 'block';
             header.style.display = 'flex';
-            exportExelForms.classList.remove('active');
+            excelForms.forEach(item => item.classList.remove('active'));
 
             switch (url) {
                 case 'login':
@@ -622,8 +670,9 @@
                 case 'final-report':
                     dataMining(mainList, 'reports');
                     adminReportsNavList.style.display = 'flex';
+                    console.log(excelForms);
                     dataMining(secondaryList, url);
-                    exportExelForms.classList.add('active');
+                    dataMining(excelForms, url);
                     break;
 
                 default:
@@ -633,7 +682,7 @@
             }
         }
 
-        setStatus(currentUrlPath, adminBtnsListItem, adminLinksListItem, adminLinksBtnsListItem);
+        setStatus(currentUrlPath, adminBtnsListItem, adminLinksListItem, adminLinksBtnsListItem, exportExelForms);
 
         const datepicker = document.querySelector(".datepicker-container");
         let activeInput = null;
@@ -960,6 +1009,132 @@
             }
         }
 
+        const employeesList = document.querySelector('#employees-list'),
+              departmentList = document.querySelector('#department-list'),
+              roleList = document.querySelector('#role-list'),
+              projectList = document.querySelector('#project-list'),
+              sectionList = document.querySelector('#section-list'),
+              zisList = document.querySelector('#zis-list'),
+              markList = document.querySelector('#mark-list'),
+              tasksList = document.querySelector('#tasks-list');
+
+        const employeesArr = [
+            {% for user in all_users %}
+            {
+                title: "{{ user.full_name }}",
+            },
+            {% endfor %}
+        ]
+
+        const departmentArr = [
+            {% for department in all_departments %}
+            {
+                title: "{{ department.title }}",
+            },
+            {% endfor %}
+        ]
+
+        const roleArr = [
+            {% for role in all_roles %}
+            {
+                title: "{{ role.title }}",
+            },
+            {% endfor %}
+        ]
+
+        const projectArr = [
+            {% for project in all_projects %}
+            {
+                title: "{{ project.title }}",
+            },
+            {% endfor %}
+        ]
+
+        const sectionArr = [
+            {% for section in all_sections %}
+            {
+                title: "{{ section.title }}",
+            },
+            {% endfor %}
+        ]
+
+        const zisArr = [
+            {% for building in all_buildings %}
+            {
+                title: "{{ building.title }}",
+            },
+            {% endfor %}
+        ]
+
+        const markArr = [
+            {% for mark in all_marks %}
+            {
+                title: "{{ mark.title }}",
+            },
+            {% endfor %}
+        ]
+
+        const taskArr = [
+            {% for task in all_tasks %}
+            {
+                title: "{{ task.title }}",
+            },
+            {% endfor %}
+        ]
+
+        function appendToLayout(layuotId, arr) {
+
+            layuotId.innerHTML = '';
+
+            layuotId.innerHTML += '<span>Вернуться к списку</span>';
+
+            function extractNumber(str) {
+                const match = str.match(/^\d+$/);
+                return match ? parseInt(str, 10) : NaN;
+            }
+
+            function categorizeTitle(title) {
+                if (/^\d+$/.test(title)) return 1;
+                if (/^[А-Яа-яЁё\s\d]+$/.test(title)) return 2;
+                return 3;
+            }
+
+            arr.sort((a,b) => {
+                const categoryA = categorizeTitle(a.title);
+                const categoryB = categorizeTitle(b.title);
+
+                if (categoryA !== categoryB) {
+                    return categoryA - categoryB;
+                }
+
+                const numberA = extractNumber(a.title);
+                const numberB = extractNumber(b.title);
+
+                if (!isNaN(numberA) && !isNaN(numberB)) {
+                    return numberA - numberB;
+                }
+
+                return a.title.localeCompare(b.title, undefined, { numeric: true, sensitivity: 'base' });
+            });
+
+            arr.forEach(item => {
+                const row = `
+                    <li>${item.title.replace(/\n/g, '')}</li>
+                `
+                layuotId.innerHTML += row;
+            })
+
+        }
+
+        appendToLayout(employeesList, employeesArr);
+        appendToLayout(departmentList, departmentArr);
+        appendToLayout(roleList, roleArr);
+        appendToLayout(projectList, projectArr);
+        appendToLayout(sectionList, sectionArr);
+        appendToLayout(zisList, zisArr);
+        appendToLayout(markList, markArr);
+        appendToLayout(tasksList, taskArr);
+
         filterModals.forEach(block => {
             const searchInput = block.querySelector('.search-block input[type="text"]');
             const searchHiddenInput = block.querySelector('.search-block input[type="text"][hidden]');
@@ -998,34 +1173,29 @@
 
             searchList.addEventListener('click', (event) => {
                 if (event.target.tagName === 'LI') {
-                    const selectedValue = event.target.textContent.trim(); // Получаем выбранный текст
+                    const selectedValue = event.target.textContent.trim();
 
-                    // Проверка, находится ли элемент уже в массиве
                     const isAlreadySelected = selectedItems.includes(selectedValue);
 
                     const listItem = event.target;
 
                     if (!isAlreadySelected) {
 
-                        // Преобразуем выбранный текст в соответствующие сокращения
                         if (selectedValue === 'РД') selectedItems.push('RD');
                         else if (selectedValue === 'ОТР') selectedItems.push('OTR');
                         else if (selectedValue === 'ПД') selectedItems.push('PD');
-                        else selectedItems.push(selectedValue); // Для других значений
+                        else selectedItems.push(selectedValue);
 
-                        // Создаем новый элемент списка
                         const newItem = document.createElement('li');
                         newItem.innerHTML = `${selectedValue} <span>+</span>`;
                         findeItems.appendChild(newItem);
 
-                        // Добавляем класс для выделения элемента
                         listItem.classList.add('active');
                     } else {
-                        // Если элемент уже в массиве, удаляем его
+
                         selectedItems.splice(selectedItems.indexOf(selectedValue), 1);
                         listItem.classList.remove('active');
 
-                        // Ищем и удаляем элемент в DOM
                         const itemToRemove = Array.from(findeItems.children).find(
                             child => child.textContent.trim().startsWith(selectedValue)
                         );
@@ -1034,14 +1204,11 @@
                         }
                     }
 
-                    // Обновляем скрытый инпут с сериализованным массивом
                     searchHiddenInput.value = JSON.stringify(selectedItems);
 
-                    // Обновляем placeholder с текущими выбранными значениями
                     updatePlaceholder(findeItems, selectedItems);
                 }
 
-                // Применение внешней логики
                 checkerApply();
             });
 
@@ -1079,18 +1246,10 @@
                     });
                     updatePlaceholder(findeItems, selectedItems);
                 }
-
-
             }
-
 
             checkerApply();
 
-            // const applyButton = block.querySelector('.apply-filters');
-            // applyButton.addEventListener('click', () => {
-            //     sendToBackend(dataCid, selectedItems);
-            // });
-            // updatePlaceholder(findeItems, selectedItems);
         });
 
         function sendToBackend(cid, data) {
@@ -1100,6 +1259,38 @@
 
             window.location.href = `${window.location.pathname}?${form.toString()}`;
         }
+
+        const btnScrollToTop = document.querySelector('#scrollToTop');
+        const tableHeader = document.querySelector('.table .table__header');
+        const tableWrapper = document.querySelector('.table-wrapper');
+        const usersTable = document.querySelector('#usersTable');
+        
+
+        let scrollPosition = window.scrollY;
+        let scrollCounter = 0;
+
+        btnScrollToTop.addEventListener('click', () => {
+            window.scrollTo(pageYOffset, 0);
+        });
+
+        usersTable ? scrollCounter = 320 : scrollCounter = 455;
+
+        window.addEventListener('scroll', (e) => {
+            scrollPosition = window.scrollY;
+            //console.log(scrollPosition);
+            if (scrollPosition >= scrollCounter) {
+                tableWrapper.style.paddingTop = '58px';
+                tableHeader.classList.add('scrolled');
+                btnScrollToTop.classList.add('active');
+
+            } 
+            else {
+                tableWrapper.style.paddingTop = '0px';
+                tableHeader.classList.remove('scrolled');
+                btnScrollToTop.classList.remove('active');
+
+            }
+        });
 
     });
 

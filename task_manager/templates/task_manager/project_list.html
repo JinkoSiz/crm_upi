@@ -8,10 +8,10 @@ Projects List
 <div class="row">
     <div class="col-md-12">
         <div class="table-wrapper only-bottom">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th class="col-2">
+            <div class="table table-striped">
+                <div class="table__header">
+                    <div class="table__row">
+                        <div class="col-2 table__item">
                             <button class="sorter" id="nameFilterButton" data-cid="project">
                                 <p>Название</p>
                                 <span>
@@ -24,8 +24,8 @@ Projects List
                             <select id="nameFilterDropdown" class="filter-dropdown" style="display: none;">
                                 <option value="">Выберите название</option>
                             </select>
-                        </th>
-                        <th class="col-3">
+                        </div>
+                        <div class="col-3 table__item">
                             <button class="sorter" data-cid="status">
                                 <p>Статус</p>
                                 <span>
@@ -34,8 +34,8 @@ Projects List
                                     </svg>
                                 </span>
                             </button>
-                        </th>
-                        <th class="col-3">
+                        </div>
+                        <div class="col-3 table__item">
                             <button class="sorter" data-cid="zis">
                                 <p>Здания и сооружения</p>
                                 <span>
@@ -44,8 +44,8 @@ Projects List
                                     </svg>
                                 </span>
                             </button>
-                        </th>
-                        <th class="col-3">
+                        </div>
+                        <div class="col-3 table__item">
                             <button class="sorter" data-cid="section">
                                 <p>Разделы</p>
                                 <span>
@@ -54,25 +54,15 @@ Projects List
                                     </svg>
                                 </span>
                             </button>
-                        </th>
-                        <th class="col-1">
+                        </div>
+                        <div class="col-1 table__item">
                             <p>Действия</p>
-                        </th>
-                    </tr>
-                </thead>
-                <tbody id="projectsTableBody"></tbody>
-            </table>
-        </div>
-        
-
-        <div class="pagination" id="pagination">
-            <p id="pageInfo" class="page-info"></p>
-            <div class="pagination-btn-wrapper">
-                <button id="prevPage" class="pagination-button">Назад</button>
-                <button id="nextPage" class="pagination-button">Вперед</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="projectsTableBody" class="table__body"></div>
             </div>
         </div>
-
     </div>
 </div>
 
@@ -127,7 +117,7 @@ Projects List
                         </div>
                         <div id="sectionsContent">
                             <div class="form-group">
-                                {% for section in sections %}
+                                {% for section in sections|dictsort:"title" %}
                                 <div class="form-check">
                                     <label class="form-check-label" for="{{ section.pk }}">
                                         <input type="checkbox" class="form-check-input" id="{{ section.pk }}" name="sections" value="{{ section.pk }}">{{ section.title }}
@@ -203,6 +193,7 @@ Projects List
     let currentProjectId = null;
     const csrfToken = '{{ csrf_token }}';
     let removedBuildings = [];
+    let sectionList = [];
 
     // Обработчик открытия модалки для создания/редактирования проекта
     $('#projectModal').on('show.bs.modal', function (event) {
@@ -233,6 +224,9 @@ Projects List
                     $('#id_title').val(data.project.title);
                     $('#id_status').val(data.project.status);
                     $('#buildingList').empty();
+                    data.buildings.sort(function(a, b) {
+                        return a.building__title.localeCompare(b.building__title);
+                    });
                     data.buildings.forEach(function (building) {
                         const title = building.building__title.trim();
                         $('#buildingList').append(
@@ -252,6 +246,10 @@ Projects List
                                 </li>
                             `
                         );
+                    });
+
+                    data.sections.sort(function(a, b) {
+                        return a.section__title.localeCompare(b.section___title);
                     });
 
                     // Отмечаем разделы как выбранные, если они уже связаны с проектом
@@ -531,24 +529,32 @@ Projects List
         {% endfor %}
     ];
 
-    let currentPage = 1;
-    const rowsPerPage = 6;
-
     function displayProjects(projectsToShow) {
         const tableBody = document.getElementById('projectsTableBody');
         tableBody.innerHTML = '';
 
+        projectsToShow.sort(function(a, b) {
+            return a.title.localeCompare(b.title);
+        });
+
         projectsToShow.forEach(project => {
-            const buildingsList = project.buildings.map(b => `<li>${b}</li>`).join('');
-            const sectionsList = project.sections.map(s => `<li>${s}</li>`).join('');
+            const buildingsList = project.buildings
+            .sort((a,b) => a.localeCompare(b))
+            .map(b => `<li>${b}</li>`)
+            .join('');
+            
+            const sectionsList = project.sections
+            .sort((a,b) => a.localeCompare(b))
+            .map(s => `<li>${s}</li>`)
+            .join('');
 
             const row = `
-                <tr>
-                    <td>${project.title}</td>
-                    <td>${project.status}</td>
-                    <td><ul>${buildingsList}</ul></td>
-                    <td><ul>${sectionsList}</ul></td>
-                    <td>
+                <div class="table__row">
+                    <div class="table__item no-border col-2">${project.title}</div>
+                    <div class="table__item no-border col-3">${project.status}</div>
+                    <div class="table__item no-border col-3"><ul>${buildingsList}</ul></div>
+                    <div class="table__item no-border col-3"><ul>${sectionsList}</ul></div>
+                    <div class="table__item no-border col-1">
                         <div class="actions-button-wrapper">
                             <button class="edit" data-toggle="modal" data-target="#projectModal" data-id="${project.id}" data-title="${project.title}" data-status="${project.status}">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -561,54 +567,14 @@ Projects List
                                 </svg>
                             </button>
                         </div>
-                    </td>
-                </tr>
+                    </div>
+                </div>
             `;
             tableBody.innerHTML += row;
         });
     }
 
-    function updatePageInfo(totalPages) {
-        const pageInfo = document.getElementById('pageInfo');
-        pageInfo.innerText = `Страница ${currentPage} / ${totalPages}`;
-    }
-
-    function setupPagination(projects) {
-        const totalPages = Math.ceil(projects.length / rowsPerPage);
-
-        if(totalPages <= 1) {
-            document.querySelector('#pagination').style.display = 'none';
-        }
-
-        function navigate(direction) {
-            if (direction === 'prev' && currentPage > 1) {
-                currentPage--;
-            }
-            if (direction === 'next' && currentPage < totalPages) {
-                currentPage++;
-            }
-            displayPage(projects, totalPages);
-        }
-
-        document.getElementById('prevPage').addEventListener('click', () => navigate('prev'));
-        document.getElementById('nextPage').addEventListener('click', () => navigate('next'));
-
-        displayPage(projects, totalPages);
-    }
-
-    function displayPage(projects, totalPages) {
-        const start = (currentPage - 1) * rowsPerPage;
-        const end = start + rowsPerPage;
-        const projectsToShow = projects.slice(start, end);
-        displayProjects(projectsToShow);
-        updatePageInfo(totalPages);
-    }
-
-    if (projects.length > 0) {
-        setupPagination(projects);
-    } else {
-        document.getElementById('projectsTableBody').innerHTML = "<tr><td colspan='5'>Нет данных для отображения</td></tr>";
-    }
+    displayProjects(projects);
 
 </script>
 {% endblock %}
