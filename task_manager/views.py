@@ -1522,7 +1522,6 @@ def reports_employees(request):
     return render(request, 'task_manager/reports_employees.html', context)
 
 
-
 def get_months_in_range(start_date, end_date):
     """Получение всех месяцев до последнего месяца в диапазоне"""
     months = []
