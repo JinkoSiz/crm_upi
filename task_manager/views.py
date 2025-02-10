@@ -1494,28 +1494,28 @@ def reports_employees(request):
         detailed_report_projects[project_title]['total_time'] += item.time
 
     # Общий итог времени по всем проектам
-    overall_total_time_projects = sum([group['total_time'] for group in detailed_report_projects.values()])
+    overall_total_time_projects = sum(group['total_time'] for group in detailed_report_projects.values())
 
-    # Группировка данных по отделам
-    detailed_report_departments = {}
+    # Группировка данных по сотрудникам
+    detailed_report_employees = {}
     for item in timelogs:
-        department_title = item.department.title
-        if department_title not in detailed_report_departments:
-            detailed_report_departments[department_title] = {
+        employee_full_name = f"{item.user.first_name} {item.user.last_name}"
+        if employee_full_name not in detailed_report_employees:
+            detailed_report_employees[employee_full_name] = {
                 'entries': [],
                 'total_time': 0
             }
-        detailed_report_departments[department_title]['entries'].append(item)
-        detailed_report_departments[department_title]['total_time'] += item.time
+        detailed_report_employees[employee_full_name]['entries'].append(item)
+        detailed_report_employees[employee_full_name]['total_time'] += item.time
 
-    # Общий итог времени по всем отделам
-    overall_total_time_departments = sum([group['total_time'] for group in detailed_report_departments.values()])
+    # Общий итог времени по всем сотрудникам
+    overall_total_time_employees = sum(group['total_time'] for group in detailed_report_employees.values())
 
     context = {
         'detailed_report_projects': detailed_report_projects,
         'overall_total_time_projects': overall_total_time_projects,
-        'detailed_report_departments': detailed_report_departments,
-        'overall_total_time_departments': overall_total_time_departments,
+        'detailed_report_departments': detailed_report_employees,
+        'overall_total_time_departments': overall_total_time_employees,
         'start_date': start_date,
         'end_date': end_date,
     }
@@ -1627,7 +1627,7 @@ def final_report(request):
                 'project': log.project.title,
                 'building': log.building.title,
                 'mark': log.mark.title,
-                'user': f"{log.user.last_name} {log.user.first_name} {log.user.middle_name}",
+                'user': f"{log.user.last_name}",
                 'total_hours': 0,  # можно суммировать часы по всем датам
                 'logs': {}  # здесь будут логи по датам
             }
@@ -1927,7 +1927,7 @@ def export_reports_employees_excel(request):
     for department_title, group in detailed_report_departments.items():
         entries = sorted(group['entries'], key=lambda x: x.date)
         for entry in entries:
-            full_name = f"{entry.user.first_name} {entry.user.last_name}"
+            full_name = f"{entry.user.last_name} {entry.user.first_name}"
             if hasattr(entry.user, 'middle_name') and entry.user.middle_name:
                 full_name += f" {entry.user.middle_name}"
             row = [
@@ -2085,7 +2085,7 @@ def export_reports_view_excel(request):
     for department_title, group in detailed_report_departments.items():
         entries = sorted(group['entries'], key=lambda x: x.date)
         for entry in entries:
-            full_name = f"{entry.user.first_name} {entry.user.last_name}"
+            full_name = f"{entry.user.last_name} {entry.user.first_name}"
             if hasattr(entry.user, 'middle_name') and entry.user.middle_name:
                 full_name += f" {entry.user.middle_name}"
             row = [
