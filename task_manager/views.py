@@ -1245,6 +1245,15 @@ def get_sections(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
+def natural_keys(text):
+    """
+    Разбивает строку на список числовых и нечисловых частей,
+    чтобы сортировка шла в «естественном» порядке.
+    Пример: "Task 2" будет меньше чем "Task 10".
+    """
+    return [int(c) if c.isdigit() else c.lower() for c in re.split(r'(\d+)', text)]
+
+
 @login_required
 def report_create(request):
     # Получаем дату из запроса или используем текущую
@@ -1318,6 +1327,27 @@ def report_create(request):
     sections = cache.get_or_set('sections_cache', Section.objects.all(), timeout=60 * 15)
     marks = Mark.objects.filter(department_marks__department=request.user.department)
     tasks = TaskType.objects.filter(department_tasks__department=request.user.department)
+
+    # Применяем натуральную сортировку по названию
+    projects = sorted(
+        cache.get_or_set('projects_cache', Project.objects.select_related('status').all(), timeout=60 * 15),
+        key=lambda project: natural_keys(project.title)
+    )
+
+    sections = sorted(
+        cache.get_or_set('sections_cache', Section.objects.all(), timeout=60 * 15),
+        key=lambda section: natural_keys(section.title)
+    )
+
+    marks = sorted(
+        Mark.objects.filter(department_marks__department=request.user.department),
+        key=lambda mark: natural_keys(mark.title)
+    )
+
+    tasks = sorted(
+        TaskType.objects.filter(department_tasks__department=request.user.department),
+        key=lambda task: natural_keys(task.title)
+    )
 
     context = {
         'form': form,
@@ -1855,13 +1885,13 @@ def export_reports_employees_excel(request):
     end_date = parse_custom_date(end_date) if isinstance(end_date, str) else end_date
 
     # Фильтры из GET-запроса
-    selected_projects    = request.GET.getlist('project')
+    selected_projects = request.GET.getlist('project')
     selected_departments = request.GET.getlist('department')
-    selected_users       = request.GET.getlist('employees')
-    selected_stages      = request.GET.getlist('stage')
-    selected_buildings   = request.GET.getlist('zis')
-    selected_marks       = request.GET.getlist('mark')
-    selected_tasks       = request.GET.getlist('task')
+    selected_users = request.GET.getlist('employees')
+    selected_stages = request.GET.getlist('stage')
+    selected_buildings = request.GET.getlist('zis')
+    selected_marks = request.GET.getlist('mark')
+    selected_tasks = request.GET.getlist('task')
 
     # Фильтрация Timelog по диапазону дат с оптимизацией связанных данных
     timelogs = (
