@@ -27,6 +27,15 @@ def admin_required(login_url=None):
     return user_passes_test(lambda u: u.is_authenticated and u.is_admin, login_url=login_url)
 
 
+def natural_keys(text):
+    """
+    Разбивает строку на список числовых и нечисловых частей,
+    чтобы сортировка шла в «естественном» порядке.
+    Пример: "Task 2" будет меньше чем "Task 10".
+    """
+    return [int(c) if c.isdigit() else c.lower() for c in re.split(r'(\d+)', text)]
+
+
 # Отделы
 @admin_required(login_url='login')
 def department(request):
@@ -1225,7 +1234,13 @@ def get_buildings(request):
     try:
         # Используем ProjectBuilding для связи между проектом и зданиями
         buildings = ProjectBuilding.objects.filter(project_id=project_id).select_related('building')
+
+        # Преобразуем в список словарей
         buildings_data = [{'id': pb.building.id, 'title': pb.building.title} for pb in buildings]
+
+        # Сортируем здания по натуральному порядку
+        buildings_data = sorted(buildings_data, key=lambda x: natural_keys(x['title']))
+
         return JsonResponse({'buildings': buildings_data})
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
@@ -1243,15 +1258,6 @@ def get_sections(request):
         return JsonResponse({'sections': sections_data})
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
-
-
-def natural_keys(text):
-    """
-    Разбивает строку на список числовых и нечисловых частей,
-    чтобы сортировка шла в «естественном» порядке.
-    Пример: "Task 2" будет меньше чем "Task 10".
-    """
-    return [int(c) if c.isdigit() else c.lower() for c in re.split(r'(\d+)', text)]
 
 
 @login_required
