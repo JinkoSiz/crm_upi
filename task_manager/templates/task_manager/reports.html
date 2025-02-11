@@ -113,7 +113,7 @@
                                 <div class="table__item col-2">{{ entry.project.title }}</div>
                                 <div class="table__item col-1">{{ entry.department.title }}</div>
                                 <div class="table__item col-1">{{ entry.user.last_name }} {{ entry.user.first_name }} {{ entry.user.middle_name }}</div>
-                                <div class="table__item col-1">{{ entry.stage }}</div>
+                                <div class="table__item col-1 stage__renaming">{{ entry.stage }}</div>
                                 <div class="table__item col-2">{{ entry.building.title }}</div>
                                 <div class="table__item col-1">{{ entry.mark.title }}</div>
                                 <div class="table__item col-2">{{ entry.task.title }}</div>
@@ -130,4 +130,20 @@
         </div>
     </div>
 </div>
+
+<script>
+    const stageRow = document.querySelectorAll('.stage__renaming');
+
+    stageRow.forEach(item => {
+        if(item.innerText == 'RD') {
+            item.innerText = 'РД';
+        }
+        if(item.innerText == 'PD') {
+            item.innerText = 'ПД';
+        }
+        if(item.innerText == 'OTR') {
+            item.innerText = 'ОТР';
+        }
+    })
+</script>
 {% endblock %}

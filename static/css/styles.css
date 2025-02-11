@@ -659,6 +659,25 @@ button.sorter span {
 .table .table__body .table__row {
     border-bottom: 1px solid var(--Text_Gray_20);
 }
+.table__wrapper .table__right .table__scroll .table .table__header .table__header__wrapper {
+    background-color: var(--Secondary);
+}
+
+.table__wrapper .table__right .table__scroll .table .table__header__visible.scrolled,
+.table__wrapper .table__left .table .table__header.scrolled {
+    position: fixed;
+    top: 0;
+    z-index: 100;
+}
+
+.table__wrapper .table__left .table .table__header.scrolled {
+    width: 758px;
+}
+
+.table__wrapper .table__right .table__scroll .table .table__header__visible.scrolled {
+    overflow: hidden;
+    max-width: 533px;
+}
 
 
 .table .table__header.scrolled {
@@ -715,6 +734,11 @@ button.sorter span {
 
 .table__wrapper .table__right .table__scroll .table .table__header .table__row .table__item {
     background-color: var(--Secondary);
+}
+
+.table__wrapper .table__left .table .table__body .table__row .table__item {
+    max-height: 58px !important;
+    min-height: 58px !important;
 }
 
 .table__wrapper .table__right .table__scroll .table .table__body .table__row .table__item {
