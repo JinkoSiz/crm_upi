@@ -95,19 +95,21 @@
             <div class="table__right">
                 <div class="table__scroll">
                     <div class="table">
-                        <div class="table__header">
-                            {% for month_key, month_data in days_by_period.items %}
-                            <div class="table__header__wrapper">
-                                <div class="table__header__title">{{ month_data.month_name }}</div>
-                                <div class="table__row" style="height: 34px;">
-                                    {% for day in month_data.days %}
-                                        <div class="table__item" style="width: 30px; height: 34px; padding: 5px 10px;">
-                                            <p>{{ day|date:"d" }}</p>
-                                        </div>
-                                    {% endfor %}
+                        <div class="table__header__visible">
+                            <div class="table__header">
+                                {% for month_key, month_data in days_by_period.items %}
+                                <div class="table__header__wrapper">
+                                    <div class="table__header__title">{{ month_data.month_name }}</div>
+                                    <div class="table__row" style="height: 34px;">
+                                        {% for day in month_data.days %}
+                                            <div class="table__item" style="width: 30px; height: 34px; padding: 5px 10px;">
+                                                <p>{{ day|date:"d" }}</p>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
                                 </div>
+                                {% endfor %}
                             </div>
-                            {% endfor %}
                         </div>
                         <div class="table__body">
                             {% for row in grouped_data.values %}

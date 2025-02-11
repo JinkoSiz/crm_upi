@@ -1245,6 +1245,15 @@ def get_sections(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
+def natural_keys(text):
+    """
+    Разбивает строку на список числовых и нечисловых частей,
+    чтобы сортировка шла в «естественном» порядке.
+    Пример: "Task 2" будет меньше чем "Task 10".
+    """
+    return [int(c) if c.isdigit() else c.lower() for c in re.split(r'(\d+)', text)]
+
+
 @login_required
 def report_create(request):
     # Получаем дату из запроса или используем текущую
@@ -1318,6 +1327,27 @@ def report_create(request):
     sections = cache.get_or_set('sections_cache', Section.objects.all(), timeout=60 * 15)
     marks = Mark.objects.filter(department_marks__department=request.user.department)
     tasks = TaskType.objects.filter(department_tasks__department=request.user.department)
+
+    # Применяем натуральную сортировку по названию
+    projects = sorted(
+        cache.get_or_set('projects_cache', Project.objects.select_related('status').all(), timeout=60 * 15),
+        key=lambda project: natural_keys(project.title)
+    )
+
+    sections = sorted(
+        cache.get_or_set('sections_cache', Section.objects.all(), timeout=60 * 15),
+        key=lambda section: natural_keys(section.title)
+    )
+
+    marks = sorted(
+        Mark.objects.filter(department_marks__department=request.user.department),
+        key=lambda mark: natural_keys(mark.title)
+    )
+
+    tasks = sorted(
+        TaskType.objects.filter(department_tasks__department=request.user.department),
+        key=lambda task: natural_keys(task.title)
+    )
 
     context = {
         'form': form,
@@ -1494,28 +1524,28 @@ def reports_employees(request):
         detailed_report_projects[project_title]['total_time'] += item.time
 
     # Общий итог времени по всем проектам
-    overall_total_time_projects = sum([group['total_time'] for group in detailed_report_projects.values()])
+    overall_total_time_projects = sum(group['total_time'] for group in detailed_report_projects.values())
 
-    # Группировка данных по отделам
-    detailed_report_departments = {}
+    # Группировка данных по сотрудникам
+    detailed_report_employees = {}
     for item in timelogs:
-        department_title = item.department.title
-        if department_title not in detailed_report_departments:
-            detailed_report_departments[department_title] = {
+        employee_full_name = f"{item.user.first_name} {item.user.last_name}"
+        if employee_full_name not in detailed_report_employees:
+            detailed_report_employees[employee_full_name] = {
                 'entries': [],
                 'total_time': 0
             }
-        detailed_report_departments[department_title]['entries'].append(item)
-        detailed_report_departments[department_title]['total_time'] += item.time
+        detailed_report_employees[employee_full_name]['entries'].append(item)
+        detailed_report_employees[employee_full_name]['total_time'] += item.time
 
-    # Общий итог времени по всем отделам
-    overall_total_time_departments = sum([group['total_time'] for group in detailed_report_departments.values()])
+    # Общий итог времени по всем сотрудникам
+    overall_total_time_employees = sum(group['total_time'] for group in detailed_report_employees.values())
 
     context = {
         'detailed_report_projects': detailed_report_projects,
         'overall_total_time_projects': overall_total_time_projects,
-        'detailed_report_departments': detailed_report_departments,
-        'overall_total_time_departments': overall_total_time_departments,
+        'detailed_report_departments': detailed_report_employees,
+        'overall_total_time_departments': overall_total_time_employees,
         'start_date': start_date,
         'end_date': end_date,
     }
@@ -1855,13 +1885,13 @@ def export_reports_employees_excel(request):
     end_date = parse_custom_date(end_date) if isinstance(end_date, str) else end_date
 
     # Фильтры из GET-запроса
-    selected_projects    = request.GET.getlist('project')
+    selected_projects = request.GET.getlist('project')
     selected_departments = request.GET.getlist('department')
-    selected_users       = request.GET.getlist('employees')
-    selected_stages      = request.GET.getlist('stage')
-    selected_buildings   = request.GET.getlist('zis')
-    selected_marks       = request.GET.getlist('mark')
-    selected_tasks       = request.GET.getlist('task')
+    selected_users = request.GET.getlist('employees')
+    selected_stages = request.GET.getlist('stage')
+    selected_buildings = request.GET.getlist('zis')
+    selected_marks = request.GET.getlist('mark')
+    selected_tasks = request.GET.getlist('task')
 
     # Фильтрация Timelog по диапазону дат с оптимизацией связанных данных
     timelogs = (

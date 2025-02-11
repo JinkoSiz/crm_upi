@@ -31,9 +31,9 @@
             <div class="table">
                 <div class="table__header">
                     <div class="table__row">
-                        <div class="table__item col-1">
+                        <div class="table__item col-1" style="padding: 20px 10px;">
                             <button class="sorter" data-cid="department">
-                                <p>Отдел</p>
+                                <p>Сотрудник</p>
                                 <span>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
                                         <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -43,7 +43,7 @@
                         </div>
                         <div class="table__item col-1">
                             <button class="sorter" data-cid="employees">
-                                <p>Сотрудник</p>
+                                <p>Отдел</p>
                                 <span>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
                                         <path d="M4 8H12M2 4H14M6 12H10" stroke="#A6A6A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -110,8 +110,8 @@
                     {% for department_title, department_data in detailed_report_departments.items %}
                         {% for entry in department_data.entries %}
                             <div class="table__row">
-                                <div class="table__item col-1">{{ entry.department.title }}</div>
                                 <div class="table__item col-1">{{ entry.user.last_name }} {{ entry.user.first_name }} {{ entry.user.middle_name }}</div>
+                                <div class="table__item col-1">{{ entry.department.title }}</div>
                                 <div class="table__item col-2">{{ entry.project.title }}</div>
                                 <div class="table__item col-1">{{ entry.stage }}</div>
                                 <div class="table__item col-2">{{ entry.building.title }}</div>
@@ -121,7 +121,7 @@
                             </div>
                         {% endfor %}
                         <div class="table__row finish-tr">
-                            <div class="table__item no-border col-9">Итого {{ department_title }}</div>
+                            <div class="table__item no-border col-9">Итого {{ department_data.entries.0.user.last_name }} {{ department_data.entries.0.user.first_name }} {{ department_data.entries.0.user.middle_name }}</div>
                             <div class="table__item no-border col-3" style="text-align: right;">{{ department_data.total_time }}</div>
                         </div>
                     {% endfor %}
