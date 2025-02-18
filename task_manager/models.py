@@ -227,11 +227,12 @@ class Timelog(models.Model):
     stage = models.CharField(max_length=255, choices=[
         ('PD', 'ПД'),
         ('RD', 'РД'),
-        ('OTR', 'ОТР')
+        ('OTR', 'ОТР'),
+        ('-', '-')
     ])
     section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name='timelogs', null=True, blank=True)
-    building = models.ForeignKey(Building, on_delete=models.CASCADE, related_name='timelogs')
-    mark = models.ForeignKey(Mark, on_delete=models.CASCADE, related_name='timelogs')
+    building = models.ForeignKey(Building, on_delete=models.CASCADE, related_name='timelogs', null=True, blank=True)
+    mark = models.ForeignKey(Mark, on_delete=models.CASCADE, related_name='timelogs', null=True, blank=True)
     task = models.ForeignKey(TaskType, on_delete=models.CASCADE, related_name='timelogs')
     date = models.DateTimeField()
     time = models.PositiveIntegerField()
