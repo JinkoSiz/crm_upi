@@ -670,7 +670,6 @@
                 case 'final-report':
                     dataMining(mainList, 'reports');
                     adminReportsNavList.style.display = 'flex';
-                    console.log(excelForms);
                     dataMining(secondaryList, url);
                     dataMining(excelForms, url);
                     break;
@@ -1262,8 +1261,12 @@
 
         const btnScrollToTop = document.querySelector('#scrollToTop');
         const tableHeader = document.querySelector('.table .table__header');
+        const finalTableHeaderLeft = document.querySelector('.table__wrapper .table__left .table .table__header');
+        const finalTableHeaderRight = document.querySelector('.table__wrapper .table__right .table__scroll .table .table__header__visible');
+        const finalTableWrapper = document.querySelector('.table__wrapper');
         const tableWrapper = document.querySelector('.table-wrapper');
         const usersTable = document.querySelector('#usersTable');
+        const scrollingFinalTable = document.querySelector('.table__wrapper .table__right .table__scroll');
         
 
         let scrollPosition = window.scrollY;
@@ -1273,22 +1276,55 @@
             window.scrollTo(pageYOffset, 0);
         });
 
+
         usersTable ? scrollCounter = 320 : scrollCounter = 455;
 
         window.addEventListener('scroll', (e) => {
-            scrollPosition = window.scrollY;
-            //console.log(scrollPosition);
-            if (scrollPosition >= scrollCounter) {
-                tableWrapper.style.paddingTop = '58px';
-                tableHeader.classList.add('scrolled');
-                btnScrollToTop.classList.add('active');
+            if(tableWrapper) {
+                scrollPosition = window.scrollY;
+                if (scrollPosition >= scrollCounter) {
+                    tableWrapper.style.paddingTop = '58px';
+                    tableHeader.classList.add('scrolled');
+                    btnScrollToTop.classList.add('active');
 
-            } 
-            else {
-                tableWrapper.style.paddingTop = '0px';
-                tableHeader.classList.remove('scrolled');
-                btnScrollToTop.classList.remove('active');
+                } 
+                else {
+                    tableWrapper.style.paddingTop = '0px';
+                    tableHeader.classList.remove('scrolled');
+                    btnScrollToTop.classList.remove('active');
 
+                }
+            }
+            if(finalTableHeaderLeft && finalTableHeaderRight) {
+                scrollPosition = window.scrollY;
+                if (scrollPosition >= scrollCounter) {
+                    finalTableWrapper.style.paddingTop = '58px';
+                    finalTableHeaderLeft.classList.add('scrolled');
+                    finalTableHeaderRight.classList.add('scrolled');
+                    btnScrollToTop.classList.add('active');
+                    if (scrollingFinalTable) {
+                        const tableHeaderView = document.querySelector('.table__wrapper .table__right .table__scroll .table .table__header__visible .table__header');
+
+
+                        scrollingFinalTable.addEventListener('scroll', (e) => {
+                            // Нужно использовать scrollLeft вместо scrollX
+                            const scrollPositionX = scrollingFinalTable.scrollLeft;
+
+                            // Правильный синтаксис для translateX 
+                            tableHeaderView.style.transform = `translateX(-${scrollPositionX}px)`;
+                        });
+                    }
+                } 
+                else {
+                    finalTableWrapper.style.paddingTop = '0px';
+                    finalTableHeaderLeft.classList.remove('scrolled');
+                    finalTableHeaderRight.classList.remove('scrolled');
+                    btnScrollToTop.classList.remove('active');
+                    const tableHeaderView = document.querySelector('.table__wrapper .table__right .table__scroll .table .table__header__visible .table__header');
+                    scrollingFinalTable.addEventListener('scroll', (e) => {
+                        tableHeaderView.style.transform = 'none';
+                    });
+                }
             }
         });
 
