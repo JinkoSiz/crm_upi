@@ -1260,6 +1260,25 @@ def get_sections(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
+def normalize_uuid(value):
+    """
+    Если значение равно "-" (как приходит с фронтенда), возвращаем None,
+    иначе оставляем значение без изменений.
+    """
+    return None if value == '-' else value
+
+
+def normalize_stage(value):
+    """
+    Если значение для stage пустое или равно "-", возвращаем значение по умолчанию.
+    Здесь выбирается первый элемент из choices (в вашем случае 'PD').
+    """
+    if value in (None, '', '-'):
+        default_stage = Timelog._meta.get_field('stage').choices[3][3]
+        return default_stage
+    return value
+
+
 @login_required
 def report_create(request):
     # Получаем дату из запроса или используем текущую
@@ -1303,9 +1322,9 @@ def report_create(request):
                 department=request.user.department,
                 project_id=projects[i],
                 stage=stages[i],
-                section_id=sections[i],
-                building_id=buildings[i],
-                mark_id=marks[i],
+                section_id=normalize_uuid(sections[i]),
+                building_id=normalize_uuid(buildings[i]),
+                mark_id=normalize_uuid(marks[i]),
                 task_id=task.id,
                 time=int(times[i]),
                 date=post_date
