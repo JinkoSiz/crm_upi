@@ -80,19 +80,20 @@
 <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form method="post" enctype="multipart/form-data" action="{% url 'user-create' %}">
+            <form id="addUserForm" method="post" enctype="multipart/form-data" action="{% url 'user-create' %}">
                 {% csrf_token %}
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addUserModalLabel">Добавление пользователя <br> в систему</h5>
+                    <h5 class="modal-title" id="addUserModalLabel">Добавление пользователя в систему</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
                     {{ form.as_p }}
+                    <div id="error-message" style="color: red; display: none;">Пользователь с таким email или ФИО уже существует.</div>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn add-btn">Сохранить</button>
+                    <button type="submit" class="btn add-btn" id="submit-button">Сохранить</button>
                 </div>
             </form>
         </div>
@@ -203,6 +204,54 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         return cookieValue;
     }
+
+    // Проверка уникальности email и ФИО
+    async function checkUserExists(event) {
+        const fullName = document.querySelector('#id_full_name').value.trim();
+        const email = document.querySelector('#id_email').value.trim();
+        const errorMessage = document.querySelector('#error-message');
+        const submitButton = document.querySelector('#submit-button');
+
+        try {
+            // Отправляем запрос на сервер для проверки уникальности
+            const response = await fetch('/users/check_user_exists/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+                body: JSON.stringify({ full_name: fullName, email: email })
+            });
+
+            const data = await response.json();
+
+            if (data.exists) {
+                errorMessage.style.display = 'block';  // Показываем ошибку
+                submitButton.disabled = true;  // Блокируем кнопку
+                event.preventDefault(); // Предотвращаем отправку формы
+            } else {
+                errorMessage.style.display = 'none';  // Убираем ошибку
+                submitButton.disabled = false;  // Разблокируем кнопку
+            }
+
+        } catch (error) {
+            console.error('Ошибка при проверке пользователя:', error);
+        }
+    }
+
+    // Добавляем слушатель на отправку формы
+    document.querySelector('#addUserForm').addEventListener('submit', function(event) {
+        // При попытке отправить форму, сначала проверим данные
+        checkUserExists(event);
+    });
+
+    // Добавляем обработку ввода в поля для немедленной проверки
+    document.querySelector('#id_full_name').addEventListener('input', function() {
+        checkUserExists(event);
+    });
+    document.querySelector('#id_email').addEventListener('input', function() {
+        checkUserExists(event);
+    });
 
     const csrftoken = getCookie('csrftoken');
 
