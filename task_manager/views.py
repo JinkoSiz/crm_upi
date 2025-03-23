@@ -1,3 +1,4 @@
+import json
 from datetime import datetime, timedelta, timezone
 import re
 import dateparser
@@ -294,6 +295,32 @@ def deleteUser(request, pk):
         return redirect('user-list')
 
     return render(request, 'task_manager/user_confirm_delete.html', {'user': user})
+
+
+def check_user_exists(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        # full_name = data.get('full_name')
+        email = data.get('email')
+
+        # print('Data:', data)
+        # print('Email:', email)
+
+        # Разделяем ФИО на три части
+        # try:
+        #     first_name, last_name, middle_name = full_name.split(' ', 2)
+        # except ValueError:
+        #     return JsonResponse({'exists': False})
+
+        # Проверяем, существует ли пользователь с таким же ФИО или email
+        user_exists = CustomUser.objects.filter(
+            # Q(first_name__iexact=first_name, last_name__iexact=last_name, middle_name__iexact=middle_name) or
+            Q(email=email)
+        ).exists()
+
+        print('User Exists:', user_exists)
+
+        return JsonResponse({'exists': user_exists})
 
 
 def user_login(request):
@@ -2111,7 +2138,7 @@ def export_reports_view_excel(request):
         entries = sorted(group['entries'], key=lambda x: x.date)
         for entry in entries:
             # Формируем полное ФИО (добавляем middle name, если есть)
-            full_name = f"{entry.user.first_name} {entry.user.last_name}"
+            full_name = f"{entry.user.last_name} {entry.user.first_name}"
             if hasattr(entry.user, 'middle_name') and entry.user.middle_name:
                 full_name += f" {entry.user.middle_name}"
             row = [
