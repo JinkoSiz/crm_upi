@@ -737,15 +737,15 @@ button.sorter span {
 }
 
 .table__wrapper .table__left .table .table__body .table__row .table__item {
-    max-height: 58px !important;
-    min-height: 58px !important;
+    max-height: 20px !important;
+    min-height: 20px !important;
 }
 
 .table__wrapper .table__right .table__scroll .table .table__body .table__row .table__item {
     background-color: var(--Text_Gray_10);
-    overflow: visible;
+    overflow: hidden;
     width: 30px !important;
-    max-height: 58px !important;
+    height: 20px !important;
 }
 
 .table__wrapper .table__right .table__scroll .table .table__body .table__row .table__item:first-child,
