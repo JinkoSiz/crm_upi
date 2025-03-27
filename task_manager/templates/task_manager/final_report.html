@@ -30,7 +30,7 @@
             </div>
         </form>
         <div class="table__wrapper">
-            <div class="table__left">
+            <div class="table__left" id="table__left">
                 <div class="table">
                     <div class="table__header">
                         <div class="table__row">
@@ -74,7 +74,7 @@
                                     </span>
                                 </button>
                             </div>
-                            <div class="table__item" style="width: 96px; padding: 20px 10px;">
+                            <div class="table__item" style="width: 96px; padding: 0;">
                                 <p>Часы</p>
                             </div>
                         </div>
@@ -82,17 +82,17 @@
                     <div class="table__body">
                         {% for row in grouped_data.values %}
                         <div class="table__row">
-                            <div class="table__item" style="width: 202px;">{{ row.project }}</div>
-                            <div class="table__item" style="width: 220px;">{{ row.building }}</div>
-                            <div class="table__item" style="width: 80px;">{{ row.mark }}</div>
-                            <div class="table__item" style="width: 160px;">{{ row.user }}</div>
-                            <div class="table__item border-in" style="width: 96px; padding: 20px 10px;">{{ row.total_hours }} ч</div>
+                            <div class="table__item" style="width: 202px; padding: 0 0 0 20px;">{{ row.project }}</div>
+                            <div class="table__item" style="width: 220px; padding: 0 10px;">{{ row.building }}</div>
+                            <div class="table__item" style="width: 80px; padding: 0 10px;">{{ row.mark }}</div>
+                            <div class="table__item" style="width: 160px; padding: 0 10px;">{{ row.user }}</div>
+                            <div class="table__item border-in" style="width: 96px; padding: 0 10px;">{{ row.total_hours }} ч</div>
                         </div>
                         {% endfor %}
                     </div>
                 </div>
             </div>
-            <div class="table__right">
+            <div class="table__right" id="table__right">
                 <div class="table__scroll">
                     <div class="table">
                         <div class="table__header__visible">
@@ -117,7 +117,7 @@
                                 {% for month_key, month_data in days_by_period.items %}
                                     <!-- Месяцы до последнего -->
                                     {% for day in month_data.days %}
-                                        <div class="table__item checking-days">
+                                        <div class="table__item checking-days" style="padding: 0 10px;">
                                             {% with date_key=day|date:"Y-m-d" %}
                                                 {% if row.logs|get_item:date_key %}
                                                     {{ row.logs|get_item:date_key }}
