@@ -44,7 +44,7 @@ LOGIN_URL = '/login/'
 SECRET_KEY = f'{DJANGO_KEY}'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True  # Purely for deploy
+DEBUG = False  # Purely for deploy
 
 CSRF_TRUSTED_ORIGINS = ['https://crm-upi.vercel.app',
                         'https://crm-upi-jinkosizs-projects-4c8f9ac9.vercel.app',
@@ -54,7 +54,8 @@ CSRF_TRUSTED_ORIGINS = ['https://crm-upi.vercel.app',
                         'https://demotimetracker.ru',
                         'https://89.223.120.50',
                         'https://upi-test.ru',
-                        'https://jinkosiz-crm-upi-e64a.twc1.net']
+                        'https://jinkosiz-crm-upi-e64a.twc1.net',
+                        'https://jinkosiz-crm-upi-77a2.twc1.net']
 
 ALLOWED_HOSTS = ['crm-upi.vercel.app',
                  'crm-upi-jinkosizs-projects-4c8f9ac9.vercel.app',
@@ -64,7 +65,8 @@ ALLOWED_HOSTS = ['crm-upi.vercel.app',
                  'demotimetracker.ru',
                  '89.223.120.50',
                  'upi-test.ru',
-                 'jinkosiz-crm-upi-e64a.twc1.net']
+                 'jinkosiz-crm-upi-e64a.twc1.net',
+                 'jinkosiz-crm-upi-77a2.twc1.net']
 
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
@@ -229,7 +231,7 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
 def show_toolbar(request):
-    return True  # Всегда показывать toolbar (используйте только для отладки)
+    return False  # Всегда показывать toolbar (используйте только для отладки)
 
 
 DEBUG_TOOLBAR_CONFIG = {
