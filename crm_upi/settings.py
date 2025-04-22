@@ -55,7 +55,8 @@ CSRF_TRUSTED_ORIGINS = ['https://crm-upi.vercel.app',
                         'https://89.223.120.50',
                         'https://upi-test.ru',
                         'https://jinkosiz-crm-upi-e64a.twc1.net',
-                        'https://jinkosiz-crm-upi-77a2.twc1.net']
+                        'https://jinkosiz-crm-upi-77a2.twc1.net',
+                        'https://89.23.115.23']
 
 ALLOWED_HOSTS = ['crm-upi.vercel.app',
                  'crm-upi-jinkosizs-projects-4c8f9ac9.vercel.app',
@@ -66,7 +67,8 @@ ALLOWED_HOSTS = ['crm-upi.vercel.app',
                  '89.223.120.50',
                  'upi-test.ru',
                  'jinkosiz-crm-upi-e64a.twc1.net',
-                 'jinkosiz-crm-upi-77a2.twc1.net']
+                 'jinkosiz-crm-upi-77a2.twc1.net',
+                 '89.23.115.23']
 
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True

@@ -388,7 +388,7 @@ def send_invitation(request, pk):
         send_mail(
             'Приглашение на платформу Task Manager',
             f'Ваши учетные данные для входа:\nЛогин: {user.username}\nПароль: {password}',
-            'info@demotimetracker.ru',
+            'time.crm@s-pi.ru',
             [user.email],
             fail_silently=False,
         )
