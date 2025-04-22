@@ -222,11 +222,13 @@ AWS_S3_FILE_OVERWRITE = False
 AUTH_USER_MODEL = 'task_manager.CustomUser'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.timeweb.ru'
-EMAIL_PORT = 465
-EMAIL_USE_SSL = True
-EMAIL_HOST_USER = f'{EMAIL_USER}'  # Your email address
-EMAIL_HOST_PASSWORD = f'{EMAIL_PASSWORD}'  # Your email account password
+EMAIL_HOST = 'mail.s-pi.ru'
+EMAIL_PORT = 25
+EMAIL_USE_SSL = False
+EMAIL_USE_TLS = False
+EMAIL_TIMEOUT = 10
+EMAIL_HOST_USER = f'{EMAIL_USER}'
+EMAIL_HOST_PASSWORD = f'{EMAIL_PASSWORD}'
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
