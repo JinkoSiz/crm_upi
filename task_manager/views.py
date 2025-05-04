@@ -1701,21 +1701,34 @@ def final_report(request):
     # Сгруппируем логи по уникальному ряду и по дате.
     grouped_data = {}
     for log in timelogs:
-        # Формируем уникальный ключ строки. Разделитель можно выбрать любой.
-        row_key = f"{log.project.title}|{log.building.title}|{log.mark.title}|{log.user.first_name} {log.user.last_name}"
+        # Берём title или дефис, если объект None
+        project_title = getattr(log.project, 'title', '-') or '-'
+        building_title = getattr(log.building, 'title', '-') or '-'
+        mark_title = getattr(log.mark, 'title', '-') or '-'
+        # Собираем ФИО пользователя, или дефис
+        if log.user:
+            user_name = f"{log.user.first_name} {log.user.last_name}"
+            user_last = log.user.last_name
+        else:
+            user_name = '-'
+            user_last = '-'
+
         date_key = log.date.strftime('%Y-%m-%d')
+        row_key = f"{project_title}|{building_title}|{mark_title}|{user_name}"
+
         if row_key not in grouped_data:
             grouped_data[row_key] = {
-                'project': log.project.title,
-                'building': log.building.title,
-                'mark': log.mark.title,
-                'user': f"{log.user.last_name}",
-                'total_hours': 0,  # можно суммировать часы по всем датам
-                'logs': {}  # здесь будут логи по датам
+                'project': project_title,
+                'building': building_title,
+                'mark': mark_title,
+                'user': user_last,
+                'total_hours': 0,
+                'logs': {}
             }
+
         grouped_data[row_key]['total_hours'] += log.time
-        # Если по одной дате может быть несколько записей – можно делать список.
-        grouped_data[row_key]['logs'][date_key] = log.mark.title
+        # Сохраняем в логе пометку марки (или другую нужную вам информацию)
+        grouped_data[row_key]['logs'][date_key] = mark_title
 
     # Если вам требуется оставить и report_data для других целей, можно его оставить:
     report_data = timelogs.values(
