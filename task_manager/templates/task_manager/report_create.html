@@ -207,50 +207,6 @@
         });
     }
 
-
-    document.addEventListener("DOMContentLoaded", function() {
-        const projectSelect = document.getElementById('id_project');
-        const buildingSelect = document.getElementById('id_building');
-
-        // Проверим, есть ли уже выбранный проект, чтобы сразу загрузить здания при старте
-        const currentProjectId = projectSelect.value;
-        if (currentProjectId) {
-          loadBuildings(currentProjectId);
-        }
-
-        // Обработчик события изменения выбора проекта
-        projectSelect.addEventListener('change', function() {
-            const projectId = this.value;
-            if (projectId) {
-              loadBuildings(projectId);  // Загружаем здания для выбранного объекта
-            }
-        });
-
-        // Функция для загрузки зданий
-        function loadBuildings(projectId) {
-          // Очищаем текущий список зданий
-          buildingSelect.innerHTML = '<option value="">-- Выберите здание --</option>';
-
-          fetch(`/get_buildings_for_project/${projectId}/`)
-            .then(response => response.json())
-            .then(data => {
-              if (data.buildings.length > 0) {
-                data.buildings.forEach(building => {
-                  const option = document.createElement('option');
-                  option.value = building.id;
-                  option.textContent = building.name;
-                  buildingSelect.appendChild(option);
-                });
-              } else {
-                buildingSelect.innerHTML = '<option value="">Нет доступных зданий</option>';
-              }
-            })
-            .catch(error => {
-              console.error('Ошибка при загрузке зданий:', error);
-            });
-        }
-      });
-
     // Функция для добавления обработчиков событий к строке
     function addEventListenersForRow(row) {
         const projectSelect = row.querySelector('input[name="project"] + .select');
@@ -379,7 +335,7 @@
         let hasError = false;
 
         document.querySelectorAll('.body-item .row-item input').forEach(input => {
-            
+
             if (input.name != 'task') {
                 if (input.value.trim() === '') {
                     input.classList.add('error');
@@ -413,7 +369,7 @@
             // Смотрим, есть ли хотя бы в одной строке значение из specialValues
             const hasSpecialInAnyRow = Array.from(rows).some(row => {
                 const eventSelect = row.querySelector('.select__current[data-cid="events-item"]');
-                if (!eventSelect) return false; 
+                if (!eventSelect) return false;
                 return specialValues.includes(eventSelect.innerText.trim());
             });
 
@@ -568,7 +524,7 @@
             inputsChecker();
             saveTableData(); // Сохранить изменения после удаления
             const rowsCounter = document.querySelectorAll('.body-item');
-            
+
             if(rowsCounter.length <= 0) {
                 document.querySelector('#sendReport').disabled = true;
             }
@@ -777,7 +733,50 @@
             restoreTableData();
             inputsChecker();
             calcInputsValues();
-        }) ;
+
+
+
+            const projectSelect = document.getElementById('id_project');
+            const buildingSelect = document.getElementById('id_building');
+
+            // Проверим, есть ли уже выбранный проект, чтобы сразу загрузить здания при старте
+            const currentProjectId = projectSelect.value;
+            if (currentProjectId) {
+                loadBuildings(currentProjectId);
+            }
+
+            // Обработчик события изменения выбора проекта
+            projectSelect.addEventListener('change', function() {
+                const projectId = this.value;
+                if (projectId) {
+                    loadBuildings(projectId);  // Загружаем здания для выбранного объекта
+                }
+            });
+
+            // Функция для загрузки зданий
+            function loadBuildings(projectId) {
+                // Очищаем текущий список зданий
+                buildingSelect.innerHTML = '<option value="">-- Выберите здание --</option>';
+
+                fetch(`/get_buildings_for_project/${projectId}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.buildings.length > 0) {
+                            data.buildings.forEach(building => {
+                                const option = document.createElement('option');
+                                option.value = building.id;
+                                option.textContent = building.name;
+                                buildingSelect.appendChild(option);
+                            });
+                        } else {
+                            buildingSelect.innerHTML = '<option value="">Нет доступных зданий</option>';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Ошибка при загрузке зданий:', error);
+                });
+            }
+        });
     }
 </script>
 {% endblock %}
