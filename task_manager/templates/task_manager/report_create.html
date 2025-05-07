@@ -336,7 +336,7 @@
 
         document.querySelectorAll('.body-item .row-item input').forEach(input => {
 
-            if (input.name != 'task') {
+            if (input.name != 'task' && input.name != 'mark') {
                 if (input.value.trim() === '') {
                     input.classList.add('error');
                     if (input.classList.contains('hidden-input')) {
@@ -730,7 +730,7 @@
                 addEventListenersForRow(row);
             });
             loadBuildingsAndSectionsForAllRows(); // Загружаем здания и разделы для всех строк
-            restoreTableData();
+            saveTableData();
             inputsChecker();
             calcInputsValues();
 
@@ -778,6 +778,18 @@
                 }
             }
         });
-    }
+    } else {
+      document.addEventListener('DOMContentLoaded', () => {
+        restoreTableData();
+        document.querySelectorAll('.custom-table-body .body-item')
+                .forEach(row => {
+                  addEventListenersForRow(row);
+                  loadBuildingsAndSectionsForRow(row);
+                });
+        inputsChecker();
+        calcInputsValues();
+      });
+}
+    console.log(localStorage);
 </script>
 {% endblock %}
