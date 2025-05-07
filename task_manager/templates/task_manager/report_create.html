@@ -764,19 +764,21 @@
         localStorage.removeItem(localStorageKey);
     });
 
-    // Восстановление данных при загрузке страницы
-    document.addEventListener('DOMContentLoaded', () => {
-        // Добавление обработчиков событий для всех существующих строк
-        const rows = document.querySelectorAll('.custom-table-body .body-item');
-        rows.forEach(row => {
-            addEventListenersForRow(row);
-        });
-        loadBuildingsAndSectionsForAllRows(); // Загружаем здания и разделы для всех строк
-        restoreTableData();
-        inputsChecker();
-        calcInputsValues();
-    }) ;
-
+    const initialRows = {{ timelogs_data|length }};
+    if (initialRows > 0){
+        // Восстановление данных при загрузке страницы
+        document.addEventListener('DOMContentLoaded', () => {
+            // Добавление обработчиков событий для всех существующих строк
+            const rows = document.querySelectorAll('.custom-table-body .body-item');
+            rows.forEach(row => {
+                addEventListenersForRow(row);
+            });
+            loadBuildingsAndSectionsForAllRows(); // Загружаем здания и разделы для всех строк
+            restoreTableData();
+            inputsChecker();
+            calcInputsValues();
+        }) ;
+    }
 
 </script>
 {% endblock %}
