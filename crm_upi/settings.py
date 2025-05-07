@@ -54,7 +54,9 @@ CSRF_TRUSTED_ORIGINS = ['https://crm-upi.vercel.app',
                         'https://demotimetracker.ru',
                         'https://89.223.120.50',
                         'https://upi-test.ru',
-                        'https://jinkosiz-crm-upi-e64a.twc1.net']
+                        'https://jinkosiz-crm-upi-e64a.twc1.net',
+                        'https://jinkosiz-crm-upi-77a2.twc1.net',
+                        'https://89.23.115.23']
 
 ALLOWED_HOSTS = ['crm-upi.vercel.app',
                  'crm-upi-jinkosizs-projects-4c8f9ac9.vercel.app',
@@ -64,7 +66,9 @@ ALLOWED_HOSTS = ['crm-upi.vercel.app',
                  'demotimetracker.ru',
                  '89.223.120.50',
                  'upi-test.ru',
-                 'jinkosiz-crm-upi-e64a.twc1.net']
+                 'jinkosiz-crm-upi-e64a.twc1.net',
+                 'jinkosiz-crm-upi-77a2.twc1.net',
+                 '89.23.115.23']
 
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
@@ -220,11 +224,13 @@ AWS_S3_FILE_OVERWRITE = False
 AUTH_USER_MODEL = 'task_manager.CustomUser'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.timeweb.ru'
-EMAIL_PORT = 465
-EMAIL_USE_SSL = True
-EMAIL_HOST_USER = f'{EMAIL_USER}'  # Your email address
-EMAIL_HOST_PASSWORD = f'{EMAIL_PASSWORD}'  # Your email account password
+EMAIL_HOST = 'mail.s-pi.ru'
+EMAIL_PORT = 25
+EMAIL_USE_SSL = False
+EMAIL_USE_TLS = False
+EMAIL_TIMEOUT = 10
+EMAIL_HOST_USER = f'{EMAIL_USER}'
+EMAIL_HOST_PASSWORD = f'{EMAIL_PASSWORD}'
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 

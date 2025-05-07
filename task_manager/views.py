@@ -1,3 +1,4 @@
+import json
 from datetime import datetime, timedelta, timezone
 import re
 import dateparser
@@ -296,6 +297,32 @@ def deleteUser(request, pk):
     return render(request, 'task_manager/user_confirm_delete.html', {'user': user})
 
 
+def check_user_exists(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        # full_name = data.get('full_name')
+        email = data.get('email')
+
+        # print('Data:', data)
+        # print('Email:', email)
+
+        # Разделяем ФИО на три части
+        # try:
+        #     first_name, last_name, middle_name = full_name.split(' ', 2)
+        # except ValueError:
+        #     return JsonResponse({'exists': False})
+
+        # Проверяем, существует ли пользователь с таким же ФИО или email
+        user_exists = CustomUser.objects.filter(
+            # Q(first_name__iexact=first_name, last_name__iexact=last_name, middle_name__iexact=middle_name) or
+            Q(email=email)
+        ).exists()
+
+        print('User Exists:', user_exists)
+
+        return JsonResponse({'exists': user_exists})
+
+
 def user_login(request):
     if request.method == 'POST':
         identifier = request.POST['username']
@@ -361,7 +388,7 @@ def send_invitation(request, pk):
         send_mail(
             'Приглашение на платформу Task Manager',
             f'Ваши учетные данные для входа:\nЛогин: {user.username}\nПароль: {password}',
-            'info@demotimetracker.ru',
+            'time.crm@s-pi.ru',
             [user.email],
             fail_silently=False,
         )
@@ -1260,6 +1287,25 @@ def get_sections(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
+def normalize_uuid(value):
+    """
+    Если значение равно "-" (как приходит с фронтенда), возвращаем None,
+    иначе оставляем значение без изменений.
+    """
+    return None if value == '-' else value
+
+
+def normalize_stage(value):
+    """
+    Если значение для stage пустое или равно "-", возвращаем значение по умолчанию.
+    Здесь выбирается первый элемент из choices (в вашем случае 'PD').
+    """
+    if value in (None, '', '-'):
+        default_stage = Timelog._meta.get_field('stage').choices[3][3]
+        return default_stage
+    return value
+
+
 @login_required
 def report_create(request):
     # Получаем дату из запроса или используем текущую
@@ -1303,9 +1349,9 @@ def report_create(request):
                 department=request.user.department,
                 project_id=projects[i],
                 stage=stages[i],
-                section_id=sections[i],
-                building_id=buildings[i],
-                mark_id=marks[i],
+                section_id=normalize_uuid(sections[i]),
+                building_id=normalize_uuid(buildings[i]),
+                mark_id=normalize_uuid(marks[i]),
                 task_id=task.id,
                 time=int(times[i]),
                 date=post_date
@@ -1655,21 +1701,34 @@ def final_report(request):
     # Сгруппируем логи по уникальному ряду и по дате.
     grouped_data = {}
     for log in timelogs:
-        # Формируем уникальный ключ строки. Разделитель можно выбрать любой.
-        row_key = f"{log.project.title}|{log.building.title}|{log.mark.title}|{log.user.first_name} {log.user.last_name}"
+        # Берём title или дефис, если объект None
+        project_title = getattr(log.project, 'title', '-') or '-'
+        building_title = getattr(log.building, 'title', '-') or '-'
+        mark_title = getattr(log.mark, 'title', '-') or '-'
+        # Собираем ФИО пользователя, или дефис
+        if log.user:
+            user_name = f"{log.user.first_name} {log.user.last_name}"
+            user_last = log.user.last_name
+        else:
+            user_name = '-'
+            user_last = '-'
+
         date_key = log.date.strftime('%Y-%m-%d')
+        row_key = f"{project_title}|{building_title}|{mark_title}|{user_name}"
+
         if row_key not in grouped_data:
             grouped_data[row_key] = {
-                'project': log.project.title,
-                'building': log.building.title,
-                'mark': log.mark.title,
-                'user': f"{log.user.last_name}",
-                'total_hours': 0,  # можно суммировать часы по всем датам
-                'logs': {}  # здесь будут логи по датам
+                'project': project_title,
+                'building': building_title,
+                'mark': mark_title,
+                'user': user_last,
+                'total_hours': 0,
+                'logs': {}
             }
+
         grouped_data[row_key]['total_hours'] += log.time
-        # Если по одной дате может быть несколько записей – можно делать список.
-        grouped_data[row_key]['logs'][date_key] = log.mark.title
+        # Сохраняем в логе пометку марки (или другую нужную вам информацию)
+        grouped_data[row_key]['logs'][date_key] = mark_title
 
     # Если вам требуется оставить и report_data для других целей, можно его оставить:
     report_data = timelogs.values(
@@ -2092,7 +2151,7 @@ def export_reports_view_excel(request):
         entries = sorted(group['entries'], key=lambda x: x.date)
         for entry in entries:
             # Формируем полное ФИО (добавляем middle name, если есть)
-            full_name = f"{entry.user.first_name} {entry.user.last_name}"
+            full_name = f"{entry.user.last_name} {entry.user.first_name}"
             if hasattr(entry.user, 'middle_name') and entry.user.middle_name:
                 full_name += f" {entry.user.middle_name}"
             row = [
