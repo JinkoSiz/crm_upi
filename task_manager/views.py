@@ -1829,12 +1829,17 @@ def export_to_excel(request):
     # Создаем переменные для хранения марок по дням
     daily_marks = {}
     for log in timelogs:
-        # Группировка по: проект, здание, марка и уникальный идентификатор пользователя
-        key_str = f"{log.project.title}|{log.building.title}|{log.mark.title}|{log.user.id}"
+        # если связи отсутствуют, подставляем '-'
+        proj_title = log.project.title if log.project else '-'
+        bld_title = log.building.title if log.building else '-'
+        mrk_title = log.mark.title if log.mark else '-'
+
+        key_str = f"{proj_title}|{bld_title}|{mrk_title}|{log.user.id}"
         day_key = log.date.strftime('%Y-%m-%d')
+
         if key_str not in daily_marks:
             daily_marks[key_str] = {}
-        daily_marks[key_str][day_key] = log.mark.title
+        daily_marks[key_str][day_key] = mrk_title
 
     # Создаем новую книгу Excel
     wb = Workbook()
