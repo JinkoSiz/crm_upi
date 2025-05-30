@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, date
 import re
 import dateparser
 import pytz
@@ -934,7 +934,7 @@ def task_list(request):
     tasks = cache.get(cache_key)
 
     if not tasks:
-        tasks = TaskType.objects.annotate(
+        tasks = TaskType.objects.filter(is_public=True).annotate(
             department_id=Subquery(
                 DepartmentTaskType.objects.filter(task=OuterRef('pk')).values('department')[:1]
             )
@@ -1341,7 +1341,7 @@ def report_create(request):
         timelogs_data = []
         for i in range(len(projects)):
             task_title = tasks[i].strip()
-            task, _ = TaskType.objects.get_or_create(title=task_title)
+            task, _ = TaskType.objects.get_or_create(title=task_title, defaults={"is_public": False})
 
             timelog = Timelog(
                 user=request.user,
@@ -1849,8 +1849,11 @@ def export_to_excel(request):
     # Записываем заголовки
     headers = ["Объект", "ЗиС", "Марка", "Исполнитель", "Часы"]
     days_in_range = pd.date_range(start=start_date, end=end_date)
-    headers.extend([day.strftime('%d') for day in days_in_range])  # Только число без месяца
+    headers.extend([day.to_pydatetime().date() for day in days_in_range])
     ws.append(headers)
+
+    for col, _ in enumerate(days_in_range, start=6):  # с 6-й колонки
+        ws.cell(row=1, column=col).number_format = 'dd'
 
     # Формируем строку с месяцами
     month_row = ["", "", "", "", ""]
@@ -1887,7 +1890,7 @@ def export_to_excel(request):
             item['building__title'],
             item['mark__title'],
             item['user_full_name'],  # Теперь включает middle name
-            f"{item['total_hours']}"
+            float(item['total_hours']),
         ]
 
         # Формируем группирующий ключ, используя user__id
@@ -1898,6 +1901,10 @@ def export_to_excel(request):
             mark = daily_marks.get(key_str, {}).get(day_key, "")
             row.append(mark)
         ws.append(row)
+
+    for cell in ws['E']:  # колонка E = 5-я
+        if cell.row > 1:  # пропустить шапку
+            cell.number_format = '0'
 
     # Настройка ширины колонок
     column_widths = [30, 20, 20, 25, 15] + [5] * len(days_in_range)
@@ -2030,19 +2037,33 @@ def export_reports_employees_excel(request):
             full_name = f"{entry.user.last_name} {entry.user.first_name}"
             if hasattr(entry.user, 'middle_name') and entry.user.middle_name:
                 full_name += f" {entry.user.middle_name}"
+
+            raw_date = entry.date  # что пришло из БД
+            if isinstance(raw_date, datetime):  # DateTimeField?
+                raw_date = raw_date.replace(tzinfo=None).date()  # в чистый date
+            elif not isinstance(raw_date, date):  # на всякий случай
+                # если это не datetime и не date (маловероятно) — делаем строкой
+                raw_date = str(raw_date)
+
             row = [
                 entry.department.title,
                 entry.project.title,
-                entry.date.strftime("%d.%m.%Y"),  # Форматируем дату
+                raw_date,
                 full_name,
                 entry.building.title if entry.building else "",
                 entry.mark.title if entry.mark else "",
                 entry.task.title if entry.task else "",
-                entry.time,
+                float(entry.time),
             ]
             ws_departments.append(row)
         ws_departments.append(["", "", "", "", "", "Итого по отделу:", group['total_time']])
         ws_departments.append([])
+
+    for cell in ws_departments['C'][1:]:  # пропускаем шапку
+        cell.number_format = 'DD.MM.YYYY'
+
+    for cell in ws_departments['H'][1:]:
+        cell.number_format = '0'
 
     # Лист "Итого" – сводные итоги
     ws_summary = wb.create_sheet(title="Итого")
@@ -2159,9 +2180,16 @@ def export_reports_view_excel(request):
             full_name = f"{entry.user.last_name} {entry.user.first_name}"
             if hasattr(entry.user, 'middle_name') and entry.user.middle_name:
                 full_name += f" {entry.user.middle_name}"
+
+            raw_date = entry.date
+            if isinstance(raw_date, datetime):
+                raw_date = raw_date.replace(tzinfo=None).date()
+            elif not isinstance(raw_date, date):
+                raw_date = str(raw_date)
+
             row = [
                 entry.project.title,
-                entry.date.strftime("%d.%m.%Y"),
+                raw_date,
                 entry.department.title,
                 full_name,
                 entry.building.title if entry.building else "",
@@ -2188,10 +2216,17 @@ def export_reports_view_excel(request):
             full_name = f"{entry.user.last_name} {entry.user.first_name}"
             if hasattr(entry.user, 'middle_name') and entry.user.middle_name:
                 full_name += f" {entry.user.middle_name}"
+
+            raw_date = entry.date
+            if isinstance(raw_date, datetime):
+                raw_date = raw_date.replace(tzinfo=None).date()
+            elif not isinstance(raw_date, date):
+                raw_date = str(raw_date)
+
             row = [
                 entry.department.title,
                 entry.project.title,
-                entry.date.strftime("%d.%m.%Y"),
+                raw_date,
                 full_name,
                 entry.building.title if entry.building else "",
                 entry.mark.title if entry.mark else "",
