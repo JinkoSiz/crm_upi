@@ -13,6 +13,9 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 import environ
 import os
+import builtins
+import sys
+from logging import NullHandler
 
 env = environ.Env(
     DEBUG=(bool, True)
@@ -241,3 +244,30 @@ def show_toolbar(request):
 DEBUG_TOOLBAR_CONFIG = {
     'SHOW_TOOLBAR_CALLBACK': show_toolbar,
 }
+
+if not DEBUG:                     # DEBUG = False → глушим всё
+    # 1) обнуляем print()
+    builtins.print = lambda *a, **k: None          # type: ignore
+
+    # 2) обнуляем stdout / stderr
+    class _NullIO:                                 # noqa: D401
+        def write(self, *_, **__):  ...
+        def flush(self):           ...
+        def isatty(self): return False
+
+    sys.stdout = _NullIO()     # type: ignore
+    sys.stderr = _NullIO()     # type: ignore
+
+    # 3) глушим logging
+    LOGGING = {
+        "version": 1,
+        "disable_existing_loggers": True,    # вырубить всё, что уже создано
+        "handlers": {"null": {"class": "logging.NullHandler"}},
+        "root": {"handlers": ["null"], "level": "CRITICAL"},
+    }
+
+    # Чтобы новые вызовы logging.getLogger() тоже молчали
+    import logging
+    logging.captureWarnings(True)
+    for name in list(logging.root.manager.loggerDict.keys()):
+        logging.getLogger(name).handlers = [NullHandler()]

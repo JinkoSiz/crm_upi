@@ -318,7 +318,7 @@ def check_user_exists(request):
             Q(email=email)
         ).exists()
 
-        print('User Exists:', user_exists)
+        # print('User Exists:', user_exists)
 
         return JsonResponse({'exists': user_exists})
 
@@ -341,9 +341,9 @@ def user_login(request):
             # Если пользователь пригашен и входит впервые, меняем статус на активный
             if user.status == 'invited':
                 user.status = 'active'
-                print(user.status)
+                # print(user.status)
                 user.save()
-                print(user.status)
+                # print(user.status)
                 # Очищаем кэш после обновления пользователя
                 cache.delete('user_list')
 
@@ -365,7 +365,7 @@ def send_invitation(request, pk):
     # print(f"Received pk from URL: {pk}")
     # print(f"Logged in user pk: {request.user.pk}")
     user = get_object_or_404(CustomUser, pk=pk)
-    #print(f'invite: before {user.status}')
+    # print(f'invite: before {user.status}')
     if user.status != 'invited' and user.status != 'active':
         # Генерация случайного логина
         username = get_random_string(length=8)
@@ -382,7 +382,7 @@ def send_invitation(request, pk):
         # Очищаем кэш после обновления пользователя
         cache.delete('user_list')
 
-        #print(f'invite: after {user.status}')
+        # print(f'invite: after {user.status}')
 
         # Синхронная отправка email
         send_mail(
@@ -393,7 +393,7 @@ def send_invitation(request, pk):
             fail_silently=False,
         )
 
-        print('Приглашение отправлено успешно.')
+        # print('Приглашение отправлено успешно.')
 
         messages.success(request, 'Приглашение отправлено успешно.')
     else:
@@ -567,8 +567,8 @@ def updateProject(request, pk):
 
             buildings_ids = request.POST.getlist('buildings_id[]')
             buildings_titles = request.POST.getlist('buildings[]')
-            print(f"buildings_ids: {buildings_ids}")
-            print(f"buildings_titles: {buildings_titles}")
+            # print(f"buildings_ids: {buildings_ids}")
+            # print(f"buildings_titles: {buildings_titles}")
 
             n_ids = len(buildings_ids)
             for i, building_title in enumerate(buildings_titles):
@@ -577,18 +577,17 @@ def updateProject(request, pk):
                     if building_id:
                         try:
                             building = Building.objects.get(pk=building_id)
-                            print(f"Обновляем здание {building_id} с новым названием '{building_title}'")
+                            # print(f"Обновляем здание {building_id} с новым названием '{building_title}'")
                             building.title = building_title
                             building.save()
                         except Building.DoesNotExist:
-                            print(f"Здание с id {building_id} не найдено, создаём новое с названием '{building_title}'")
+                            # print(f"Здание с id {building_id} не найдено, создаём новое с названием '{building_title}'")
                             building, created = Building.objects.get_or_create(title=building_title)
                     else:
-                        print(
-                            f"Передан некорректный UUID {building_id}, создаём новое здание с названием '{building_title}'")
+                        # print(f"Передан некорректный UUID {building_id}, создаём новое здание с названием '{building_title}'")
                         building, created = Building.objects.get_or_create(title=building_title)
                 else:
-                    print(f"Нет id для здания с названием '{building_title}', создаём новое")
+                    # print(f"Нет id для здания с названием '{building_title}', создаём новое")
                     building, created = Building.objects.get_or_create(title=building_title)
 
                 ProjectBuilding.objects.update_or_create(
@@ -1774,7 +1773,7 @@ def parse_russian_date(date_str):
     try:
         return datetime.strptime(date_str, '%d %m %Y').date()
     except ValueError as e:
-        print(f"Ошибка преобразования даты: {e}")
+        # print(f"Ошибка преобразования даты: {e}")
         return None
 
 
@@ -1796,7 +1795,7 @@ def export_to_excel(request):
 
     # Проверка на наличие start_date и end_date после парсинга
     if start_date is None or end_date is None:
-        print("Error: start_date or end_date is None")
+        # print("Error: start_date or end_date is None")
         return HttpResponse("Ошибка: некорректные даты", status=400)
 
     # Получаем фильтры из GET-запроса

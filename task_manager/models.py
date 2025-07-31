@@ -129,9 +129,9 @@ class CustomUser(AbstractUser):
             # Clear admin rights if is_admin is False
             self.is_staff = False
             self.is_superuser = False
-            print(f'models {self.status}')
+            # print(f'models {self.status}')
             if self.status != 'invited' and self.status != 'active':
-                #print(f'models {self.status}')
+                # print(f'models {self.status}')
                 self.status = 'draft'
             admin_group = Group.objects.filter(name='Admin').first()
             if admin_group:
